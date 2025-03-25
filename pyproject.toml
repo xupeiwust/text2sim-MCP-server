@@ -1,0 +1,10 @@
+[project]
+name = "text2sim-MCP-server"
+version = "0.1.0"
+description = "An intelligent discrete-event simulation engine that generates and executes flexible SimPy-based models from natural language descriptions. Supports multi-domain workflows (airport, healthcare, manufacturing) with configurable entities, stochastic logic, and real-time metrics."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=1.5.0",
+    "simpy>=4.1.1",
+]
