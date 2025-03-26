@@ -5,9 +5,7 @@
 
 **Text2Sim MCP Server** is a discrete-event simulation engine that generates and executes flexible SimPy-based models from natural language descriptions. It integrates with LLMs using the **Model Context Protocol (MCP)**, enabling powerful simulation capabilities within natural language environments like Claude Desktop.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/qkdV-HtTtLs" 
-frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-allowfullscreen></iframe>
+[![Text2Sim MCP Server (demo)](assets/youtube_screen.png)](https://www.youtube.com/embed/qkdV-HtTtLs "Text2Sim MCP Server (demo)")
 
 ---
 ## 🚀 Features
