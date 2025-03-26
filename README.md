@@ -1,14 +1,19 @@
+![Header Image](assets/text2sim_mcp_github.png)
+
 # **Text2Sim MCP Server**  
 ### *SimPy-based Discrete-Event Simulation Engine for LLM Integration*
 
 **Text2Sim MCP Server** is a discrete-event simulation engine that generates and executes flexible SimPy-based models from natural language descriptions. It integrates with LLMs using the **Model Context Protocol (MCP)**, enabling powerful simulation capabilities within natural language environments like Claude Desktop.
 
----
+<iframe width="560" height="315" src="https://www.youtube.com/embed/qkdV-HtTtLs" 
+frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+allowfullscreen></iframe>
 
+---
 ## 🚀 Features
 
-- **Natural Language Model Generation**  
-  Create simulation models using plain English descriptions.
+- **Large Language Model (LLM) Integration**  
+  Create simulation models using plain English descriptions to LLMs.
 
 - **Multi-Domain Support**  
   Build simulations for domains such as airport operations, healthcare, manufacturing, and more.
@@ -21,9 +26,6 @@
 
 - **Real-Time Metrics**  
   Collect and analyse performance indicators such as wait times and throughput.
-
-- **MCP Integration**  
-  Expose simulation capabilities through the standardised Model Context Protocol.
 
 - **Secure Implementation**  
   Uses regex-based parsing (not `eval()`) for processing time distribution inputs.
@@ -57,7 +59,6 @@ Learn more: [astral-sh/uv](https://github.com/astral-sh/uv)
 ### **Clone the repository**
 ```bash
 git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
-cd text2sim-MCP-server
 ```
 
 ### **Integration with Claude Desktop**
@@ -92,7 +93,7 @@ cd text2sim-MCP-server
 
 ### Overview
 
-The `simulate_des` function expects a configuration dictionary describing the simulation setup. If using a language model (e.g. Claude), natural language prompts are translated into this dictionary via the **Model Context Protocol (MCP)**.
+The `simulate_des` function expects a configuration dictionary describing the simulation setup. When using a Large Language Model (e.g. Claude) client, natural language prompts are translated into this dictionary via the **Model Context Protocol (MCP)**.
 
 ---
 
@@ -151,7 +152,7 @@ Each simulation returns a dictionary of performance metrics:
 
 ---
 
-### ✍️ Prompting Guide: From Natural Language to Config
+### ✍️ Prompting Guide:
 
 Here’s how to structure prompts that result in effective simulations:
 
@@ -238,7 +239,7 @@ Will generate:
 }
 ```
 
-The Text2Sim DES engine parses this config, runs a SimPy simulation, and returns metrics for interpretation.
+The Text2Sim Discete-event Simulation (DES) engine parses this config, runs a SimPy-based simulation, and returns metrics for interpretation.
 
 ---
 
@@ -247,7 +248,7 @@ The Text2Sim DES engine parses this config, runs a SimPy simulation, and returns
 Text2Sim is structured into modular components:
 
 - **MCP Server** – Handles natural language requests via MCP.
-- **Simulation Model** – Core SimPy engine that executes process flows.
+- **Simulation Model** – Core [SimPy](https://simpy.readthedocs.io/en/latest/) engine that executes process flows.
 - **Entity Class** – Represents units flowing through the system.
 - **Process Steps** – Encapsulate logic for each process stage.
 - **Metrics Collector** – Gathers statistics like wait times and throughput.
@@ -268,16 +269,6 @@ Text2Sim is structured into modular components:
 
 ---
 
-## 🌱 Future Enhancements
-
-- [ ] Support for branching and conditional process flows  
-- [ ] More distribution types (e.g., gamma, triangular)  
-- [ ] Entity attribute-based routing  
-- [ ] Shared resources across steps  
-- [ ] Integration with visualisation tools (e.g., Gantt charts, dashboards)
-
----
-
 ## 🤝 Contributing
 
 Pull requests are welcome! Please fork the repo and submit a PR. Suggestions, bug reports, and feature ideas are always appreciated.
@@ -286,4 +277,4 @@ Pull requests are welcome! Please fork the repo and submit a PR. Suggestions, bu
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE.txt) file for details.
