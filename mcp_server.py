@@ -1,47 +1,31 @@
-from mcp.server.fastmcp import FastMCP
-from des_simulator import SimulationModel
+from mcp.server.fastmcp import FastMCP, Context
+from DES.des_simulator import SimulationModel
+from DES.des_utils import parse_distribution, run_simulation
 import random
 import re  # Added for the regex parser
+import json
+from pathlib import Path
+import sys
+import os
+
+# Ensure the SD module is in the path
+current_dir = Path(__file__).parent
+if str(current_dir) not in sys.path:
+    sys.path.append(str(current_dir))
+
+# Import SD utilities
+try:
+    from SD.sd_utils import load_model_metadata, run_model_simulation, get_model_list, get_model_details
+except ImportError:
+    # Create SD directory if it doesn't exist
+    sd_dir = current_dir / "SD"
+    sd_dir.mkdir(exist_ok=True)
+    
+    # Reattempt import after ensuring directory exists
+    from SD.sd_utils import load_model_metadata, run_model_simulation, get_model_list, get_model_details
 
 # Initialise the MCP server
 mcp = FastMCP("text2sim-mcp-server")
-
-def parse_distribution(dist_str):
-    """
-    Safely parse a distribution string into a function that generates random values.
-    
-    Args:
-        dist_str: A string like "uniform(2, 5)" or "normal(10, 2)"
-        
-    Returns:
-        A function that returns random values from the specified distribution
-        
-    Raises:
-        ValueError: If the format is invalid or the distribution is unsupported
-    """
-    pattern = r'(\w+)\(([^)]+)\)'
-    match = re.match(pattern, dist_str.strip())
-    
-    if not match:
-        raise ValueError(f"Invalid distribution format: {dist_str}")
-        
-    dist_name, args_str = match.groups()
-    args = [float(x.strip()) for x in args_str.split(',')]
-    
-    if dist_name == "uniform":
-        if len(args) != 2:
-            raise ValueError("Uniform distribution requires exactly 2 parameters: min and max")
-        return lambda: random.uniform(args[0], args[1])
-    elif dist_name in ["gauss", "normal"]:
-        if len(args) != 2:
-            raise ValueError("Normal distribution requires exactly 2 parameters: mean and std dev")
-        return lambda: max(0, random.gauss(args[0], args[1]))
-    elif dist_name == "exp":
-        if len(args) != 1:
-            raise ValueError("Exponential distribution requires exactly 1 parameter: mean")
-        return lambda: random.expovariate(1 / args[0])
-    else:
-        raise ValueError(f"Unsupported distribution: {dist_name}")
 
 @mcp.tool()
 def simulate_des(config: dict) -> dict:
@@ -77,36 +61,86 @@ def simulate_des(config: dict) -> dict:
             
         If an error occurs, returns: {"error": "Error message"}
     """
-    # Apply defaults
-    sim_config = {
-        "interarrival": config.get("interarrival", 2),
-        "num_entities": config.get("num_entities", 100),
-        "run_time": config.get("run_time", 120)
-    }
+    from DES.des_utils import run_simulation
+    
+    try:
+        # Use the run_simulation function from des_utils
+        return run_simulation(config)
+    except Exception as e:
+        return {"error": f"Simulation error: {str(e)}"}
 
-    model = SimulationModel(sim_config)
+@mcp.tool()
+def simulate_sd_model(model: str, parameters: dict = None, 
+                     start: int = None, stop: int = None, step: int = None) -> dict:
+    """
+    Run a System Dynamics model simulation using PySD.
+    
+    This tool runs a registered System Dynamics model with the provided parameters
+    and returns the simulation results. Models must be registered in the SD/models/metadata.json file.
+    
+    Args:
+        model: Name of the model to simulate (must match an entry in metadata.json)
+        parameters: Dictionary of parameter name-value pairs to override default values
+        start: Start time for simulation (defaults to model's metadata setting)
+        stop: End time for simulation (defaults to model's metadata setting)
+        step: Time step for simulation (defaults to model's metadata setting)
+    
+    Returns:
+        A dictionary containing simulation results with time series data for each model variable
+        
+        If an error occurs, returns: {"error": "Error message"}
+    """
+    try:
+        # Run simulation with provided parameters
+        result = run_model_simulation({
+            "model": model,
+            "parameters": parameters or {},
+            "start": start,
+            "stop": stop,
+            "step": step
+        })
+        
+        # Convert to a dictionary that's serializable
+        return json.loads(result.to_json())
+    except Exception as e:
+        return {"error": f"SD simulation error: {str(e)}"}
 
-    # Validate and add steps
-    steps = config.get("steps", [])
-    if not steps:
-        return {"error": "No process steps defined. Please include a 'steps' list."}
+@mcp.tool()
+def list_sd_models() -> dict:
+    """
+    List all available System Dynamics models with their descriptions.
+    
+    Returns:
+        A dictionary mapping model names to their descriptions, or
+        {"error": "Error message"} if an error occurs
+    """
+    try:
+        return get_model_list()
+    except Exception as e:
+        return {"error": f"Error listing SD models: {str(e)}"}
 
-    for step in steps:
-        name = step.get("name")
-        if not name:
-            return {"error": "Each step must have a 'name' property"}
-            
-        capacity = step.get("capacity", 1)
-        dist = step.get("distribution", "uniform(1, 3)")
-
-        try:
-            # Use the secure parser instead of eval()
-            fn = parse_distribution(dist)
-            model.add_step(name, capacity, fn)
-        except Exception as e:
-            return {"error": f"Error processing step '{name}': {str(e)}"}
-
-    return model.run()
+@mcp.tool()
+def get_sd_model_info(model_name: str) -> dict:
+    """
+    Get detailed information about a specific System Dynamics model.
+    
+    This tool returns metadata about a registered model, including its
+    available parameters, outputs, and time settings.
+    
+    Args:
+        model_name: Name of the model to retrieve information for
+    
+    Returns:
+        A dictionary containing model metadata, or
+        {"error": "Error message"} if the model is not found or an error occurs
+    """
+    try:
+        model_info = get_model_details(model_name)
+        if not model_info:
+            return {"error": f"Model not found: {model_name}"}
+        return model_info
+    except Exception as e:
+        return {"error": f"Error retrieving model info: {str(e)}"}
 
 if __name__ == "__main__":
     mcp.run(transport='stdio')

@@ -1,10 +1,13 @@
 [project]
 name = "text2sim-MCP-server"
 version = "0.1.0"
-description = "An intelligent discrete-event simulation engine that generates and executes flexible SimPy-based models from natural language descriptions. Supports multi-domain workflows (airport, healthcare, manufacturing) with configurable entities, stochastic logic, and real-time metrics."
+description = "A multi-paradigm simulation engine that supports Discrete-Event Simulation (DES) with SimPy and System Dynamics (SD) with PySD. Integrates with LLMs through the Model Context Protocol (MCP) to enable simulation capabilities in natural language environments."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=1.5.0",
     "simpy>=4.1.1",
+    "pysd>=3.12.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
 ]
