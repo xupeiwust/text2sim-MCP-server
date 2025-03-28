@@ -5,7 +5,7 @@
 
 **Text2Sim MCP Server** is a simulation engine that supports multiple modeling paradigms, including Discrete-Event Simulation (DES) and System Dynamics (SD). It integrates with LLMs using the **Model Context Protocol (MCP)**, enabling powerful simulation capabilities within natural language environments like Claude Desktop.
 
-[![Text2Sim MCP Server (demo)](assets/youtube_screen.png)](https://www.youtube.com/embed/qkdV-HtTtLs "Text2Sim MCP Server (demo)")
+[![Text2Sim MCP Server (demo)](assets/youtube_screen.png)](https://www.youtube.com/watch?v=qkdV-HtTtLs "Text2Sim MCP Server (demo)")
 
 ---
 ## 🚀 Features
