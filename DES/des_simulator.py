@@ -180,9 +180,15 @@ class SimulationModel:
         num_entities = self.config.get("num_entities", 100)
         run_time = self.config.get("run_time", 120)
 
-        for i in range(num_entities):
-            self.env.process(self.entity_process(i))
-            yield self.env.timeout(random.expovariate(1 / interarrival))
+        # Create a separate generator function for entity arrivals
+        def entity_arrivals():
+            for i in range(num_entities):
+                self.env.process(self.entity_process(i))
+                yield self.env.timeout(random.expovariate(1 / interarrival))
 
+        # Start the entity arrival process
+        self.env.process(entity_arrivals())
+        
+        # Run the simulation
         self.env.run(until=run_time)
         return self.metrics.summarise()
