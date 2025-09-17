@@ -39,62 +39,14 @@ def parse_distribution(dist_str: str) -> Callable[[], float]:
     else:
         raise ValueError(f"Unsupported distribution: {dist_name}")
 
-def validate_config(config: Dict[str, Any]) -> Optional[str]:
-    """
-    Validate a simulation configuration dictionary.
-    
-    Args:
-        config: A dictionary with simulation configuration
-        
-    Returns:
-        None if valid, error message string if invalid
-    """
-    # Check for required steps
-    steps = config.get("steps", [])
-    if not steps:
-        return "No process steps defined. Please include a 'steps' list."
-    
-    # Validate each step
-    for i, step in enumerate(steps):
-        # Check for name
-        name = step.get("name")
-        if not name:
-            return f"Step {i+1} is missing a 'name' property"
-        
-        # Validate distribution if provided
-        if "distribution" in step:
-            try:
-                parse_distribution(step["distribution"])
-            except ValueError as e:
-                return f"Error in step '{name}' distribution: {str(e)}"
-    
-    return None
-
-def prepare_simulation_config(config: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Prepare and standardize a simulation configuration with defaults.
-    
-    Args:
-        config: User-provided configuration dictionary
-        
-    Returns:
-        Configuration with defaults applied
-    """
-    # Apply defaults
-    return {
-        "interarrival": config.get("interarrival", 2),
-        "num_entities": config.get("num_entities", 100),
-        "run_time": config.get("run_time", 120),
-        "steps": config.get("steps", [])
-    }
+# Legacy validation functions removed - now using JSON Schema validation
 
 def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Run a discrete-event simulation based on the provided configuration.
+    Run unified DES simulation with schema validation.
     
-    This function supports both basic and advanced simulation scenarios:
-    - Basic: Simple sequential processing through steps
-    - Advanced: Complex scenarios with balking, custom metrics, entity types
+    This function uses the new schema-driven unified simulation model that
+    handles all scenarios through comprehensive configuration validation.
     
     Args:
         config: A dictionary with simulation configuration
@@ -102,67 +54,30 @@ def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Simulation results dictionary or error message
     """
-    # Check if this is a complex scenario
-    if _is_complex_scenario(config):
-        from DES.des_simulator import AdvancedSimulationModel
-        try:
-            model = AdvancedSimulationModel(config)
-            return model.run()
-        except Exception as e:
-            return {"error": f"Advanced simulation error: {str(e)}"}
-    
-    # Otherwise use the basic DES framework
-    from DES.des_simulator import SimulationModel
-    
-    # Validate config
-    error = validate_config(config)
-    if error:
-        return {"error": error}
-    
-    # Prepare config with defaults
-    sim_config = prepare_simulation_config(config)
-    
-    # Create model
-    model = SimulationModel(sim_config)
-    
-    # Add steps to the model
-    for step in sim_config["steps"]:
-        name = step["name"]
-        capacity = step.get("capacity", 1)
-        dist_str = step.get("distribution", "uniform(1, 3)")
-        
-        try:
-            # Use the secure parser instead of eval()
-            fn = parse_distribution(dist_str)
-            model.add_step(name, capacity, fn)
-        except Exception as e:
-            return {"error": f"Error processing step '{name}': {str(e)}"}
-    
-    # Run the simulation and return results
     try:
+        from DES.schema_validator import DESConfigValidator
+        from DES.unified_simulator import UnifiedSimulationModel
+        
+        # Validate configuration
+        validator = DESConfigValidator()
+        normalized_config, errors = validator.validate_and_normalize(config)
+        
+        if errors:
+            return {
+                "error": "Configuration validation failed", 
+                "details": errors,
+                "suggestion": "Please check the configuration format against the schema examples"
+            }
+        
+        # Run unified simulation
+        model = UnifiedSimulationModel(normalized_config)
         return model.run()
+        
+    except ImportError:
+        # Fallback for missing dependencies during transition
+        return {"error": "Unified simulation model not available. Please check dependencies."}
+        
     except Exception as e:
         return {"error": f"Simulation error: {str(e)}"}
 
-def _is_complex_scenario(config: Dict[str, Any]) -> bool:
-    """
-    Determine if this is a complex scenario that needs advanced handling.
-    
-    Args:
-        config: Simulation configuration
-        
-    Returns:
-        True if complex scenario, False if basic DES
-    """
-    # Check for advanced simulation indicators
-    advanced_indicators = [
-        # Generic advanced features
-        "entity_types", "balking_rules", "custom_metrics", 
-        "conditional_processing", "routing_rules", "resources",
-        "processing_rules", "arrival_pattern",
-        
-        # Metric configuration indicators
-        "arrival_metric", "served_metric", "balk_metric", "value_metric"
-    ]
-    
-    return any(key in config for key in advanced_indicators) 
+# Legacy functions removed - now using unified schema-driven approach 

@@ -1,8 +1,5 @@
 from mcp.server.fastmcp import FastMCP, Context
-from DES.des_simulator import SimulationModel
-from DES.des_utils import parse_distribution, run_simulation
-import random
-import re  # Added for the regex parser
+from DES.schema_validator import DESConfigValidator
 import json
 from pathlib import Path
 import sys
@@ -30,60 +27,119 @@ mcp = FastMCP("text2sim-mcp-server")
 @mcp.tool()
 def simulate_des(config: dict) -> dict:
     """
-    Run a discrete-event simulation based on the provided configuration.
+    Run a discrete-event simulation with comprehensive configuration using SimPy.
     
-    This tool supports both basic and advanced simulation scenarios:
+    This tool enables complex discrete-event simulations through a schema-driven
+    configuration system optimized for SimPy's native capabilities. The configuration
+    is validated against a comprehensive JSON schema to ensure correctness.
     
-    BASIC MODE: Simple sequential processing through steps
-    ADVANCED MODE: Complex scenarios with balking, custom metrics, entity types
+    Configuration Structure:
+        run_time: Total simulation runtime (required)
+        entity_types: Different types of entities with probabilities and values
+        resources: System resources with capacity and type (fifo/priority/preemptive)
+        processing_rules: Processing steps and service time distributions
+        arrival_pattern: How entities arrive (mutually exclusive with num_entities)
+        num_entities: Fixed number of entities (mutually exclusive with arrival_pattern)
+        balking_rules: Rules for entities leaving without service
+        reneging_rules: Rules for entities abandoning queues after waiting
+        simple_routing: Basic conditional routing based on entity attributes
+        basic_failures: Simple resource failure and repair cycles
+        metrics: Custom names for simulation metrics
+        statistics: Additional statistics collection settings
     
-    The tool automatically detects which mode to use based on the configuration.
+    Coffee Shop Example:
+    {
+      "run_time": 480,
+      "entity_types": {
+        "regular_customer": {"probability": 0.7, "value": {"min": 3, "max": 6}, "priority": 5},
+        "vip_customer": {"probability": 0.3, "value": {"min": 5, "max": 12}, "priority": 2}
+      },
+      "resources": {
+        "barista": {"capacity": 1, "resource_type": "priority"}
+      },
+      "processing_rules": {
+        "steps": ["barista"],
+        "barista": {"distribution": "normal(5, 1)"}
+      },
+      "balking_rules": {
+        "overcrowding": {"type": "queue_length", "resource": "barista", "max_length": 5}
+      },
+      "arrival_pattern": {"distribution": "uniform(1, 5)"}
+    }
     
-    Args:
-        config: A dictionary defining the simulation parameters
-        
-        BASIC CONFIGURATION:
-            interarrival: Average time between entity arrivals (default: 2)
-            num_entities: Total number of entities to generate (default: 100)
-            run_time: Total simulation runtime (default: 120)
-            steps: List of process steps, each with:
-                name: Identifier for the step (required)
-                capacity: Number of entities that can be processed simultaneously (default: 1)
-                distribution: Processing time distribution as a string (default: "uniform(1, 3)")
-        
-        ADVANCED CONFIGURATION:
-            entity_types: Dictionary defining entity types, probabilities, and value ranges
-            resources: Dictionary defining simulation resources and their capacities
-            processing_rules: Dictionary defining processing steps and distributions
-            balking_rules: Dictionary defining when entities leave without being served
-            arrival_pattern: Dictionary defining arrival time distributions
-            Custom metric names: arrival_metric, served_metric, balk_metric, value_metric
-        
-        SUPPORTED DISTRIBUTIONS:
-            - "uniform(min, max)": Uniform distribution between min and max
-            - "normal(mean, std)" or "gauss(mean, std)": Normal distribution  
-            - "exp(mean)": Exponential distribution with given mean
+    Hospital Example:
+    {
+      "run_time": 720,
+      "entity_types": {
+        "emergency": {"probability": 0.1, "priority": 1, "value": {"min": 2000, "max": 5000}},
+        "urgent": {"probability": 0.3, "priority": 3, "value": {"min": 500, "max": 2000}},
+        "routine": {"probability": 0.6, "priority": 7, "value": {"min": 100, "max": 500}}
+      },
+      "resources": {
+        "triage": {"capacity": 2, "resource_type": "priority"},
+        "treatment": {"capacity": 8, "resource_type": "preemptive"},
+        "discharge": {"capacity": 1, "resource_type": "fifo"}
+      },
+      "processing_rules": {
+        "steps": ["triage", "treatment", "discharge"],
+        "triage": {"distribution": "uniform(5, 15)"},
+        "treatment": {
+          "conditional_distributions": {
+            "emergency": "normal(60, 20)",
+            "urgent": "normal(30, 10)",
+            "routine": "normal(30, 10)"
+          }
+        },
+        "discharge": {"distribution": "uniform(5, 10)"}
+      },
+      "arrival_pattern": {"distribution": "exp(2)"}
+    }
+    
+    Supported Distributions:
+        - "uniform(min, max)": Uniform distribution between min and max
+        - "normal(mean, std)" or "gauss(mean, std)": Normal distribution  
+        - "exp(mean)": Exponential distribution with given mean (not rate)
+    
+    Resource Types:
+        - "fifo": Standard FIFO queue (SimPy Resource)
+        - "priority": Priority queue without preemption (SimPy PriorityResource)
+        - "preemptive": Priority queue with preemption (SimPy PreemptiveResource)
     
     Returns:
-        BASIC MODE: Dictionary with step-based metrics
-            {step_name}_{metric_type}_avg: Average values
-            {step_name}_{metric_type}_count: Count of occurrences
-            
-        ADVANCED MODE: Dictionary with comprehensive business metrics
-            {arrival_metric}_count: Total entities that arrived
-            {served_metric}_count: Total entities served  
-            {balk_metric}_count: Total entities that left without being served
-            {value_metric}: Total value generated
-            average_{value}_per_{entity}: Average value per served entity
-            {entity}_processing_efficiency: Percentage of entities processed successfully
-            
-        If an error occurs, returns: {"error": "Error message"}
+        Dictionary with simulation results including:
+        - Entity arrival, served, balked, and reneged counts
+        - Total value/revenue generated
+        - Processing efficiency percentages
+        - Average values per entity
+        - Resource utilization statistics (if enabled)
+        - Wait time statistics (if enabled)
+        
+        If validation fails, returns: {"error": "message", "details": [error_list]}
+        If simulation fails, returns: {"error": "Simulation error: message"}
     """
-    from DES.des_utils import run_simulation
-    
     try:
-        # Use the run_simulation function from des_utils
+        # Validate and normalize configuration
+        validator = DESConfigValidator()
+        normalized_config, errors = validator.validate_and_normalize(config)
+        
+        if errors:
+            return {
+                "error": "Configuration validation failed",
+                "details": errors,
+                "suggestion": "Please check the configuration format against the schema examples"
+            }
+        
+        # Import and run unified simulation (will be created in Phase 2)
+        from DES.unified_simulator import UnifiedSimulationModel
+        
+        model = UnifiedSimulationModel(normalized_config)
+        return model.run()
+        
+    except ImportError:
+        # Fallback to old system during transition
+        from DES.des_utils import run_simulation
         return run_simulation(config)
+        
     except Exception as e:
         return {"error": f"Simulation error: {str(e)}"}
 
