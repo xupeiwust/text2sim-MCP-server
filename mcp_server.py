@@ -32,12 +32,17 @@ def simulate_des(config: dict) -> dict:
     """
     Run a discrete-event simulation based on the provided configuration.
     
-    This tool converts a flexible configuration structure into a SimPy-based
-    discrete-event simulation model and executes it. It supports various
-    probability distributions for process times and provides summary metrics.
+    This tool supports both basic and advanced simulation scenarios:
+    
+    BASIC MODE: Simple sequential processing through steps
+    ADVANCED MODE: Complex scenarios with balking, custom metrics, entity types
+    
+    The tool automatically detects which mode to use based on the configuration.
     
     Args:
-        config: A dictionary defining the simulation parameters:
+        config: A dictionary defining the simulation parameters
+        
+        BASIC CONFIGURATION:
             interarrival: Average time between entity arrivals (default: 2)
             num_entities: Total number of entities to generate (default: 100)
             run_time: Total simulation runtime (default: 120)
@@ -45,19 +50,32 @@ def simulate_des(config: dict) -> dict:
                 name: Identifier for the step (required)
                 capacity: Number of entities that can be processed simultaneously (default: 1)
                 distribution: Processing time distribution as a string (default: "uniform(1, 3)")
-                    Supported formats:
-                    - "uniform(min, max)": Uniform distribution between min and max
-                    - "normal(mean, std)" or "gauss(mean, std)": Normal distribution
-                    - "exp(mean)": Exponential distribution with given mean
+        
+        ADVANCED CONFIGURATION:
+            entity_types: Dictionary defining entity types, probabilities, and value ranges
+            resources: Dictionary defining simulation resources and their capacities
+            processing_rules: Dictionary defining processing steps and distributions
+            balking_rules: Dictionary defining when entities leave without being served
+            arrival_pattern: Dictionary defining arrival time distributions
+            Custom metric names: arrival_metric, served_metric, balk_metric, value_metric
+        
+        SUPPORTED DISTRIBUTIONS:
+            - "uniform(min, max)": Uniform distribution between min and max
+            - "normal(mean, std)" or "gauss(mean, std)": Normal distribution  
+            - "exp(mean)": Exponential distribution with given mean
     
     Returns:
-        A dictionary containing simulation metrics:
-            {step_name}_{metric_type}_avg: Average value for numeric metrics
+        BASIC MODE: Dictionary with step-based metrics
+            {step_name}_{metric_type}_avg: Average values
             {step_name}_{metric_type}_count: Count of occurrences
             
-        Example metrics include:
-            - step1_wait_time_avg: Average wait time for step1
-            - step1_completed_count: Number of entities that completed step1
+        ADVANCED MODE: Dictionary with comprehensive business metrics
+            {arrival_metric}_count: Total entities that arrived
+            {served_metric}_count: Total entities served  
+            {balk_metric}_count: Total entities that left without being served
+            {value_metric}: Total value generated
+            average_{value}_per_{entity}: Average value per served entity
+            {entity}_processing_efficiency: Percentage of entities processed successfully
             
         If an error occurs, returns: {"error": "Error message"}
     """

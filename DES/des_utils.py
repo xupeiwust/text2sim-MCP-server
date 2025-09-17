@@ -92,12 +92,26 @@ def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
     """
     Run a discrete-event simulation based on the provided configuration.
     
+    This function supports both basic and advanced simulation scenarios:
+    - Basic: Simple sequential processing through steps
+    - Advanced: Complex scenarios with balking, custom metrics, entity types
+    
     Args:
         config: A dictionary with simulation configuration
         
     Returns:
         Simulation results dictionary or error message
     """
+    # Check if this is a complex scenario
+    if _is_complex_scenario(config):
+        from DES.des_simulator import AdvancedSimulationModel
+        try:
+            model = AdvancedSimulationModel(config)
+            return model.run()
+        except Exception as e:
+            return {"error": f"Advanced simulation error: {str(e)}"}
+    
+    # Otherwise use the basic DES framework
     from DES.des_simulator import SimulationModel
     
     # Validate config
@@ -128,4 +142,27 @@ def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
     try:
         return model.run()
     except Exception as e:
-        return {"error": f"Simulation error: {str(e)}"} 
+        return {"error": f"Simulation error: {str(e)}"}
+
+def _is_complex_scenario(config: Dict[str, Any]) -> bool:
+    """
+    Determine if this is a complex scenario that needs advanced handling.
+    
+    Args:
+        config: Simulation configuration
+        
+    Returns:
+        True if complex scenario, False if basic DES
+    """
+    # Check for advanced simulation indicators
+    advanced_indicators = [
+        # Generic advanced features
+        "entity_types", "balking_rules", "custom_metrics", 
+        "conditional_processing", "routing_rules", "resources",
+        "processing_rules", "arrival_pattern",
+        
+        # Metric configuration indicators
+        "arrival_metric", "served_metric", "balk_metric", "value_metric"
+    ]
+    
+    return any(key in config for key in advanced_indicators) 
