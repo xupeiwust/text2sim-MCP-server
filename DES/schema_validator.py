@@ -26,7 +26,7 @@ class DESConfigValidator:
     
     def __init__(self):
         """Load the SimPy-compatible schema."""
-        schema_path = Path(__file__).parent.parent / "des-simpy-compatible-schema.json"
+        schema_path = Path(__file__).parent.parent / "schemas" / "DES" / "des-simpy-compatible-schema.json"
         try:
             with open(schema_path) as f:
                 self.schema = json.load(f)
