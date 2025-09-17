@@ -81,7 +81,7 @@ You can add custom fields for additional metadata through the command line:
 
 - `--author` or `-a`: Model creator information (e.g., "Jane Smith, University of Example")
 - `--version` or `-v`: Model version number (e.g., "2.1.0")
-- `--documentation` or `-D`: Links to model documentation (e.g., "https://example.com/docs")
+- `--documentation` or `-D`: Links to model documentation 
 - `--reference-modes`: Named scenario configurations (comma-separated list, e.g., "baseline,policy_a,policy_b")
 
 These custom fields will be included in the model metadata and can be accessed through the MCP server's `get_sd_model_info` tool. 
