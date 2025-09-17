@@ -233,13 +233,135 @@ class DESConfigValidator:
     
     def _format_schema_error(self, error: jsonschema.ValidationError) -> str:
         """
-        Format JSON schema validation errors into user-friendly messages.
+        Format JSON schema validation errors into user-friendly messages with examples.
         """
-        if error.path:
-            path = " -> ".join(str(p) for p in error.path)
-            return f"At '{path}': {error.message}"
+        path = " -> ".join(str(p) for p in error.path) if error.path else "root"
+        base_message = f"At '{path}': {error.message}"
+        
+        # Generate helpful suggestions based on common error patterns
+        suggestion = self._get_error_suggestion(error, path)
+        
+        if suggestion:
+            return f"{base_message}\n💡 Suggestion: {suggestion['tip']}\n📋 Example: {json.dumps(suggestion['example'], indent=2)}"
         else:
-            return error.message
+            return base_message
+    
+    def _get_error_suggestion(self, error: jsonschema.ValidationError, path: str) -> Dict[str, Any]:
+        """Generate helpful suggestions for common schema validation errors."""
+        
+        # Map of common error patterns to helpful examples
+        error_suggestions = {
+            # Statistics section errors
+            "statistics": {
+                "pattern": "Additional properties are not allowed",
+                "tip": "Statistics section uses specific property names. Common mistake: 'wait_times' should be 'collect_wait_times'",
+                "example": {
+                    "statistics": {
+                        "collect_wait_times": True,
+                        "collect_utilization": True,
+                        "collect_queue_lengths": False,
+                        "warmup_period": 60
+                    }
+                }
+            },
+            
+            # Reneging rules errors
+            "reneging_rules": {
+                "pattern": "'abandon_time' is a required property",
+                "tip": "Reneging rules require 'abandon_time' as a distribution string, not a number",
+                "example": {
+                    "customer_impatience": {
+                        "abandon_time": "normal(30, 10)",
+                        "priority_multipliers": {"1": 3.0, "5": 1.0, "10": 0.5}
+                    }
+                }
+            },
+            
+            # Basic failures errors  
+            "basic_failures": {
+                "pattern": "is not of type 'string'",
+                "tip": "Failure times must be distribution strings, not numbers. Use 'exp(300)' instead of 300",
+                "example": {
+                    "resource_name": {
+                        "mtbf": "exp(480)",
+                        "repair_time": "uniform(20, 40)"
+                    }
+                }
+            },
+            
+            # Simple routing errors
+            "simple_routing": {
+                "pattern": "'conditions' is a required property",
+                "tip": "Simple routing requires 'conditions' array, not 'from_step'/'to_step' properties",
+                "example": {
+                    "quality_check": {
+                        "conditions": [
+                            {"attribute": "priority", "operator": "<=", "value": 2, "destination": "express_lane"}
+                        ],
+                        "default_destination": "regular_service"
+                    }
+                }
+            },
+            
+            # Distribution format errors
+            "distribution": {
+                "pattern": "does not match",
+                "tip": "Distributions must be formatted as 'type(params)'. Examples: 'uniform(5,10)', 'normal(8,2)', 'exp(5)'",
+                "example": {
+                    "valid_distributions": [
+                        "uniform(1, 10)",
+                        "normal(5, 1.5)", 
+                        "exp(3)",
+                        "gauss(10, 2)"
+                    ]
+                }
+            },
+            
+            # Entity types probability errors
+            "entity_types": {
+                "pattern": "probability",
+                "tip": "Entity type probabilities must sum to exactly 1.0",
+                "example": {
+                    "standard": {"probability": 0.7, "value": {"min": 100, "max": 200}, "priority": 5},
+                    "premium": {"probability": 0.3, "value": {"min": 500, "max": 1000}, "priority": 2}
+                }
+            },
+            
+            # Resource type errors
+            "resources": {
+                "pattern": "resource_type",
+                "tip": "Resource type must be one of: 'fifo', 'priority', 'preemptive'",
+                "example": {
+                    "server": {"capacity": 2, "resource_type": "priority"},
+                    "machine": {"capacity": 1, "resource_type": "fifo"}
+                }
+            }
+        }
+        
+        # Find matching suggestion based on path and error message
+        for section_key, suggestion in error_suggestions.items():
+            if (section_key in path.lower() and 
+                (suggestion["pattern"] in error.message or section_key in error.message.lower())):
+                return suggestion
+        
+        # Generic suggestions based on error message patterns
+        if "Additional properties are not allowed" in error.message:
+            return {
+                "tip": "Check property names against the schema. Common issues: typos, wrong section, or unsupported properties",
+                "example": {"note": "Refer to schema documentation for valid properties"}
+            }
+        elif "is a required property" in error.message:
+            return {
+                "tip": "This section is missing a required property. Check the schema for required fields",
+                "example": {"note": "Add the missing required property to this section"}
+            }
+        elif "is not of type" in error.message:
+            return {
+                "tip": "Wrong data type. Check if you're using a string where a number is expected, or vice versa",
+                "example": {"note": "Verify the expected data type in the schema"}
+            }
+        
+        return None
     
     def get_schema_examples(self) -> List[Dict[str, Any]]:
         """

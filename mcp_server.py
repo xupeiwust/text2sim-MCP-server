@@ -24,98 +24,191 @@ except ImportError:
 # Initialise the MCP server
 mcp = FastMCP("text2sim-mcp-server")
 
+def _generate_quick_fixes(errors):
+    """Generate quick fix suggestions based on common error patterns."""
+    fixes = []
+    
+    for error in errors:
+        if "wait_times" in error and "collect_wait_times" not in error:
+            fixes.append("🔧 Replace 'wait_times' with 'collect_wait_times' in statistics section")
+        elif "resource_utilization" in error:
+            fixes.append("🔧 Replace 'resource_utilization' with 'collect_utilization' in statistics section")
+        elif "abandon_time" in error and "required property" in error:
+            fixes.append("🔧 Add 'abandon_time': 'normal(30, 10)' to reneging rules (use distribution string)")
+        elif "mtbf" in error and "not of type 'string'" in error:
+            fixes.append("🔧 Change MTBF to distribution string: 'exp(300)' instead of 300")
+        elif "conditions" in error and "required property" in error:
+            fixes.append("🔧 Use 'conditions' array in simple_routing, not 'from_step'/'to_step'")
+        elif "probabilities sum to" in error:
+            fixes.append("🔧 Adjust entity_types probabilities to sum exactly to 1.0")
+        elif "does not match" in error and "distribution" in error:
+            fixes.append("🔧 Fix distribution format: use 'uniform(5,10)', 'normal(8,2)', or 'exp(5)'")
+        elif "Additional properties are not allowed" in error:
+            fixes.append("🔧 Check for typos in property names or unsupported properties")
+        elif "resource" in error and "not found" in error:
+            fixes.append("🔧 Ensure resource names in rules match those defined in 'resources' section")
+    
+    # Add generic helpful tips if no specific fixes found
+    if not fixes:
+        fixes.extend([
+            "🔍 Check property names for typos",
+            "📝 Ensure all distributions are strings: 'uniform(a,b)', 'normal(mean,std)', 'exp(mean)'",
+            "🎯 Verify resource names match between sections",
+            "⚖️ Confirm entity probabilities sum to 1.0"
+        ])
+    
+    return fixes[:3]  # Limit to top 3 most relevant fixes
+
 @mcp.tool()
 def simulate_des(config: dict) -> dict:
     """
-    Run a discrete-event simulation with comprehensive configuration using SimPy.
+    Advanced discrete-event simulation with comprehensive schema validation and SimPy integration.
     
-    This tool enables complex discrete-event simulations through a schema-driven
-    configuration system optimized for SimPy's native capabilities. The configuration
-    is validated against a comprehensive JSON schema to ensure correctness.
-    
-    Configuration Structure:
-        run_time: Total simulation runtime (required)
-        entity_types: Different types of entities with probabilities and values
-        resources: System resources with capacity and type (fifo/priority/preemptive)
-        processing_rules: Processing steps and service time distributions
-        arrival_pattern: How entities arrive (mutually exclusive with num_entities)
-        num_entities: Fixed number of entities (mutually exclusive with arrival_pattern)
-        balking_rules: Rules for entities leaving without service
-        reneging_rules: Rules for entities abandoning queues after waiting
-        simple_routing: Basic conditional routing based on entity attributes
-        basic_failures: Simple resource failure and repair cycles
-        metrics: Custom names for simulation metrics
-        statistics: Additional statistics collection settings
-    
-    Coffee Shop Example:
+    🎯 QUICK START - Basic Configuration:
     {
       "run_time": 480,
+      "arrival_pattern": {"distribution": "exp(5)"},
       "entity_types": {
-        "regular_customer": {"probability": 0.7, "value": {"min": 3, "max": 6}, "priority": 5},
-        "vip_customer": {"probability": 0.3, "value": {"min": 5, "max": 12}, "priority": 2}
+        "customer": {"probability": 1.0, "value": {"min": 10, "max": 50}, "priority": 5}
       },
       "resources": {
-        "barista": {"capacity": 1, "resource_type": "priority"}
+        "server": {"capacity": 1, "resource_type": "fifo"}
       },
       "processing_rules": {
-        "steps": ["barista"],
-        "barista": {"distribution": "normal(5, 1)"}
+        "steps": ["server"],
+        "server": {"distribution": "uniform(3, 7)"}
+      }
+    }
+    
+    📋 COMMON CONFIGURATION PATTERNS:
+    
+    ✅ Statistics Collection:
+    "statistics": {
+      "collect_wait_times": true,
+      "collect_utilization": true,
+      "collect_queue_lengths": false,
+      "warmup_period": 60
+    }
+    
+    ✅ Balking (Customers Leave):
+    "balking_rules": {
+      "overcrowding": {"type": "queue_length", "resource": "server_name", "max_length": 8}
+    }
+    
+    ✅ Reneging (Customers Abandon Queue):
+    "reneging_rules": {
+      "impatience": {
+        "abandon_time": "normal(30, 10)",
+        "priority_multipliers": {"1": 5.0, "5": 1.0, "10": 0.3}
+      }
+    }
+    
+    ✅ Resource Failures:
+    "basic_failures": {
+      "machine_name": {
+        "mtbf": "exp(480)",
+        "repair_time": "uniform(20, 40)"
+      }
+    }
+    
+    ✅ Conditional Routing:
+    "simple_routing": {
+      "priority_check": {
+        "conditions": [
+          {"attribute": "priority", "operator": "<=", "value": 2, "destination": "express_lane"}
+        ],
+        "default_destination": "regular_service"
+      }
+    }
+    
+    ✅ Custom Metrics Names:
+    "metrics": {
+      "arrival_metric": "customers_arrived",
+      "served_metric": "customers_served",
+      "value_metric": "total_revenue"
+    }
+    
+    🔧 DISTRIBUTION FORMATS (All strings):
+    - "uniform(5, 10)" - Uniform between 5 and 10
+    - "normal(8, 2)" - Normal with mean=8, std=2
+    - "exp(5)" - Exponential with mean=5 (NOT rate=5)
+    - "gauss(10, 3)" - Same as normal
+    
+    🏭 RESOURCE TYPES:
+    - "fifo" - First-in-first-out (default)
+    - "priority" - Priority queue (1=highest, 10=lowest)
+    - "preemptive" - Priority with preemption capability
+    
+    📊 ENTITY CONFIGURATION:
+    "entity_types": {
+      "vip": {
+        "probability": 0.2,           // Must sum to 1.0 across all types
+        "priority": 1,                // 1=highest, 10=lowest
+        "value": {"min": 100, "max": 500},
+        "attributes": {"membership": "gold", "urgent": true}  // For routing
+      }
+    }
+    
+    🔄 PROCESSING FLOW:
+    "processing_rules": {
+      "steps": ["reception", "service", "checkout"],  // Sequential steps
+      "reception": {"distribution": "uniform(2, 5)"},
+      "service": {
+        "distribution": "normal(10, 2)",              // Default for all entities
+        "conditional_distributions": {               // Override by entity type
+          "vip": "normal(5, 1)",
+          "regular": "normal(12, 3)"
+        }
+      }
+    }
+    
+    ⚠️ COMMON MISTAKES TO AVOID:
+    - Don't use "wait_times" → Use "collect_wait_times"
+    - Don't use numbers for distributions → Use strings like "exp(300)"
+    - Don't use "from_step"/"to_step" → Use "conditions" array in routing
+    - Don't forget "abandon_time" in reneging_rules
+    - Ensure probabilities sum to exactly 1.0
+    - Resource names in steps must match resource definitions
+    
+    💡 PRO TIPS:
+    - Start simple, add complexity gradually
+    - Use priority 1-3 for urgent, 4-6 for normal, 7-10 for low priority
+    - Set warmup_period to exclude initial transient behavior
+    - Use conditional_distributions for different entity types
+    - Resource failures use resource names as keys, not separate "resource" field
+    
+    🎯 COMPLETE MANUFACTURING EXAMPLE:
+    {
+      "run_time": 960,
+      "entity_types": {
+        "standard": {"probability": 0.6, "value": {"min": 400, "max": 400}, "priority": 5},
+        "premium": {"probability": 0.1, "value": {"min": 1200, "max": 1200}, "priority": 1}
+      },
+      "resources": {
+        "inspection": {"capacity": 2, "resource_type": "priority"},
+        "assembly": {"capacity": 4, "resource_type": "priority"}
+      },
+      "processing_rules": {
+        "steps": ["inspection", "assembly"],
+        "inspection": {"distribution": "uniform(3, 7)"},
+        "assembly": {
+          "conditional_distributions": {
+            "standard": "uniform(20, 30)",
+            "premium": "uniform(35, 50)"
+          }
+        }
       },
       "balking_rules": {
-        "overcrowding": {"type": "queue_length", "resource": "barista", "max_length": 5}
+        "overcrowding": {"type": "queue_length", "resource": "inspection", "max_length": 12}
       },
-      "arrival_pattern": {"distribution": "uniform(1, 5)"}
+      "basic_failures": {
+        "assembly": {"mtbf": "exp(300)", "repair_time": "uniform(20, 40)"}
+      },
+      "arrival_pattern": {"distribution": "uniform(8, 15)"}
     }
     
-    Hospital Example:
-    {
-      "run_time": 720,
-      "entity_types": {
-        "emergency": {"probability": 0.1, "priority": 1, "value": {"min": 2000, "max": 5000}},
-        "urgent": {"probability": 0.3, "priority": 3, "value": {"min": 500, "max": 2000}},
-        "routine": {"probability": 0.6, "priority": 7, "value": {"min": 100, "max": 500}}
-      },
-      "resources": {
-        "triage": {"capacity": 2, "resource_type": "priority"},
-        "treatment": {"capacity": 8, "resource_type": "preemptive"},
-        "discharge": {"capacity": 1, "resource_type": "fifo"}
-      },
-      "processing_rules": {
-        "steps": ["triage", "treatment", "discharge"],
-        "triage": {"distribution": "uniform(5, 15)"},
-        "treatment": {
-          "conditional_distributions": {
-            "emergency": "normal(60, 20)",
-            "urgent": "normal(30, 10)",
-            "routine": "normal(30, 10)"
-          }
-        },
-        "discharge": {"distribution": "uniform(5, 10)"}
-      },
-      "arrival_pattern": {"distribution": "exp(2)"}
-    }
-    
-    Supported Distributions:
-        - "uniform(min, max)": Uniform distribution between min and max
-        - "normal(mean, std)" or "gauss(mean, std)": Normal distribution  
-        - "exp(mean)": Exponential distribution with given mean (not rate)
-    
-    Resource Types:
-        - "fifo": Standard FIFO queue (SimPy Resource)
-        - "priority": Priority queue without preemption (SimPy PriorityResource)
-        - "preemptive": Priority queue with preemption (SimPy PreemptiveResource)
-    
-    Returns:
-        Dictionary with simulation results including:
-        - Entity arrival, served, balked, and reneged counts
-        - Total value/revenue generated
-        - Processing efficiency percentages
-        - Average values per entity
-        - Resource utilization statistics (if enabled)
-        - Wait time statistics (if enabled)
-        
-        If validation fails, returns: {"error": "message", "details": [error_list]}
-        If simulation fails, returns: {"error": "Simulation error: message"}
+    Returns simulation results with counts, efficiency metrics, utilization, and wait times.
+    Validation errors include helpful suggestions and examples for quick correction.
     """
     try:
         # Validate and normalize configuration
@@ -123,11 +216,19 @@ def simulate_des(config: dict) -> dict:
         normalized_config, errors = validator.validate_and_normalize(config)
         
         if errors:
-            return {
+            # Generate helpful response with quick fixes
+            error_response = {
                 "error": "Configuration validation failed",
                 "details": errors,
-                "suggestion": "Please check the configuration format against the schema examples"
+                "quick_fixes": _generate_quick_fixes(errors),
+                "help": "💡 Common issues: Check property names, ensure distributions are strings, verify probabilities sum to 1.0"
             }
+            
+            # Add schema examples if validation failed
+            if any("Schema validation error" in error for error in errors):
+                error_response["schema_help"] = "📋 Use the patterns shown in the tool description above for correct formatting"
+            
+            return error_response
         
         # Import and run unified simulation (will be created in Phase 2)
         from DES.unified_simulator import UnifiedSimulationModel
