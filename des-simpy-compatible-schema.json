@@ -2,9 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://text2sim.com/schemas/des-simpy-model.json",
   "title": "SimPy-Compatible Discrete-Event Simulation Model Configuration",
-  "description": "Practical DES configuration optimized for SimPy's native capabilities",
+  "description": "Practical DES configuration optimized for SimPy's native capabilities. Implementation notes: (1) exp(x) uses mean=x, (2) max_wait balking implemented as reneging timeout, (3) entity_type probabilities must sum to 1.0, (4) smaller priority numbers = higher priority in SimPy",
   "type": "object",
   "required": ["run_time"],
+  "oneOf": [
+    {"required": ["arrival_pattern"], "not": {"required": ["num_entities"]}},
+    {"required": ["num_entities"], "not": {"required": ["arrival_pattern"]}}
+  ],
   "properties": {
     "run_time": {
       "type": "number",
@@ -14,7 +18,7 @@
     },
     "num_entities": {
       "type": "integer",
-      "description": "Total number of entities to generate (alternative to arrival_pattern)",
+      "description": "Total number of entities to generate (mutually exclusive with arrival_pattern)",
       "minimum": 1,
       "examples": [100, 500, 1000]
     },
@@ -74,7 +78,7 @@
     },
     "resources": {
       "type": "object",
-      "description": "System resources with capacity limits",
+      "description": "System resources with capacity limits (maps directly to SimPy resource types)",
       "patternProperties": {
         "^[a-zA-Z][a-zA-Z0-9_]*$": {
           "type": "object",
@@ -85,15 +89,10 @@
               "minimum": 1,
               "description": "Resource capacity (number of parallel servers)"
             },
-            "preemptive": {
-              "type": "boolean",
-              "default": false,
-              "description": "Whether this resource supports preemption by priority"
-            },
-            "queue_discipline": {
-              "enum": ["FIFO", "LIFO", "priority"],
-              "default": "FIFO",
-              "description": "Queue ordering discipline"
+            "resource_type": {
+              "enum": ["fifo", "priority", "preemptive"],
+              "default": "fifo",
+              "description": "SimPy resource type: fifo=Resource, priority=PriorityResource, preemptive=PreemptiveResource"
             }
           },
           "additionalProperties": false
@@ -101,15 +100,15 @@
       },
       "examples": [
         {
-          "reception": {"capacity": 2, "queue_discipline": "FIFO"},
-          "service": {"capacity": 3, "preemptive": true, "queue_discipline": "priority"},
-          "checkout": {"capacity": 1}
+          "reception": {"capacity": 2, "resource_type": "fifo"},
+          "service": {"capacity": 3, "resource_type": "preemptive"},
+          "checkout": {"capacity": 1, "resource_type": "priority"}
         }
       ]
     },
     "processing_rules": {
       "type": "object",
-      "description": "Entity processing flow and service times",
+      "description": "Entity processing flow and service times (all step names must match resource names or use conditional_distributions for routing)",
       "required": ["steps"],
       "properties": {
         "steps": {
@@ -184,7 +183,7 @@
             "max_wait": {
               "type": "number",
               "minimum": 0,
-              "description": "Maximum wait time before balking"
+              "description": "Maximum wait time before balking (implemented as reneging timeout in SimPy)"
             },
             "probability": {
               "type": "number",
@@ -196,7 +195,7 @@
               "type": "object",
               "description": "Balking probability multipliers by priority (lower priority = more likely to balk)",
               "patternProperties": {
-                "^[1-9]|10$": {
+                "^(?:[1-9]|10)$": {
                   "type": "number",
                   "minimum": 0,
                   "maximum": 5
@@ -239,7 +238,7 @@
               "type": "object",
               "description": "Patience multipliers by priority (higher priority = more patient)",
               "patternProperties": {
-                "^[1-9]|10$": {
+                "^(?:[1-9]|10)$": {
                   "type": "number",
                   "minimum": 0.1,
                   "maximum": 10
@@ -262,13 +261,13 @@
     },
     "arrival_pattern": {
       "type": "object",
-      "description": "How entities arrive in the system",
+      "description": "How entities arrive in the system (mutually exclusive with num_entities)",
       "properties": {
         "distribution": {
           "type": "string",
           "pattern": "^(uniform|normal|gauss|exp)\\s*\\(\\s*[0-9.]+\\s*(,\\s*[0-9.]+\\s*)?\\)$",
-          "description": "Inter-arrival time distribution",
-          "examples": ["exp(0.2)", "uniform(2, 8)", "normal(5, 1)"]
+      "description": "Inter-arrival time distribution (exp(x) means mean=x, not rate=x)",
+      "examples": ["exp(5)", "uniform(2, 8)", "normal(5, 1)"]
         }
       },
       "required": ["distribution"],
@@ -451,8 +450,7 @@
       "resources": {
         "barista": {
           "capacity": 1,
-          "preemptive": false,
-          "queue_discipline": "priority"
+          "resource_type": "priority"
         }
       },
       "processing_rules": {
@@ -523,35 +521,35 @@
       "resources": {
         "triage": {
           "capacity": 2,
-          "queue_discipline": "priority"
+          "resource_type": "priority"
         },
-        "emergency_bay": {
-          "capacity": 3,
-          "preemptive": true,
-          "queue_discipline": "priority"
-        },
-        "regular_treatment": {
-          "capacity": 5,
-          "queue_discipline": "priority"
+        "treatment": {
+          "capacity": 8,
+          "resource_type": "preemptive"
         },
         "discharge": {
           "capacity": 1,
-          "queue_discipline": "FIFO"
+          "resource_type": "fifo"
         }
       },
       "simple_routing": {
         "after_triage": {
           "conditions": [
-            {"attribute": "priority", "operator": "<=", "value": 2, "destination": "emergency_bay"}
+            {"attribute": "priority", "operator": "<=", "value": 2, "destination": "treatment"}
           ],
-          "default_destination": "regular_treatment"
+          "default_destination": "treatment"
         }
       },
       "processing_rules": {
         "steps": ["triage", "treatment", "discharge"],
         "triage": {"distribution": "uniform(5, 15)"},
-        "emergency_bay": {"distribution": "normal(60, 20)"},
-        "regular_treatment": {"distribution": "normal(30, 10)"},
+        "treatment": {
+          "conditional_distributions": {
+            "emergency": "normal(60, 20)",
+            "urgent": "normal(30, 10)",
+            "routine": "normal(30, 10)"
+          }
+        },
         "discharge": {"distribution": "uniform(5, 10)"}
       },
       "balking_rules": {
@@ -572,7 +570,7 @@
         "distribution": "exp(2)"
       },
       "basic_failures": {
-        "emergency_bay": {
+        "treatment": {
           "mtbf": "exp(360)",
           "repair_time": "uniform(20, 40)"
         }
