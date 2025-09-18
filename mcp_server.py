@@ -317,5 +317,430 @@ def get_sd_model_info(model_name: str) -> dict:
     except Exception as e:
         return {"error": f"Error retrieving model info: {str(e)}"}
 
+# Import new model builder infrastructure
+from common.multi_schema_validator import MultiSchemaValidator
+from common.model_state_manager import model_state_manager
+from common.schema_registry import schema_registry
+
+# Initialize model builder components
+multi_validator = MultiSchemaValidator()
+
+@mcp.tool()
+def validate_model(
+    model: dict,
+    schema_type: str = None,
+    validation_mode: str = "partial"
+) -> dict:
+    """
+    Validate simulation model JSON against appropriate schema with LLM-optimized feedback.
+    
+    This tool provides comprehensive validation for simulation models with detailed error
+    messages, quick fixes, and actionable suggestions designed for AI assistant comprehension.
+    
+    🎯 VALIDATION MODES:
+    - "partial": Validate only provided sections (default for iterative development)
+    - "strict": Full schema compliance required (use before simulation execution)
+    - "structure": Check structure without business rules (quick structural check)
+    
+    🔍 SCHEMA AUTO-DETECTION:
+    The tool automatically detects schema type from model structure:
+    - DES: Looks for entity_types, resources, processing_rules
+    - SD: Looks for stocks, flows, variables (future)
+    - Explicit: Use "schema_type": "DES" in model for explicit declaration
+    
+    📊 RESPONSE INCLUDES:
+    - Detailed validation errors with quick fixes
+    - Missing required sections with examples
+    - Completeness percentage (0.0 to 1.0)
+    - Actionable suggestions for improvement
+    - Prioritized next steps for development
+    
+    🛠️ LLM-OPTIMIZED ERROR MESSAGES:
+    Each error includes:
+    - Exact path to problematic field
+    - Clear explanation of the issue
+    - Quick fix suggestion
+    - Correct example for reference
+    - Schema reference for deeper understanding
+    
+    💡 COMMON USAGE PATTERNS:
+    
+    # Basic validation during development
+    validate_model({"entity_types": {"customer": {"probability": 0.8}}})
+    
+    # Strict validation before simulation
+    validate_model(complete_model, validation_mode="strict")
+    
+    # Structure check for large models
+    validate_model(model, validation_mode="structure")
+    
+    # Explicit schema type override
+    validate_model(model, schema_type="DES")
+    
+    Args:
+        model: JSON model dictionary to validate
+        schema_type: Optional schema type override ("DES", "SD", etc.) - auto-detected if None
+        validation_mode: Validation strictness level
+        
+    Returns:
+        Comprehensive validation result with errors, suggestions, and next steps
+    """
+    try:
+        result = multi_validator.validate_model(model, schema_type, validation_mode)
+        
+        # Convert ValidationResult to dictionary for MCP response
+        return {
+            "valid": result.valid,
+            "schema_type": result.schema_type,
+            "validation_mode": result.validation_mode,
+            "completeness": result.completeness,
+            "errors": [
+                {
+                    "path": error.path,
+                    "message": error.message,
+                    "current_value": error.current_value,
+                    "expected": error.expected,
+                    "quick_fix": error.quick_fix,
+                    "example": error.example or {},
+                    "schema_reference": error.schema_reference
+                }
+                for error in result.errors
+            ],
+            "missing_required": result.missing_required,
+            "suggestions": result.suggestions,
+            "next_steps": result.next_steps
+        }
+        
+    except Exception as e:
+        return {
+            "valid": False,
+            "error": f"Validation error: {str(e)}",
+            "schema_type": "unknown",
+            "validation_mode": validation_mode,
+            "completeness": 0.0,
+            "suggestions": ["Check model format and try again"]
+        }
+
+@mcp.tool()
+def save_model(
+    model: dict,
+    name: str = None,
+    notes: str = None,
+    tags: list = None,
+    overwrite: bool = False
+) -> dict:
+    """
+    Save simulation model with metadata for iterative development across conversations.
+    
+    This tool enables persistent model development across multiple conversation rounds,
+    supporting both user-defined names and intelligent auto-generation with domain detection.
+    
+    🏷️ HYBRID NAMING SYSTEM:
+    - User-provided names have priority: save_model(model, "hospital_triage")
+    - Auto-generated names when none provided: "DES_healthcare_20250118_143022"
+    - Conflict resolution: Automatic versioning (hospital_triage_v2, hospital_triage_v3)
+    - Domain detection: Analyzes model content for intelligent naming
+    
+    🏥 DOMAIN AUTO-DETECTION:
+    The system detects domains from model content for better auto-naming:
+    - Healthcare: hospital, patient, doctor, triage, emergency
+    - Manufacturing: production, assembly, quality, inspection
+    - Service: customer, restaurant, call_center, checkout
+    - Transportation: airport, passenger, logistics, delivery
+    - Finance: bank, transaction, account, investment
+    
+    📝 METADATA TRACKING:
+    - Creation and modification timestamps
+    - User notes and descriptions
+    - Tags for categorization and search
+    - Schema type auto-detection
+    - Validation status caching
+    - Completeness percentage
+    
+    🔄 CONVERSATION CONTINUITY:
+    Saved models persist across conversation sessions, enabling:
+    - Resume development in new conversations
+    - Share models between team members
+    - Version tracking and comparison
+    - Export for external use
+    
+    💡 USAGE PATTERNS:
+    
+    # Save with user-defined name
+    save_model(model, "my_hospital_simulation", "Added VIP patients")
+    
+    # Auto-generated name with notes
+    save_model(model, notes="First version with basic flow")
+    
+    # Organized with tags
+    save_model(model, "clinic_v2", tags=["healthcare", "priority", "testing"])
+    
+    # Overwrite existing model
+    save_model(updated_model, "hospital_triage", overwrite=True)
+    
+    Args:
+        model: Model dictionary to save
+        name: Optional user-provided name (auto-generated if None)
+        notes: Optional description or notes
+        tags: Optional tags for categorization
+        overwrite: Allow overwriting existing model with same name
+        
+    Returns:
+        Save result with model ID, metadata, and confirmation message
+    """
+    try:
+        # Validate model first to cache validation result
+        validation_result = multi_validator.validate_model(model)
+        validation_dict = {
+            "valid": validation_result.valid,
+            "completeness": validation_result.completeness,
+            "missing_required": validation_result.missing_required
+        }
+        
+        # Save model with validation result
+        result = model_state_manager.save_model(
+            model=model,
+            name=name,
+            notes=notes,
+            tags=tags,
+            overwrite=overwrite,
+            validation_result=validation_dict
+        )
+        
+        return result
+        
+    except Exception as e:
+        return {
+            "saved": False,
+            "error": f"Save error: {str(e)}",
+            "message": "Failed to save model"
+        }
+
+@mcp.tool()
+def load_model(
+    name: str = None,
+    schema_type: str = None,
+    tags: list = None
+) -> dict:
+    """
+    Load saved simulation model or list available models with filtering capabilities.
+    
+    This tool supports both loading specific models and discovering available models
+    with advanced filtering options for efficient model management.
+    
+    🔍 TWO OPERATION MODES:
+    
+    1. LOAD MODE (name provided):
+       - Returns complete model with metadata
+       - Includes cached validation status
+       - Updates last-loaded reference
+       - Ready for continued development
+    
+    2. LIST MODE (name=None):
+       - Shows all available models
+       - Supports filtering by schema type and tags
+       - Sorted by last modified (newest first)
+       - Includes metadata preview
+    
+    🏷️ FILTERING OPTIONS:
+    - schema_type: Filter by "DES", "SD", etc.
+    - tags: Filter by any matching tags
+    - Combined filters: Use both for precise selection
+    
+    📊 MODEL METADATA INCLUDED:
+    - Schema type and validation status
+    - Creation and modification dates
+    - User notes and tags
+    - Completeness percentage
+    - Domain classification
+    
+    💡 USAGE PATTERNS:
+    
+    # Load specific model
+    load_model("hospital_triage_v3")
+    
+    # List all models
+    load_model()
+    
+    # Filter by schema type
+    load_model(schema_type="DES")
+    
+    # Filter by tags
+    load_model(tags=["healthcare", "testing"])
+    
+    # Combined filtering
+    load_model(schema_type="DES", tags=["manufacturing"])
+    
+    🔄 CONVERSATION FLOW:
+    After loading a model, you can:
+    1. Continue development with validate_model()
+    2. Make modifications and save_model() again
+    3. Export with export_model() for sharing
+    4. Run simulation when ready
+    
+    Args:
+        name: Model name to load (None for list mode)
+        schema_type: Filter by schema type in list mode
+        tags: Filter by tags in list mode
+        
+    Returns:
+        Model data with metadata or filtered list of available models
+    """
+    try:
+        result = model_state_manager.load_model(name, schema_type, tags)
+        return result
+        
+    except Exception as e:
+        return {
+            "loaded": False,
+            "error": f"Load error: {str(e)}",
+            "available_models": []
+        }
+
+@mcp.tool()
+def export_model(
+    name: str = None,
+    format: str = "pretty",
+    include_metadata: bool = False
+) -> dict:
+    """
+    Export simulation model as formatted JSON for copy-paste to new conversations.
+    
+    This tool enables conversation continuity by providing properly formatted JSON
+    that can be easily copied and pasted into new conversation sessions for continued
+    model development.
+    
+    📋 EXPORT FORMATS:
+    - "pretty": Human-readable with proper indentation (default)
+    - "compact": Minimized JSON for token efficiency
+    - "conversation": Includes template text for easy pasting
+    
+    🔄 CONVERSATION CONTINUITY:
+    The exported JSON can be used to:
+    - Continue development in new conversation sessions
+    - Share models with team members
+    - Create backups of work-in-progress
+    - Transfer models between different AI assistants
+    
+    📊 INCLUDES:
+    - Complete model JSON in specified format
+    - Character and estimated token counts
+    - Copy-paste ready formatting
+    - Optional metadata inclusion
+    - Conversation template for easy use
+    
+    💡 USAGE PATTERNS:
+    
+    # Export last loaded model (pretty format)
+    export_model()
+    
+    # Export specific model
+    export_model("hospital_triage_v3")
+    
+    # Compact format for token efficiency
+    export_model("my_model", format="compact")
+    
+    # Include metadata for complete backup
+    export_model("my_model", include_metadata=True)
+    
+    # Conversation-ready format
+    export_model("my_model", format="conversation")
+    
+    🎯 CONVERSATION TEMPLATE:
+    When format="conversation", includes ready-to-use text:
+    "Here's my current simulation model:
+    
+    ```json
+    {model_content}
+    ```
+    
+    Please help me continue developing this model."
+    
+    Args:
+        name: Model name to export (uses last loaded if None)
+        format: Export format ("pretty", "compact", "conversation")
+        include_metadata: Include model metadata in export
+        
+    Returns:
+        Formatted JSON string with metadata and usage information
+    """
+    try:
+        # Determine which model to export
+        model_name = name or model_state_manager.get_last_loaded()
+        
+        if not model_name:
+            return {
+                "exported": False,
+                "error": "No model specified and no model previously loaded",
+                "suggestion": "Specify model name or load a model first"
+            }
+        
+        # Load the model
+        load_result = model_state_manager.load_model(model_name)
+        if not load_result.get("loaded", False):
+            return {
+                "exported": False,
+                "error": f"Model '{model_name}' not found",
+                "available_models": list(model_state_manager.models.keys())
+            }
+        
+        model_data = load_result["model"]
+        metadata = load_result.get("metadata", {})
+        
+        # Format JSON based on requested format
+        if format == "compact":
+            json_string = json.dumps(model_data, separators=(',', ':'))
+        elif format == "pretty":
+            json_string = json.dumps(model_data, indent=2, separators=(',', ': '))
+        elif format == "conversation":
+            json_string = json.dumps(model_data, indent=2, separators=(',', ': '))
+        else:
+            json_string = json.dumps(model_data, indent=2, separators=(',', ': '))
+        
+        # Include metadata if requested
+        if include_metadata:
+            export_data = {
+                "model": model_data,
+                "metadata": metadata
+            }
+            if format == "compact":
+                json_string = json.dumps(export_data, separators=(',', ':'))
+            else:
+                json_string = json.dumps(export_data, indent=2, separators=(',', ': '))
+        
+        # Calculate size estimates
+        char_count = len(json_string)
+        estimated_tokens = char_count // 4  # Rough estimate: 4 chars per token
+        
+        # Create conversation template
+        conversation_template = ""
+        if format == "conversation":
+            conversation_template = f"""Here's my current simulation model:
+
+```json
+{json_string}
+```
+
+Please help me continue developing this model."""
+        
+        return {
+            "exported": True,
+            "model_name": model_name,
+            "format": format,
+            "json_string": json_string,
+            "copy_paste_ready": True,
+            "character_count": char_count,
+            "estimated_tokens": estimated_tokens,
+            "conversation_template": conversation_template,
+            "metadata_included": include_metadata,
+            "usage_tip": "Copy the json_string value and paste it into a new conversation"
+        }
+        
+    except Exception as e:
+        return {
+            "exported": False,
+            "error": f"Export error: {str(e)}"
+        }
+
 if __name__ == "__main__":
     mcp.run(transport='stdio')
