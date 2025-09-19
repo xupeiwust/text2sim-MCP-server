@@ -1,0 +1,89 @@
+{
+  "template_info": {
+    "template_id": "single-server-queue-v1",
+    "name": "Single Server Queue",
+    "description": "Basic single-server queueing system with FIFO processing and exponential arrivals",
+    "domain": "basic",
+    "complexity": "basic",
+    "author": "Text2Sim",
+    "version": "1.0",
+    "tags": ["basic", "single-server", "fifo", "queue", "exponential", "tutorial"],
+    "schema_type": "DES",
+    "category": "basic",
+    "created": "2025-01-18T12:00:00Z",
+    "last_modified": "2025-01-18T12:00:00Z",
+    "use_count": 0
+  },
+  "model": {
+    "entity_types": [
+      {
+        "name": "customer",
+        "arrival_distribution": {
+          "type": "exponential",
+          "rate": 1.0
+        },
+        "attributes": {
+          "priority": 1,
+          "customer_type": "standard"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "name": "server",
+        "capacity": 1,
+        "schedule": "24/7",
+        "queue_discipline": "FIFO"
+      }
+    ],
+    "processing_rules": [
+      {
+        "entity_type": "customer",
+        "steps": [
+          {
+            "resource": "server",
+            "duration": {
+              "type": "exponential",
+              "rate": 2.0
+            }
+          }
+        ]
+      }
+    ],
+    "simulation_parameters": {
+      "run_time": 100,
+      "warmup_time": 10,
+      "number_of_runs": 1
+    },
+    "statistics": {
+      "entity_statistics": ["wait_time", "service_time", "system_time"],
+      "resource_statistics": ["utilization", "queue_length"]
+    }
+  },
+  "usage_notes": "Perfect starting point for understanding basic queueing concepts. This template demonstrates the fundamental M/M/1 queue with exponential arrivals and service times. Ideal for learning simulation basics and testing simple scenarios.",
+  "customization_tips": [
+    "Adjust 'arrival_distribution.rate' to change customer frequency (higher = more customers)",
+    "Modify 'processing_rules[0].steps[0].duration.rate' to change service speed (higher = faster service)",
+    "Increase 'resources[0].capacity' to add more servers (creates M/M/c queue)",
+    "Change 'run_time' to simulate longer periods for stable results",
+    "Add 'balking_rules' to model customer abandonment behavior"
+  ],
+  "examples": [
+    {
+      "scenario": "Low Traffic",
+      "changes": {
+        "entity_types[0].arrival_distribution.rate": 0.5,
+        "processing_rules[0].steps[0].duration.rate": 2.0
+      },
+      "description": "Light customer load with fast service (utilization ~25%)"
+    },
+    {
+      "scenario": "High Traffic", 
+      "changes": {
+        "entity_types[0].arrival_distribution.rate": 1.8,
+        "processing_rules[0].steps[0].duration.rate": 2.0
+      },
+      "description": "Heavy customer load approaching server capacity (utilization ~90%)"
+    }
+  ]
+}
