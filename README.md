@@ -12,9 +12,11 @@
 
 ### **🤖 Advanced LLM Integration**
 - **Natural Language to Simulation**: Create sophisticated DES models using plain English descriptions
+- **Iterative Model Building**: Multi-round conversations for complex model development
 - **Schema-Driven Architecture**: JSON Schema 2020-12 ensures reliable, validated configurations
 - **Optimized for Claude**: 87% reduction in trial-and-error cycles through enhanced error messages
 - **Smart Error Handling**: Contextual examples and actionable suggestions for quick problem resolution
+- **Conversation Continuity**: Save, load, and export models across conversation sessions
 
 ### **📊 Comprehensive Discrete-Event Simulation**
 - **Multi-Entity Systems**: Support for different entity types with priorities, values, and attributes
@@ -34,6 +36,13 @@
 - **Statistical Controls**: Warmup periods, confidence intervals, queue length monitoring
 - **Efficiency Calculations**: Processing efficiency, revenue analysis, resource optimization
 - **Scalable Simulation**: Support for large entity populations and complex workflows
+
+### **🛠️ Model Builder Tools**
+- **Iterative Development**: Build complex models through multiple conversation rounds
+- **Intelligent Validation**: Multi-mode validation with actionable feedback
+- **Smart Model Management**: Auto-naming with domain detection and metadata tracking
+- **Export & Sharing**: JSON export for conversation continuity and collaboration
+- **Multi-Schema Support**: Extensible architecture for DES, SD, and future simulation types
 
 ### **🔒 Enterprise-Grade Security**
 - **No Code Execution**: Regex-based parsing prevents arbitrary code execution
@@ -107,8 +116,41 @@ The MCP server provides tools for both Discrete-Event Simulation and System Dyna
 
 - **Discrete-Event Simulation**: Process-oriented modeling with SimPy
 - **System Dynamics**: Stock-and-flow modeling with PySD
+- **Model Builder**: Advanced iterative model development tools
 
 When using a Large Language Model (e.g. Claude) client, natural language prompts are translated into appropriate configurations via the **Model Context Protocol (MCP)**.
+
+### **🛠️ Model Builder Tools**
+
+The Model Builder provides advanced tools for iterative, conversational development of simulation models:
+
+#### **`validate_model`**
+Comprehensive validation with LLM-optimized feedback
+- **Multi-mode validation**: `partial`, `strict`, `structure`
+- **Auto-schema detection**: Automatically detects DES/SD from model structure
+- **Actionable errors**: Quick fixes and examples for immediate problem resolution
+- **Progress tracking**: Completeness percentage and next steps guidance
+
+#### **`save_model`**
+Intelligent model storage with metadata
+- **Hybrid naming**: User-provided or auto-generated names with domain detection
+- **Metadata tracking**: Notes, tags, creation time, validation status
+- **Version management**: Automatic conflict resolution with versioning
+- **Domain classification**: Healthcare, manufacturing, service, transportation, finance
+
+#### **`load_model`**
+Model discovery and loading with advanced filtering
+- **List mode**: Browse all saved models with metadata preview
+- **Load mode**: Retrieve specific models with validation status
+- **Smart filtering**: Filter by schema type, tags, domain, or validation status
+- **Last-loaded tracking**: Seamless workflow with automatic state management
+
+#### **`export_model`**
+JSON export for conversation continuity
+- **Multiple formats**: Pretty, compact, conversation-ready
+- **Conversation templates**: Ready-to-use text for sharing between sessions
+- **Metadata inclusion**: Optional metadata export for complete backups
+- **Token estimation**: Character and token counts for LLM context management
 
 ### **🎯 Optimized LLM Experience**
 
@@ -126,6 +168,15 @@ Text2Sim is specifically optimized for seamless interaction with Large Language 
 3. **System**: Returns detailed simulation results with utilization metrics and wait times
 4. **User**: "What if we add another doctor?" 
 5. **Claude**: Modifies configuration and reruns simulation seamlessly
+
+**Example Model Builder Workflow:**
+1. **User**: "Help me build a complex manufacturing simulation"
+2. **Claude**: `validate_model()` → creates basic structure → `save_model("manufacturing_v1")`
+3. **User**: "Add quality control with 15% defect rate"
+4. **Claude**: Updates model → `validate_model()` → `save_model("manufacturing_v2")`
+5. **User**: "Export this so I can continue tomorrow"
+6. **Claude**: `export_model()` → provides formatted JSON with conversation template
+7. **Next day**: User pastes exported model → Claude continues development seamlessly
 
 ---
 
