@@ -425,7 +425,7 @@ Control what additional statistics to collect.
 - **`des-simpy-compatible-schema.json`**: The complete JSON Schema specification
 - **`json-to-simulation-flow.md`**: Detailed explanation of JSON → SimPy transformation
 - **`../DES/schema_validator.py`**: Schema validation and normalization
-- **`../DES/unified_simulator.py`**: SimPy simulation implementation
+- **`../DES/simulator.py`**: SimPy simulation implementation
 
 ---
 

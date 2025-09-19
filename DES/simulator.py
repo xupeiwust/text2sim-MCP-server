@@ -185,12 +185,16 @@ class EnhancedMetricsCollector:
             results["min_wait_time"] = round(min(self.wait_times_data), 2)
 
 
-class UnifiedSimulationModel:
+class SimulationModel:
     """
-    Unified simulation model that handles all DES scenarios through schema-driven configuration.
+    Comprehensive simulation model that handles all DES scenarios through schema-driven configuration.
     
-    Replaces both SimulationModel and AdvancedSimulationModel with a single, comprehensive
-    implementation that leverages SimPy's native capabilities.
+    This is the main simulation engine that leverages SimPy's capabilities to provide:
+    - Multi-entity type support with priorities and attributes
+    - Advanced resource management (FIFO, Priority, Preemptive)
+    - Conditional routing and multi-step processing flows
+    - Comprehensive statistics collection with customizable metrics
+    - Built-in support for balking, reneging, and resource failures
     """
     
     def __init__(self, config: Dict[str, Any]):

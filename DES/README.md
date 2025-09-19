@@ -4,36 +4,47 @@ This module adds Discrete Event Simulation (DES) capabilities to the Text2Sim MC
 
 ## Structure
 
-- `des_simulator.py`: Contains the core SimPy-based simulation model, entities, and metrics collection  
+- `simulator.py`: Contains the comprehensive SimulationModel and enhanced metrics collection
+- `des_simulator.py`: Contains core simulation components (Entity, ProcessStep, MetricsCollector)
 - `des_utils.py`: Utility functions for distribution parsing, configuration validation, and simulation execution
+- `schema_validator.py`: JSON Schema validation and configuration normalization
 
 ## Module Components
+
+### SimulationModel
+
+The main simulation engine that handles all DES scenarios through schema-driven configuration:
+- Multi-entity type support with priorities and attributes
+- Advanced resource management (FIFO, Priority, Preemptive)
+- Conditional routing and multi-step processing flows
+- Comprehensive statistics collection with customizable metrics
+- Built-in support for balking, reneging, and resource failures
 
 ### Entity Class
 
 Represents the units moving through the simulation system. Entities can have custom attributes and track their own state throughout the process.
 
-### Process Step Class
+### Process Step Class (Legacy)
 
-Encapsulates the logic for a single step in a process flow. Key features include:
+Encapsulates the logic for a single step in a process flow. Used by legacy components:
 - Resource management with capacity constraints
 - Processing time determined by probability distributions
 - Wait time and throughput metrics collection
 
-### Metrics Collector
+### Metrics Collector (Legacy)
 
-Gathers and summarises performance metrics during the simulation run:
+Basic metrics collection for simple simulations:
 - Wait times for each process step  
 - Throughput counts  
-- Automatic calculation of averages and counts  
+- Automatic calculation of averages and counts
 
-### Simulation Model
+### Enhanced Metrics Collector
 
-Integrates all components into a complete discrete-event simulation:
-- SimPy environment configuration  
-- Entity generation with configurable interarrival times  
-- Sequential processing through multiple steps  
-- Metrics collection and reporting
+Advanced metrics collection used by SimulationModel:
+- Configurable metric names and terminology
+- Resource utilization tracking
+- Wait time distributions and statistics
+- Custom business metrics support
 
 ## Supported Distributions
 
