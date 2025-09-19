@@ -56,7 +56,7 @@ def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
     """
     try:
         from DES.schema_validator import DESConfigValidator
-        from DES.unified_simulator import UnifiedSimulationModel
+        from DES.simulator import SimulationModel
         
         # Validate configuration
         validator = DESConfigValidator()
@@ -69,13 +69,13 @@ def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
                 "suggestion": "Please check the configuration format against the schema examples"
             }
         
-        # Run unified simulation
-        model = UnifiedSimulationModel(normalized_config)
+        # Run simulation
+        model = SimulationModel(normalized_config)
         return model.run()
         
     except ImportError:
         # Fallback for missing dependencies during transition
-        return {"error": "Unified simulation model not available. Please check dependencies."}
+        return {"error": "Simulation model not available. Please check dependencies."}
         
     except Exception as e:
         return {"error": f"Simulation error: {str(e)}"}

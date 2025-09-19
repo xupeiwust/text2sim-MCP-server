@@ -40,10 +40,10 @@ normalized_config, errors = validator.validate_and_normalize(config)
 # - Distribution formats are valid
 ```
 
-### **Step 3: SimPy Object Creation (`UnifiedSimulationModel.__init__`)**
+### **Step 3: SimPy Object Creation (`SimulationModel.__init__`)**
 ```python
-# In unified_simulator.py
-class UnifiedSimulationModel:
+# In simulator.py
+class SimulationModel:
     def __init__(self, config):
         self.env = simpy.Environment()  # Create SimPy environment
         

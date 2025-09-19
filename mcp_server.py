@@ -230,10 +230,10 @@ def simulate_des(config: dict) -> dict:
             
             return error_response
         
-        # Import and run unified simulation (will be created in Phase 2)
-        from DES.unified_simulator import UnifiedSimulationModel
+        # Import and run simulation
+        from DES.simulator import SimulationModel
         
-        model = UnifiedSimulationModel(normalized_config)
+        model = SimulationModel(normalized_config)
         return model.run()
         
     except ImportError:
