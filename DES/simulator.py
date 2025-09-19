@@ -141,6 +141,9 @@ class EnhancedMetricsCollector:
         if self.collect_wait_times and self.wait_times_data:
             self._add_wait_time_metrics(results)
         
+        # Add confidence and metadata information
+        self._add_confidence_metadata(results, simulation_run_time)
+        
         return results
     
     def _add_calculated_metrics(self, results: Dict[str, Any]):
@@ -180,9 +183,89 @@ class EnhancedMetricsCollector:
     def _add_wait_time_metrics(self, results: Dict[str, Any]):
         """Add wait time statistics."""
         if self.wait_times_data:
-            results["average_wait_time"] = round(sum(self.wait_times_data) / len(self.wait_times_data), 2)
+            import statistics as stats
+            mean_wait = sum(self.wait_times_data) / len(self.wait_times_data)
+            results["average_wait_time"] = round(mean_wait, 2)
             results["max_wait_time"] = round(max(self.wait_times_data), 2)
             results["min_wait_time"] = round(min(self.wait_times_data), 2)
+            
+            # Add confidence interval for wait times (if enough samples)
+            if len(self.wait_times_data) > 1:
+                std_wait = stats.stdev(self.wait_times_data)
+                n = len(self.wait_times_data)
+                # 95% confidence interval using t-distribution approximation
+                margin_of_error = 1.96 * (std_wait / (n ** 0.5))
+                results["wait_time_confidence_interval"] = {
+                    "lower": round(max(0, mean_wait - margin_of_error), 2),
+                    "upper": round(mean_wait + margin_of_error, 2),
+                    "confidence_level": 0.95
+                }
+    
+    def _add_confidence_metadata(self, results: Dict[str, Any], simulation_run_time: float):
+        """Add confidence and reliability metadata to results."""
+        import math
+        
+        # Calculate sample sizes
+        served_count = results.get(f"{self.served_metric}_count", 0)
+        arrived_count = results.get(f"{self.arrival_metric}_count", 0)
+        
+        # Determine confidence level based on simulation characteristics
+        confidence_level = "high"
+        warnings = []
+        
+        # Check simulation length adequacy
+        if simulation_run_time < 1000:
+            confidence_level = "low"
+            warnings.append("Short simulation time may affect accuracy")
+        elif simulation_run_time < 5000:
+            confidence_level = "medium"
+            warnings.append("Consider longer simulation for higher confidence")
+        
+        # Check sample size adequacy
+        if served_count < 100:
+            confidence_level = "low"
+            warnings.append("Low sample size may affect statistical reliability")
+        elif served_count < 500:
+            if confidence_level == "high":
+                confidence_level = "medium"
+            warnings.append("Moderate sample size - consider more replications")
+        
+        # Check warmup period adequacy
+        warmup_ratio = self.warmup_period / simulation_run_time if simulation_run_time > 0 else 0
+        if warmup_ratio > 0.2:
+            confidence_level = "low"
+            warnings.append("Excessive warmup period may bias results")
+        elif warmup_ratio < 0.01 and simulation_run_time > 0:
+            warnings.append("Consider adding warmup period for transient removal")
+        
+        # Add metadata to results
+        results["_metadata"] = {
+            "confidence_level": confidence_level,
+            "simulation_run_time": simulation_run_time,
+            "warmup_period": self.warmup_period,
+            "sample_size": served_count,
+            "warnings": warnings,
+            "recommended_replications": max(5, min(20, math.ceil(1000 / max(served_count, 1)))),
+            "reliability_score": self._calculate_reliability_score(simulation_run_time, served_count, warmup_ratio)
+        }
+    
+    def _calculate_reliability_score(self, sim_time: float, sample_size: int, warmup_ratio: float) -> float:
+        """Calculate a reliability score (0-1) based on simulation characteristics."""
+        # Time adequacy (0-0.4)
+        time_score = min(0.4, sim_time / 10000)
+        
+        # Sample size adequacy (0-0.4) 
+        sample_score = min(0.4, sample_size / 1000)
+        
+        # Warmup appropriateness (0-0.2)
+        if 0.02 <= warmup_ratio <= 0.1:
+            warmup_score = 0.2
+        elif warmup_ratio < 0.02:
+            warmup_score = 0.1
+        else:
+            warmup_score = max(0, 0.2 - (warmup_ratio - 0.1) * 2)
+        
+        return round(time_score + sample_score + warmup_score, 2)
 
 
 class SimulationModel:
