@@ -255,17 +255,93 @@ class MultiSchemaValidator:
         """Generate a quick fix suggestion for a JSON Schema error."""
         if "required property" in error.message:
             missing_prop = error.message.split("'")[1]
-            return f"Add required property '{missing_prop}'"
+            return f"Add required property '{missing_prop}' to this section"
         elif "not of type" in error.message:
-            return "Check the data type of this field"
+            expected_type = error.schema.get("type", "unknown")
+            return f"Change this field to type '{expected_type}'"
         elif "does not match" in error.message:
+            if "pattern" in error.schema:
+                return f"Format must match pattern: {error.schema['pattern']}"
             return "Check the format/pattern of this field"
+        elif "not valid under any of the given schemas" in error.message:
+            return "Check that this value matches one of the allowed formats"
+        elif "is not one of" in error.message:
+            if "enum" in error.schema:
+                return f"Must be one of: {', '.join(map(str, error.schema['enum']))}"
+            return "Value not in allowed list"
+        elif "is greater than the maximum" in error.message:
+            maximum = error.schema.get("maximum", "unknown")
+            return f"Value must be ≤ {maximum}"
+        elif "is less than the minimum" in error.message:
+            minimum = error.schema.get("minimum", "unknown")
+            return f"Value must be ≥ {minimum}"
         else:
             return "Review the field value against schema requirements"
     
     def _generate_example_for_error(self, error: jsonschema.ValidationError) -> Dict[str, Any]:
         """Generate an example for fixing a JSON Schema error."""
-        # This would be enhanced with specific examples based on error type
+        path = ".".join(str(p) for p in error.absolute_path) if error.absolute_path else "root"
+        
+        # Common examples based on path and error type
+        if "entity_types" in path:
+            return {
+                "customer": {
+                    "probability": 0.8,
+                    "priority": 5,
+                    "value": {"min": 10, "max": 50}
+                },
+                "vip": {
+                    "probability": 0.2,
+                    "priority": 1,
+                    "value": {"min": 100, "max": 500}
+                }
+            }
+        elif "resources" in path:
+            return {
+                "server": {
+                    "capacity": 2,
+                    "resource_type": "priority"
+                }
+            }
+        elif "processing_rules" in path:
+            if "steps" in path:
+                return ["reception", "service", "checkout"]
+            else:
+                return {
+                    "steps": ["server"],
+                    "server": {"distribution": "uniform(3, 7)"}
+                }
+        elif "balking_rules" in path:
+            return {
+                "overcrowding": {
+                    "type": "queue_length",
+                    "resource": "server",
+                    "max_length": 8
+                }
+            }
+        elif "reneging_rules" in path:
+            return {
+                "impatience": {
+                    "abandon_time": "normal(30, 10)",
+                    "priority_multipliers": {"1": 5.0, "5": 1.0}
+                }
+            }
+        elif error.schema.get("type") == "string" and "distribution" in path:
+            return "uniform(5, 10)"
+        elif error.schema.get("type") == "number":
+            if "probability" in path:
+                return 0.5
+            elif "capacity" in path:
+                return 1
+            elif "priority" in path:
+                return 5
+            else:
+                return 1.0
+        elif error.schema.get("type") == "boolean":
+            return True
+        elif error.schema.get("type") == "array":
+            return ["example_item"]
+        
         return {}
     
     def _calculate_completeness(self, model: Dict[str, Any], schema_type: str) -> float:
@@ -336,21 +412,47 @@ class MultiSchemaValidator:
         """Generate helpful suggestions for improving the model."""
         suggestions = []
         
-        # Schema-specific suggestions
+        # Schema-specific suggestions based on missing sections
         if schema_type == "DES":
             if not self._has_nested_key(model, "entity_types"):
-                suggestions.append("Add entity_types to define different types of entities")
+                suggestions.append("Add entity_types to define different types of entities (customers, patients, jobs)")
             if not self._has_nested_key(model, "resources"):
-                suggestions.append("Add resources to define system capacity")
+                suggestions.append("Add resources to define system capacity and queuing behavior")
             if not self._has_nested_key(model, "processing_rules"):
-                suggestions.append("Add processing_rules to define entity flow")
+                suggestions.append("Add processing_rules to define how entities flow through resources")
+            if not self._has_nested_key(model, "arrival_pattern") and not model.get("num_entities"):
+                suggestions.append("Add arrival_pattern for continuous arrivals or num_entities for fixed batch")
+            
+            # Advanced feature suggestions based on completeness
+            has_basic_structure = all(self._has_nested_key(model, key) for key in ["entity_types", "resources"])
+            if has_basic_structure:
+                if not self._has_nested_key(model, "balking_rules"):
+                    suggestions.append("Consider adding balking_rules for realistic customer behavior")
+                if not self._has_nested_key(model, "reneging_rules"):
+                    suggestions.append("Consider adding reneging_rules for customer impatience modeling")
+                if not self._has_nested_key(model, "statistics"):
+                    suggestions.append("Add statistics configuration to control data collection")
+                if not self._has_nested_key(model, "metrics"):
+                    suggestions.append("Customize metrics names for domain-specific terminology")
         
         # Error-based suggestions
         for error in errors:
             if "probability" in error.path and "sum" in error.message:
-                suggestions.append("Adjust entity type probabilities to sum to 1.0")
+                suggestions.append("Adjust entity type probabilities to sum exactly to 1.0")
+            elif "distribution" in error.path:
+                suggestions.append("Use valid distribution formats: 'uniform(a,b)', 'normal(mean,std)', 'exp(mean)'")
+            elif "resource" in error.path and "not found" in error.message:
+                suggestions.append("Ensure resource names in rules match those defined in resources section")
+            elif "priority" in error.path:
+                suggestions.append("Use priority values 1-10 (1=highest priority, 10=lowest)")
         
-        return suggestions[:5]  # Limit to top 5 suggestions
+        # Development stage suggestions
+        if len(model.keys()) < 4:
+            suggestions.append("Start with basic structure: entity_types, resources, processing_rules")
+        elif len(model.keys()) >= 4 and not errors:
+            suggestions.append("Model looks good! Consider running a simulation to test behavior")
+        
+        return suggestions[:6]  # Limit to top 6 suggestions
     
     def _generate_next_steps(self, errors: List[ValidationError], completeness: float) -> List[str]:
         """Generate prioritized next steps for model development."""

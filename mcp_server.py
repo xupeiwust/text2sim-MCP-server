@@ -321,6 +321,7 @@ def get_sd_model_info(model_name: str) -> dict:
 from common.multi_schema_validator import MultiSchemaValidator
 from common.model_state_manager import model_state_manager
 from common.schema_registry import schema_registry
+from common.schema_documentation import schema_documentation_provider
 
 # Initialize model builder components
 multi_validator = MultiSchemaValidator()
@@ -740,6 +741,116 @@ Please help me continue developing this model."""
         return {
             "exported": False,
             "error": f"Export error: {str(e)}"
+        }
+
+@mcp.tool()
+def get_schema_help(
+    schema_type: str,
+    section_path: str = None,
+    include_examples: bool = True,
+    detail_level: str = "standard"
+) -> dict:
+    """
+    Get comprehensive schema documentation and examples for any simulation type.
+    
+    This tool provides dynamic, context-aware help for building simulation models with
+    extensive examples, validation rules, and LLM-optimized guidance for any schema section.
+    
+    🎯 FLEXIBLE PATH RESOLUTION:
+    - Full schema: get_schema_help("DES")
+    - Main sections: get_schema_help("DES", "entity_types")  
+    - Nested paths: get_schema_help("DES", "processing_rules.steps")
+    - Templates: get_schema_help("DES", "templates")
+    
+    📚 COMPREHENSIVE DOCUMENTATION:
+    Each response includes:
+    - Clear descriptions and requirements
+    - Structural information and constraints
+    - Validation rules and business logic
+    - Multiple practical examples
+    - Related sections and common patterns
+    - LLM-optimized guidance
+    
+    🏥 DOMAIN-SPECIFIC EXAMPLES:
+    Examples cover major domains:
+    - Healthcare: Hospital triage, patient flow, emergency departments
+    - Manufacturing: Production lines, quality control, equipment failures
+    - Service: Customer segments, queue management, service levels
+    - Transportation: Logistics, scheduling, resource allocation
+    
+    📊 DETAIL LEVELS:
+    - "brief": Essential information only
+    - "standard": Comprehensive documentation (default)
+    - "detailed": Full technical specifications
+    
+    💡 COMMON USAGE PATTERNS:
+    
+    # Get full schema overview
+    get_schema_help("DES")
+    
+    # Learn about entity types
+    get_schema_help("DES", "entity_types")
+    
+    # Understand processing rules
+    get_schema_help("DES", "processing_rules", detail_level="detailed")
+    
+    # Get examples without technical details
+    get_schema_help("DES", "balking_rules", detail_level="brief")
+    
+    # Discover available templates
+    get_schema_help("DES", "templates")
+    
+    🔍 SECTION COVERAGE:
+    
+    DES Sections:
+    - entity_types: Different entity classes with priorities and attributes
+    - resources: System capacity with FIFO, priority, preemptive queues
+    - processing_rules: Sequential steps with service time distributions
+    - balking_rules: Customer abandonment before joining queues
+    - reneging_rules: Customer abandonment while waiting in queues
+    - simple_routing: Conditional routing based on entity attributes
+    - basic_failures: Resource breakdowns and repair cycles
+    - statistics: Data collection configuration
+    - metrics: Custom metric names for domain-specific terminology
+    
+    🚀 DEVELOPMENT WORKFLOWS:
+    Includes common development patterns:
+    - Basic Service System: entity_types → resources → processing_rules
+    - Advanced Queue Management: Add balking/reneging rules
+    - Multi-Stage Process: Complex routing and failure handling
+    
+    🎓 LEARNING PROGRESSION:
+    - Start with schema overview to understand structure
+    - Focus on entity_types and resources for basic setup
+    - Add processing_rules to define flow
+    - Enhance with balking/reneging for realism
+    - Configure statistics and metrics for analysis
+    
+    Args:
+        schema_type: Schema type ("DES", "SD", etc.)
+        section_path: Optional path to specific section (e.g., "entity_types", "processing_rules.steps")
+        include_examples: Whether to include practical examples
+        detail_level: Level of detail ("brief", "standard", "detailed")
+        
+    Returns:
+        Comprehensive documentation with examples, validation rules, and guidance
+    """
+    try:
+        result = schema_documentation_provider.get_schema_help(
+            schema_type=schema_type,
+            section_path=section_path,
+            include_examples=include_examples,
+            detail_level=detail_level
+        )
+        
+        return result
+        
+    except Exception as e:
+        return {
+            "error": f"Schema help error: {str(e)}",
+            "schema_type": schema_type,
+            "section_path": section_path,
+            "suggestion": "Check schema type and section path format"
         }
 
 if __name__ == "__main__":
