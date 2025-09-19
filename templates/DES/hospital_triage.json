@@ -1,0 +1,153 @@
+{
+  "template_info": {
+    "template_id": "hospital-triage-v1",
+    "name": "Hospital Triage System",
+    "description": "Emergency department triage with priority-based treatment for emergency and routine patients",
+    "domain": "healthcare",
+    "complexity": "intermediate",
+    "author": "Text2Sim",
+    "version": "1.0",
+    "tags": ["healthcare", "triage", "priority", "emergency", "hospital", "medical", "patient-flow"],
+    "schema_type": "DES",
+    "category": "healthcare",
+    "created": "2025-01-18T12:00:00Z",
+    "last_modified": "2025-01-18T12:00:00Z",
+    "use_count": 0
+  },
+  "model": {
+    "entity_types": [
+      {
+        "name": "emergency_patient",
+        "arrival_distribution": {
+          "type": "exponential",
+          "rate": 0.5
+        },
+        "attributes": {
+          "priority": 1,
+          "severity": "high",
+          "patient_type": "emergency"
+        }
+      },
+      {
+        "name": "routine_patient",
+        "arrival_distribution": {
+          "type": "exponential", 
+          "rate": 2.0
+        },
+        "attributes": {
+          "priority": 3,
+          "severity": "low",
+          "patient_type": "routine"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "name": "triage_nurse",
+        "capacity": 1,
+        "schedule": "24/7",
+        "queue_discipline": "priority"
+      },
+      {
+        "name": "emergency_doctor",
+        "capacity": 2,
+        "schedule": "24/7",
+        "skills": ["emergency", "critical-care"]
+      },
+      {
+        "name": "routine_doctor", 
+        "capacity": 1,
+        "schedule": "8-18",
+        "skills": ["general-medicine"]
+      }
+    ],
+    "processing_rules": [
+      {
+        "entity_type": "emergency_patient",
+        "steps": [
+          {
+            "resource": "triage_nurse",
+            "duration": {
+              "type": "triangular",
+              "low": 2,
+              "mode": 5,
+              "high": 10
+            }
+          },
+          {
+            "resource": "emergency_doctor",
+            "duration": {
+              "type": "normal",
+              "mean": 30,
+              "std": 10
+            }
+          }
+        ]
+      },
+      {
+        "entity_type": "routine_patient",
+        "steps": [
+          {
+            "resource": "triage_nurse",
+            "duration": {
+              "type": "triangular",
+              "low": 2,
+              "mode": 5, 
+              "high": 10
+            }
+          },
+          {
+            "resource": "routine_doctor",
+            "duration": {
+              "type": "normal",
+              "mean": 15,
+              "std": 5
+            }
+          }
+        ]
+      }
+    ],
+    "simulation_parameters": {
+      "run_time": 480,
+      "warmup_time": 60,
+      "number_of_runs": 10
+    },
+    "statistics": {
+      "entity_statistics": ["wait_time", "service_time", "system_time"],
+      "resource_statistics": ["utilization", "queue_length"],
+      "custom_metrics": {
+        "emergency_wait_time": "Average wait time for emergency patients",
+        "routine_wait_time": "Average wait time for routine patients"
+      }
+    }
+  },
+  "usage_notes": "Models realistic hospital emergency department with priority-based patient flow. Emergency patients receive priority treatment while routine patients are handled during regular hours. Includes realistic service time distributions based on medical literature.",
+  "customization_tips": [
+    "Adjust patient arrival rates based on hospital size and location",
+    "Modify doctor schedules for different shift patterns (24/7 vs day shifts)",
+    "Add specialized resources like X-ray, lab equipment, or specialists",
+    "Include patient balking/reneging for realistic abandonment behavior",
+    "Add more priority levels (urgent, semi-urgent) for complex triage",
+    "Scale resource capacities based on department size"
+  ],
+  "examples": [
+    {
+      "scenario": "Night Shift",
+      "changes": {
+        "entity_types[0].arrival_distribution.rate": 0.3,
+        "entity_types[1].arrival_distribution.rate": 0.5,
+        "resources[2].schedule": "off"
+      },
+      "description": "Reduced patient volume during night hours with no routine doctor"
+    },
+    {
+      "scenario": "Crisis Mode",
+      "changes": {
+        "entity_types[0].arrival_distribution.rate": 1.2,
+        "resources[1].capacity": 3,
+        "resources[2].schedule": "24/7"
+      },
+      "description": "High emergency volume requiring additional emergency doctor and 24/7 routine coverage"
+    }
+  ]
+}
