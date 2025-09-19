@@ -122,17 +122,20 @@ class EnhancedMetricsCollector:
         if self.collect_utilization:
             self.resource_stats[resource_name]["total_time"] += time_elapsed
     
-    def get_results(self) -> Dict[str, Any]:
+    def get_results(self, simulation_run_time: float = 0, resources: Dict = None) -> Dict[str, Any]:
         """Generate comprehensive simulation results."""
         results = dict(self.entity_counts)
         results.update(self.custom_metrics)
+        
+        # Store resources reference for utilization calculation
+        self.resources = resources or {}
         
         # Add calculated metrics
         self._add_calculated_metrics(results)
         
         # Add resource utilization
-        if self.collect_utilization:
-            self._add_utilization_metrics(results)
+        if self.collect_utilization and simulation_run_time > 0:
+            self._add_utilization_metrics(results, simulation_run_time)
         
         # Add wait time statistics
         if self.collect_wait_times and self.wait_times_data:
@@ -159,11 +162,19 @@ class EnhancedMetricsCollector:
             served_base = self.served_metric.replace("_served", "").replace("_", "")
             results[f"average_{value_base}_per_{served_base}"] = round(avg_value, 2)
     
-    def _add_utilization_metrics(self, results: Dict[str, Any]):
+    def _add_utilization_metrics(self, results: Dict[str, Any], simulation_run_time: float):
         """Add resource utilization metrics."""
         for resource_name, stats in self.resource_stats.items():
-            if stats["total_time"] > 0:
-                utilization = (stats["busy_time"] / stats["total_time"]) * 100
+            if simulation_run_time > 0 and stats["busy_time"] > 0:
+                # Calculate utilization based on actual busy time vs simulation time
+                # For multi-capacity resources, divide by capacity
+                resource = self.resources.get(resource_name)
+                capacity = getattr(resource, 'capacity', 1) if resource else 1
+                
+                # Total available time = simulation_time * capacity
+                total_available_time = simulation_run_time * capacity
+                
+                utilization = (stats["busy_time"] / total_available_time) * 100
                 results[f"{resource_name}_utilization"] = round(utilization, 2)
     
     def _add_wait_time_metrics(self, results: Dict[str, Any]):
@@ -272,7 +283,10 @@ class UnifiedSimulationModel:
             run_time = self.config["run_time"]
             self.env.run(until=run_time)
             
-            return self.metrics.get_results()
+            # Get actual simulation end time (might be less than run_time due to early completion)
+            actual_run_time = self.env.now
+            
+            return self.metrics.get_results(actual_run_time, self.resources)
             
         except Exception as e:
             return {"error": f"Simulation execution error: {str(e)}"}
@@ -377,13 +391,19 @@ class UnifiedSimulationModel:
     def _entity_process(self, entity: Entity):
         """Process entity through the system."""
         try:
-            for step_index, step_name in enumerate(self.processing_steps):
+            # Start with the initial processing steps
+            steps_to_process = list(self.processing_steps)
+            step_index = 0
+            
+            while step_index < len(steps_to_process):
+                step_name = steps_to_process[step_index]
                 entity.current_step = step_index
                 
-                # Apply routing rules
+                # Apply pre-step routing rules
                 actual_resource = self._apply_routing(entity, step_name)
                 
                 if actual_resource not in self.resources:
+                    step_index += 1
                     continue
                 
                 # Process at resource
@@ -392,6 +412,16 @@ class UnifiedSimulationModel:
                 # Check if entity reneged during processing
                 if entity.reneged:
                     return
+                
+                # Apply post-step routing to determine next steps
+                next_steps = self._apply_after_routing(entity, actual_resource)
+                
+                if next_steps:
+                    # Insert next steps after current position
+                    for i, next_step in enumerate(reversed(next_steps)):
+                        steps_to_process.insert(step_index + 1, next_step)
+                
+                step_index += 1
             
             # Entity completed all steps
             self.metrics.record_departure(entity, self.env.now)
@@ -404,6 +434,10 @@ class UnifiedSimulationModel:
         """Apply routing rules to determine actual resource."""
         # Check if there are routing rules for this step
         for routing_name, routing_config in self.routing_rules.items():
+            # Skip "after_" routing rules - they're handled post-processing
+            if routing_name.startswith("after_"):
+                continue
+                
             conditions = routing_config.get("conditions", [])
             default_destination = routing_config.get("default_destination", step_name)
             
@@ -422,6 +456,35 @@ class UnifiedSimulationModel:
             return default_destination
         
         return step_name
+    
+    def _apply_after_routing(self, entity: Entity, completed_step: str) -> List[str]:
+        """Apply post-step routing rules to determine next processing steps."""
+        after_key = f"after_{completed_step}"
+        
+        if after_key in self.routing_rules:
+            routing_config = self.routing_rules[after_key]
+            conditions = routing_config.get("conditions", [])
+            default_destination = routing_config.get("default_destination")
+            
+            # Evaluate routing conditions
+            for condition in conditions:
+                attribute = condition["attribute"]
+                operator = condition.get("operator", "==")
+                value = condition["value"]
+                destination = condition["destination"]
+                
+                if attribute in entity.attributes:
+                    entity_value = entity.attributes[attribute]
+                    
+                    if self._evaluate_condition(entity_value, operator, value):
+                        return [destination]
+            
+            # Use default destination if no conditions matched
+            if default_destination:
+                return [default_destination]
+        
+        # No routing rules found, continue with normal flow
+        return []
     
     def _evaluate_condition(self, entity_value: Any, operator: str, condition_value: Any) -> bool:
         """Evaluate routing condition."""
@@ -527,12 +590,7 @@ class UnifiedSimulationModel:
     
     def _track_resource_utilization(self, resource_name: str):
         """Track resource utilization over time."""
-        last_time = 0
-        
-        while True:
-            yield self.env.timeout(1)  # Check every time unit
-            current_time = self.env.now
-            time_elapsed = current_time - last_time
-            
-            self.metrics.update_resource_time(resource_name, time_elapsed)
-            last_time = current_time
+        # This method is no longer needed - we'll calculate utilization 
+        # based on actual simulation run time and busy time
+        return
+        yield  # Make it a generator for compatibility
