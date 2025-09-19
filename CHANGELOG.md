@@ -7,6 +7,111 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - **Schema Help System**
+
+### 🎯 **Advanced Documentation & Learning System**
+
+This release introduces the **Schema Help System**, a comprehensive documentation and learning platform that transforms simulation model development from trial-and-error into guided, example-driven learning. The system provides dynamic, context-aware help with extensive examples designed specifically for AI assistant comprehension.
+
+### ✨ **Added**
+
+#### **🔍 Dynamic Schema Documentation**
+- **`get_schema_help`**: New MCP tool providing comprehensive schema documentation
+- **Flexible Path Resolution**: Support for nested paths (e.g., "processing_rules.steps")
+- **Multi-Detail Levels**: Brief, standard, and detailed documentation modes
+- **Context-Aware Help**: Dynamic responses based on requested section and detail level
+
+#### **📚 Comprehensive Example Library**
+- **50+ Practical Examples**: Domain-specific examples across all major DES sections
+- **Multi-Domain Coverage**: Healthcare, manufacturing, service, transportation patterns
+- **Real-World Scenarios**: Hospital triage, production lines, customer service, logistics
+- **Progressive Complexity**: From basic setups to advanced multi-stage processes
+
+#### **🤖 LLM-Optimized Learning Experience**
+- **Example-Driven Documentation**: Learn by seeing practical implementations
+- **Workflow Guidance**: Common development patterns and step-by-step progressions
+- **Cross-References**: Related sections and common patterns for comprehensive understanding
+- **Action-Oriented Responses**: Clear next steps and development suggestions
+
+#### **⚡ Enhanced Error Messages**
+- **Context-Aware Quick Fixes**: Error-specific suggestions with actionable guidance
+- **Rich Examples**: Contextual examples for fixing validation errors instantly
+- **Path-Based Suggestions**: Examples tailored to specific schema sections
+- **Progressive Guidance**: Development stage-appropriate recommendations
+
+### 🔄 **Changed**
+
+#### **📈 Intelligent Validation System**
+- **Enhanced Error Analysis**: 10+ error patterns with specific quick fixes
+- **Smart Suggestions**: Development stage-aware recommendations
+- **Domain-Aware Guidance**: Industry-specific validation explanations
+- **Business Rule Integration**: Clear explanations of schema constraints
+
+#### **🧠 AI Assistant Optimization**
+- **Structured Documentation**: Consistent response format across all help requests
+- **Learning Progression**: Guided workflow from basic to advanced features
+- **Error Recovery**: Transform validation failures into learning opportunities
+- **Development Flow**: Smart suggestions based on current model completeness
+
+### 🏗️ **Architecture**
+
+#### **🔧 New Components**
+- **`common/schema_documentation.py`**: Dynamic documentation provider (713 lines)
+- **Enhanced `mcp_server.py`**: Added `get_schema_help` tool with comprehensive documentation
+- **Enhanced `common/multi_schema_validator.py`**: Improved error messages and examples
+
+#### **📊 Content Statistics**
+- **50+ comprehensive examples** across all major DES sections
+- **15+ validation rules** with clear explanations
+- **25+ common patterns** for different simulation domains
+- **10+ workflow guides** for development progression
+- **100+ quick fixes** and suggestions for common issues
+
+### 💡 **Learning & Development Features**
+
+#### **🎓 Guided Learning Paths**
+```
+# Complete schema overview
+get_schema_help("DES")
+
+# Learn specific concepts
+get_schema_help("DES", "entity_types")
+
+# Deep dive into complex topics
+get_schema_help("DES", "processing_rules", detail_level="detailed")
+
+# Quick reference
+get_schema_help("DES", "balking_rules", detail_level="brief")
+```
+
+#### **🏥 Domain-Specific Examples**
+- **Healthcare**: Emergency triage, patient flow optimization, resource allocation
+- **Manufacturing**: Production lines, quality control, equipment failure modeling
+- **Service Industries**: Customer segmentation, queue management, service levels
+- **Transportation**: Logistics optimization, scheduling, resource planning
+
+#### **🚀 Development Workflows**
+- **Basic Service System**: entity_types → resources → processing_rules
+- **Advanced Queue Management**: Add balking/reneging for realistic behavior
+- **Multi-Stage Processes**: Complex routing and failure handling
+- **Performance Optimization**: Statistics configuration and metrics customization
+
+### 🔮 **Enhanced User Experience**
+
+#### **📋 Flexible Help Access**
+- **Full Schema Overview**: Complete understanding of available features
+- **Section-Specific Help**: Focused guidance for specific concepts
+- **Nested Path Support**: Detailed help for complex nested structures
+- **Template Discovery**: Foundation for Phase 3 template system
+
+#### **⚡ Intelligent Error Recovery**
+- **Contextual Examples**: See exactly how to fix validation errors
+- **Quick Fix Suggestions**: Immediate, actionable solutions
+- **Progressive Assistance**: Escalating levels of help based on error complexity
+- **Learning Integration**: Turn errors into learning opportunities
+
+---
+
 ## [2.1.0] - **Model Builder Integration**
 
 ### 🎯 **Advanced Model Development Capabilities**

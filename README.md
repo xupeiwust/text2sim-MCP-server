@@ -44,6 +44,13 @@
 - **Export & Sharing**: JSON export for conversation continuity and collaboration
 - **Multi-Schema Support**: Extensible architecture for DES, SD, and future simulation types
 
+### **📚 Schema Help System**
+- **Dynamic Documentation**: Context-aware help for any schema section with examples
+- **Learning Progression**: Guided workflows from basic to advanced features
+- **Domain-Specific Examples**: Healthcare, manufacturing, service, transportation patterns
+- **Enhanced Error Recovery**: Transform validation errors into learning opportunities
+- **Flexible Detail Levels**: Brief, standard, and detailed documentation modes
+
 ### **🔒 Enterprise-Grade Security**
 - **No Code Execution**: Regex-based parsing prevents arbitrary code execution
 - **Comprehensive Validation**: All inputs validated against formal schema
@@ -152,6 +159,14 @@ JSON export for conversation continuity
 - **Metadata inclusion**: Optional metadata export for complete backups
 - **Token estimation**: Character and token counts for LLM context management
 
+#### **`get_schema_help`**
+Comprehensive schema documentation and learning system
+- **Dynamic help**: Context-aware documentation for any schema section
+- **Flexible paths**: Support for nested sections (e.g., "processing_rules.steps")
+- **Rich examples**: 50+ domain-specific examples across all major sections
+- **Detail levels**: Brief, standard, and detailed documentation modes
+- **Learning guidance**: Workflow patterns and development progressions
+
 ### **🎯 Optimized LLM Experience**
 
 Text2Sim is specifically optimized for seamless interaction with Large Language Models:
@@ -171,12 +186,20 @@ Text2Sim is specifically optimized for seamless interaction with Large Language 
 
 **Example Model Builder Workflow:**
 1. **User**: "Help me build a complex manufacturing simulation"
-2. **Claude**: `validate_model()` → creates basic structure → `save_model("manufacturing_v1")`
+2. **Claude**: `get_schema_help("DES")` → understands available features → creates basic structure → `save_model("manufacturing_v1")`
 3. **User**: "Add quality control with 15% defect rate"
-4. **Claude**: Updates model → `validate_model()` → `save_model("manufacturing_v2")`
+4. **Claude**: `get_schema_help("DES", "simple_routing")` → learns routing options → updates model → `validate_model()` → `save_model("manufacturing_v2")`
 5. **User**: "Export this so I can continue tomorrow"
 6. **Claude**: `export_model()` → provides formatted JSON with conversation template
 7. **Next day**: User pastes exported model → Claude continues development seamlessly
+
+**Example Schema Help Workflow:**
+1. **User**: "I'm new to simulation modeling, where do I start?"
+2. **Claude**: `get_schema_help("DES")` → provides complete overview with learning progression
+3. **User**: "How do I model different customer types?"
+4. **Claude**: `get_schema_help("DES", "entity_types")` → shows healthcare, manufacturing, and service examples
+5. **User**: "My validation failed, what's wrong?"
+6. **Claude**: Enhanced error messages → contextual examples → `get_schema_help("DES", "processing_rules")` for detailed guidance
 
 ---
 
