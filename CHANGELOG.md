@@ -7,7 +7,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.0.1] - 2024-09-17 - **Conversation Optimization**
+## [2.1.0] - **Model Builder Integration**
+
+### 🎯 **Advanced Model Development Capabilities**
+
+This major feature release introduces the **Text2Sim Model Builder**, a comprehensive system for iterative, conversational development of complex simulation models. The Model Builder enables multi-round conversations for sophisticated model construction, with persistent state management and intelligent validation.
+
+### ✨ **Added**
+
+#### **🛠️ Model Builder MCP Tools**
+- **`validate_model`**: Advanced validation with LLM-optimized error messages and quick fixes
+- **`save_model`**: Persistent model storage with intelligent naming and metadata tracking
+- **`load_model`**: Model discovery and loading with filtering by type and tags
+- **`export_model`**: JSON export for conversation continuity and sharing
+
+#### **🏗️ Multi-Schema Infrastructure**
+- **Schema Registry**: Extensible system supporting multiple simulation paradigms (DES, SD, future types)
+- **Auto-Detection**: Intelligent schema type detection from model structure
+- **Generic Validation**: Schema-agnostic validation engine with specialized handlers
+- **Future-Proof Design**: Easy addition of new simulation types without breaking changes
+
+#### **💾 Intelligent Model Management**
+- **Hybrid Naming**: User-provided names with intelligent auto-generation and domain detection
+- **Metadata Tracking**: Comprehensive model metadata with creation time, notes, tags, and validation status
+- **Domain Detection**: Automatic classification (healthcare, manufacturing, service, transportation, finance)
+- **Conflict Resolution**: Automatic versioning for duplicate names (model_v2, model_v3)
+
+#### **🔄 Conversation Continuity**
+- **Session Persistence**: Models saved across conversation rounds for iterative development
+- **Export Functionality**: Formatted JSON output for sharing between conversations
+- **Progress Tracking**: Completeness percentage and development status monitoring
+- **State Management**: Last-loaded model tracking for seamless workflow
+
+#### **🎯 LLM-First Design**
+- **Actionable Error Messages**: Structured errors with quick fixes and examples
+- **Workflow Guidance**: Step-by-step suggestions for model development
+- **Context-Aware Help**: Smart suggestions based on current model state
+- **Example-Rich Documentation**: Comprehensive usage patterns and common scenarios
+
+### 🔄 **Changed**
+
+#### **📈 Enhanced Validation System**
+- **Multi-Mode Validation**: `partial`, `strict`, and `structure` validation modes
+- **Completeness Scoring**: Quantitative assessment of model development progress
+- **Missing Requirements**: Clear identification of required sections with examples
+- **Next Steps Guidance**: Prioritized recommendations for continued development
+
+#### **🧠 Improved AI Interaction**
+- **Tool Documentation**: Extensive examples and usage patterns for better LLM comprehension
+- **Error Recovery**: Enhanced error messages enable AI assistants to self-correct issues
+- **Workflow Support**: Tools designed specifically for conversational model building
+
+### 🏗️ **Architecture**
+
+#### **🔧 New Components**
+- **`common/schema_registry.py`**: Multi-schema registration and auto-detection
+- **`common/multi_schema_validator.py`**: Generic validation engine
+- **`common/model_state_manager.py`**: Intelligent state management 
+- **Enhanced `mcp_server.py`**: 4 new MCP tools integrated seamlessly
+
+### 💡 **Use Cases**
+
+#### **🏥 Iterative Healthcare Model Development**
+```
+User: "Help me build a hospital triage simulation"
+AI: Creates basic template → saves as "hospital_v1"
+User: "Add VIP patients with 20% probability"  
+AI: Updates model → validates → saves as "hospital_v2"
+User: "Export this for my colleague"
+AI: Provides formatted JSON with conversation template
+```
+
+#### **🏭 Manufacturing Process Design**
+```
+User: "Design a production line with quality control"
+AI: Builds model incrementally across multiple conversation rounds
+AI: Validates each addition → tracks progress → suggests improvements
+User: Can export model and continue development in new conversation
+```
+
+#### **📊 Cross-Conversation Development**
+```
+User: Pastes exported model from previous conversation
+AI: Loads model → validates current state → continues development
+AI: Maintains full development history and metadata
+```
+
+
+## [2.0.1] - **Conversation Optimization**
 
 ### 🎯 **Enhanced LLM Interaction Experience**
 
@@ -58,7 +145,7 @@ This release dramatically improves the interaction experience between LLMs (like
 
 ---
 
-## [2.0.0] - 2024-09-17 - **Schema-Driven Architecture**
+## [2.0.0] - **Schema-Driven Architecture**
 
 ### 🎯 **Major Release: Complete System Redesign**
 
@@ -145,35 +232,9 @@ This release represents a fundamental transformation from a basic DES tool to a 
 - **Probability Validation**: Ensured entity type probabilities sum to 1.0
 - **Default Application**: Proper schema default value application
 
-### 🚀 **Performance**
-
-#### **⚡ Optimizations**
-- **Single Validation Pass**: Efficient schema validation with default application
-- **Streamlined Simulation**: Unified model reduces overhead
-- **Selective Statistics**: Configurable statistics collection for performance tuning
-
-#### **📈 Scalability**
-- **Memory Efficient**: Optimized entity and metrics handling
-- **Warmup Support**: Steady-state analysis with configurable warmup periods
-- **Batch Processing**: Support for large entity populations
-
-### 🧪 **Testing & Validation**
-
-#### **✅ Comprehensive Testing**
-- **Schema Validation**: Extensive JSON Schema compliance testing
-- **Simulation Accuracy**: Verified against known DES principles
-- **Edge Cases**: Robust handling of boundary conditions
-- **Performance Testing**: Validated with large-scale simulations
-
-#### **📋 Example Scenarios**
-- **Service Systems**: Coffee shops, restaurants, retail
-- **Healthcare**: Hospital triage, clinics, emergency departments
-- **Manufacturing**: Production lines, quality control, maintenance
-- **Call Centers**: Queue management, agent routing, abandonment
-
 ---
 
-## [1.0.0] - 2024-09-16 - **Initial Release**
+## [1.0.0] - **Initial Release**
 
 ### ✨ **Added**
 
@@ -205,31 +266,6 @@ This release represents a fundamental transformation from a basic DES tool to a 
 - **Project Structure**: Organized DES/ and SD/ directories
 - **Dependencies**: SimPy, PySD, FastMCP integration
 - **Documentation**: Basic README and setup instructions
-
----
-
-## 📝 **Development Notes**
-
-### **🎯 Design Principles**
-1. **User-Centric**: Non-coders can create sophisticated simulations
-2. **SimPy-Native**: Leverage SimPy's strengths without custom extensions
-3. **Configuration-Driven**: Business logic in JSON, not code
-4. **Validation-First**: Comprehensive error checking and helpful messages
-5. **Progressive Complexity**: Simple start, sophisticated capabilities
-
-### **🔮 Future Roadmap**
-- **Advanced Routing**: Complex decision trees and probabilistic routing
-- **Resource Scheduling**: Shift patterns, breaks, planned maintenance
-- **Batch Processing**: Batch arrivals and processing
-- **Network Topologies**: Multi-location simulations with transfers
-- **Optimization Integration**: Parameter optimization and sensitivity analysis
-- **Visualization**: Real-time simulation visualization and dashboards
-
-### **🤝 Contributing**
-- **Schema Evolution**: Propose new features through schema extensions
-- **Example Scenarios**: Contribute domain-specific examples
-- **Performance**: Optimize for larger simulations
-- **Documentation**: Improve user guides and tutorials
 
 ---
 
