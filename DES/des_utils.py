@@ -34,8 +34,10 @@ def parse_distribution(dist_str: str) -> Callable[[], float]:
         return lambda: max(0, random.gauss(args[0], args[1]))
     elif dist_name == "exp":
         if len(args) != 1:
-            raise ValueError("Exponential distribution requires exactly 1 parameter: rate")
-        return lambda: random.expovariate(args[0])
+            raise ValueError("Exponential distribution requires exactly 1 parameter: mean")
+        # Convert mean to rate for random.expovariate (which expects rate)
+        rate = 1.0 / args[0]
+        return lambda: random.expovariate(rate)
     else:
         raise ValueError(f"Unsupported distribution: {dist_name}")
 
