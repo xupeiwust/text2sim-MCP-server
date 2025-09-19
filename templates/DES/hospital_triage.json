@@ -15,139 +15,112 @@
     "use_count": 0
   },
   "model": {
-    "entity_types": [
-      {
-        "name": "emergency_patient",
-        "arrival_distribution": {
-          "type": "exponential",
-          "rate": 0.5
+    "run_time": 480,
+    "arrival_pattern": {
+      "distribution": "exp(2.5)"
+    },
+    "entity_types": {
+      "emergency_patient": {
+        "probability": 0.2,
+        "priority": 1,
+        "value": {
+          "min": 2000,
+          "max": 5000
         },
         "attributes": {
-          "priority": 1,
           "severity": "high",
           "patient_type": "emergency"
         }
       },
-      {
-        "name": "routine_patient",
-        "arrival_distribution": {
-          "type": "exponential", 
-          "rate": 2.0
+      "routine_patient": {
+        "probability": 0.8,
+        "priority": 3,
+        "value": {
+          "min": 100,
+          "max": 500
         },
         "attributes": {
-          "priority": 3,
           "severity": "low",
           "patient_type": "routine"
         }
       }
-    ],
-    "resources": [
-      {
-        "name": "triage_nurse",
+    },
+    "resources": {
+      "triage_nurse": {
         "capacity": 1,
-        "schedule": "24/7",
-        "queue_discipline": "priority"
+        "resource_type": "priority"
       },
-      {
-        "name": "emergency_doctor",
+      "emergency_doctor": {
         "capacity": 2,
-        "schedule": "24/7",
-        "skills": ["emergency", "critical-care"]
+        "resource_type": "priority"
       },
-      {
-        "name": "routine_doctor", 
+      "routine_doctor": {
         "capacity": 1,
-        "schedule": "8-18",
-        "skills": ["general-medicine"]
+        "resource_type": "priority"
       }
-    ],
-    "processing_rules": [
-      {
-        "entity_type": "emergency_patient",
-        "steps": [
-          {
-            "resource": "triage_nurse",
-            "duration": {
-              "type": "triangular",
-              "low": 2,
-              "mode": 5,
-              "high": 10
-            }
-          },
-          {
-            "resource": "emergency_doctor",
-            "duration": {
-              "type": "normal",
-              "mean": 30,
-              "std": 10
-            }
-          }
-        ]
+    },
+    "processing_rules": {
+      "steps": ["triage_nurse"],
+      "triage_nurse": {
+        "distribution": "uniform(2, 10)"
       },
-      {
-        "entity_type": "routine_patient",
-        "steps": [
-          {
-            "resource": "triage_nurse",
-            "duration": {
-              "type": "triangular",
-              "low": 2,
-              "mode": 5, 
-              "high": 10
-            }
-          },
-          {
-            "resource": "routine_doctor",
-            "duration": {
-              "type": "normal",
-              "mean": 15,
-              "std": 5
-            }
-          }
-        ]
+      "emergency_doctor": {
+        "distribution": "normal(30, 10)"
+      },
+      "routine_doctor": {
+        "distribution": "normal(15, 5)"
       }
-    ],
-    "simulation_parameters": {
-      "run_time": 480,
-      "warmup_time": 60,
-      "number_of_runs": 10
+    },
+    "simple_routing": {
+      "after_triage_nurse": {
+        "conditions": [
+          {
+            "attribute": "priority",
+            "operator": "<=",
+            "value": 1,
+            "destination": "emergency_doctor"
+          }
+        ],
+        "default_destination": "routine_doctor"
+      }
     },
     "statistics": {
-      "entity_statistics": ["wait_time", "service_time", "system_time"],
-      "resource_statistics": ["utilization", "queue_length"],
-      "custom_metrics": {
-        "emergency_wait_time": "Average wait time for emergency patients",
-        "routine_wait_time": "Average wait time for routine patients"
-      }
+      "collect_wait_times": true,
+      "collect_utilization": true,
+      "collect_queue_lengths": true,
+      "warmup_period": 60
     }
   },
   "usage_notes": "Models realistic hospital emergency department with priority-based patient flow. Emergency patients receive priority treatment while routine patients are handled during regular hours. Includes realistic service time distributions based on medical literature.",
   "customization_tips": [
-    "Adjust patient arrival rates based on hospital size and location",
-    "Modify doctor schedules for different shift patterns (24/7 vs day shifts)",
-    "Add specialized resources like X-ray, lab equipment, or specialists",
-    "Include patient balking/reneging for realistic abandonment behavior",
-    "Add more priority levels (urgent, semi-urgent) for complex triage",
-    "Scale resource capacities based on department size"
+    "Adjust 'arrival_pattern.distribution' to change overall patient volume (e.g., 'exp(1.5)' for slower, 'exp(4.0)' for busier)",
+    "Modify 'entity_types' probabilities to change emergency vs routine patient mix",
+    "Scale 'resources' capacities based on department size (more doctors/nurses)",
+    "Add 'balking_rules' or 'reneging_rules' for realistic patient abandonment behavior",
+    "Extend 'simple_routing' with more complex triage decision logic",
+    "Add more entity types (urgent, semi-urgent) with different priority levels",
+    "Include additional resources like X-ray, lab equipment, or specialists in routing"
   ],
   "examples": [
     {
       "scenario": "Night Shift",
       "changes": {
-        "entity_types[0].arrival_distribution.rate": 0.3,
-        "entity_types[1].arrival_distribution.rate": 0.5,
-        "resources[2].schedule": "off"
+        "arrival_pattern.distribution": "exp(1.0)",
+        "entity_types.emergency_patient.probability": 0.4,
+        "entity_types.routine_patient.probability": 0.6,
+        "resources.routine_doctor.capacity": 0
       },
-      "description": "Reduced patient volume during night hours with no routine doctor"
+      "description": "Reduced patient volume during night hours with higher emergency ratio and no routine doctor"
     },
     {
       "scenario": "Crisis Mode",
       "changes": {
-        "entity_types[0].arrival_distribution.rate": 1.2,
-        "resources[1].capacity": 3,
-        "resources[2].schedule": "24/7"
+        "arrival_pattern.distribution": "exp(5.0)",
+        "entity_types.emergency_patient.probability": 0.5,
+        "resources.emergency_doctor.capacity": 4,
+        "resources.routine_doctor.capacity": 2
       },
-      "description": "High emergency volume requiring additional emergency doctor and 24/7 routine coverage"
+      "description": "High patient volume crisis requiring additional doctors and higher emergency patient ratio"
     }
   ]
 }
