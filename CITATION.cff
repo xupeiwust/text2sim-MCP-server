@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Text2Sim MCP Server"
+version: "2.2"
+doi: # Add DOI if/when available
+date-released: 2025-09-19 # Update with actual release date
+url: "https://github.com/IamCatoBot/text2sim-MCP-server"
+repository-code: "https://github.com/IamCatoBot/text2sim-MCP-server"
+abstract: "Multi-paradigm Simulation Engine for LLM Integration. Text2Sim MCP Server is a simulation engine that supports multiple modeling paradigms, including Discrete-Event Simulation (DES) and System Dynamics (SD). It integrates with LLMs using the Model Context Protocol (MCP), enabling powerful simulation capabilities within natural language environments."
+keywords:
+  - simulation
+  - discrete-event-simulation
+  - system-dynamics
+  - mcp
+  - model-context-protocol
+  - llm
+  - claude
+  - simpy
+  - pysd
+license: MIT
+authors:
+  - given-names: "Nikolaos"
+    family-names: "Maniatis"
+    email: "hello@catobot.com" # Update with your preferred contact email
+    orcid: # Add ORCID if you have one
+    affiliation: "The Cato Bot Company Limited"
+preferred-citation:
+  type: software
+  title: "Text2Sim MCP Server"
+  version: "2.2"
+  authors:
+    - given-names: "Nikolaos"
+      family-names: "Maniatis"
+      email: "hello@catobot.com" # Update with your preferred contact email
+      orcid: # Add ORCID if you have one
+      affiliation: "The Cato Bot Company Limited"
+  url: "https://github.com/IamCatoBot/text2sim-MCP-server"
+  year: 2025
+  publisher: "The Cato Bot Company Limited"

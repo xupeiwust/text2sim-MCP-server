@@ -8,57 +8,14 @@
 [![Text2Sim MCP Server (demo)](assets/youtube_screen.png)](https://www.youtube.com/watch?v=qkdV-HtTtLs "Text2Sim MCP Server (demo)")
 
 ---
-## 🚀 Features
 
-### **🤖 Advanced LLM Integration**
-- **Natural Language to Simulation**: Create sophisticated DES models using plain English descriptions
-- **Iterative Model Building**: Multi-round conversations for complex model development
-- **Schema-Driven Architecture**: JSON Schema 2020-12 ensures reliable, validated configurations
-- **Optimized for Claude**: 87% reduction in trial-and-error cycles through enhanced error messages
-- **Smart Error Handling**: Contextual examples and actionable suggestions for quick problem resolution
-- **Conversation Continuity**: Save, load, and export models across conversation sessions
+## About
 
-### **📊 Comprehensive Discrete-Event Simulation**
-- **Multi-Entity Systems**: Support for different entity types with priorities, values, and attributes
-- **Advanced Resource Management**: FIFO, Priority, and Preemptive resource types
-- **Behavioral Modeling**: Balking, reneging, and conditional routing capabilities
-- **Failure Simulation**: Resource breakdowns and repair cycles
-- **Custom Metrics**: Domain-specific terminology (customers, patients, orders, products)
-
-### **🏭 Multi-Domain Support**
-- **Healthcare**: Hospital triage, patient flow, emergency departments
-- **Manufacturing**: Production lines, quality control, bottleneck analysis
-- **Service Industries**: Restaurants, call centers, retail operations
-- **Transportation**: Airport operations, logistics, supply chain management
-
-### **⚡ Performance & Analytics**
-- **Real-Time Metrics**: Wait times, utilization rates, throughput analysis
-- **Statistical Controls**: Warmup periods, confidence intervals, queue length monitoring
-- **Efficiency Calculations**: Processing efficiency, revenue analysis, resource optimization
-- **Scalable Simulation**: Support for large entity populations and complex workflows
-
-### **🛠️ Model Builder Tools**
-- **Iterative Development**: Build complex models through multiple conversation rounds
-- **Intelligent Validation**: Multi-mode validation with actionable feedback
-- **Smart Model Management**: Auto-naming with domain detection and metadata tracking
-- **Export & Sharing**: JSON export for conversation continuity and collaboration
-- **Multi-Schema Support**: Extensible architecture for DES, SD, and future simulation types
-
-### **📚 Schema Help System**
-- **Dynamic Documentation**: Context-aware help for any schema section with examples
-- **Learning Progression**: Guided workflows from basic to advanced features
-- **Domain-Specific Examples**: Healthcare, manufacturing, service, transportation patterns
-- **Enhanced Error Recovery**: Transform validation errors into learning opportunities
-- **Flexible Detail Levels**: Brief, standard, and detailed documentation modes
-
-### **🔒 Enterprise-Grade Security**
-- **No Code Execution**: Regex-based parsing prevents arbitrary code execution
-- **Comprehensive Validation**: All inputs validated against formal schema
-- **Robust Error Handling**: Clean error reporting without internal state leakage
+The Text2Sim MCP Server is an open source project run by [The Cato Bot Company Limited](https://catobot.com) and open to contributions from the community. We believe in transparent, commercially-backed open source development that benefits both users and contributors while supporting sustainable project growth.
 
 ---
 
-## 🔧 Installation
+## Installation
 
 ### **Prerequisites**
 - Python **3.12** or higher
@@ -80,7 +37,7 @@ Learn more: [astral-sh/uv](https://github.com/astral-sh/uv)
 
 ---
 
-## 🛠️ Usage
+## Usage
 
 ### **Clone the repository**
 ```bash
@@ -101,7 +58,7 @@ git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
       "command": "uv",
       "args": [
         "--directory",
-        "PATH_TO_TEXT2SIM_MCP_SERVER", 
+        "PATH_TO_TEXT2SIM_MCP_SERVER", # Update it with yours
         "run",
         "mcp_server.py"
       ],
@@ -115,7 +72,56 @@ git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
 
 ---
 
-## 📚 API Reference
+## Features
+
+### **Advanced LLM Integration**
+- **Natural Language to Simulation**: Create sophisticated DES models using plain English descriptions
+- **Iterative Model Building**: Multi-round conversations for complex model development
+- **Schema-Driven Architecture**: JSON Schema 2020-12 ensures reliable, validated configurations
+- **Smart Error Handling**: Contextual examples and actionable suggestions for quick problem resolution
+- **Conversation Continuity**: Save, load, and export models across conversation sessions
+
+### **Comprehensive Discrete-Event Simulation**
+- **Multi-Entity Systems**: Support for different entity types with priorities, values, and attributes
+- **Advanced Resource Management**: FIFO, Priority, and Preemptive resource types
+- **Behavioral Modeling**: Balking, reneging, and conditional routing capabilities
+- **Failure Simulation**: Resource breakdowns and repair cycles
+- **Custom Metrics**: Domain-specific terminology (customers, patients, orders, products)
+
+### **Multi-Domain Support**
+- **Healthcare**: Hospital triage, patient flow, emergency departments
+- **Manufacturing**: Production lines, quality control, bottleneck analysis
+- **Service Industries**: Restaurants, call centers, retail operations
+- **Transportation**: Airport operations, logistics, supply chain management
+
+### **Performance & Analytics**
+- **Real-Time Metrics**: Wait times, utilization rates, throughput analysis
+- **Statistical Controls**: Warmup periods, confidence intervals, queue length monitoring
+- **Efficiency Calculations**: Processing efficiency, revenue analysis, resource optimisation
+- **Scalable Simulation**: Support for large entity populations and complex workflows
+
+### **Model Builder Tools**
+- **Iterative Development**: Build complex models through multiple conversation rounds
+- **Intelligent Validation**: Multi-mode validation with actionable feedback
+- **Smart Model Management**: Auto-naming with domain detection and metadata tracking
+- **Export & Sharing**: JSON export for conversation continuity and collaboration
+- **Multi-Schema Support**: Architecture supporting DES, SD (To-Do)
+
+### **Schema Help System**
+- **Dynamic Documentation**: Context-aware help for any schema section with examples
+- **Learning Progression**: Guided workflows from basic to advanced features
+- **Domain-Specific Examples**: Healthcare, manufacturing, service, transportation patterns
+- **Enhanced Error Recovery**: Transform validation errors into learning opportunities
+- **Flexible Detail Levels**: Brief, standard, and detailed documentation modes
+
+### **Security**
+- **No Code Execution**: Regex-based parsing prevents arbitrary code execution
+- **Comprehensive Validation**: All inputs validated against formal schema
+- **Robust Error Handling**: Clean error reporting without internal state leakage
+
+---
+
+## API Reference
 
 ### Overview
 
@@ -127,12 +133,12 @@ The MCP server provides tools for both Discrete-Event Simulation and System Dyna
 
 When using a Large Language Model (e.g. Claude) client, natural language prompts are translated into appropriate configurations via the **Model Context Protocol (MCP)**.
 
-### **🛠️ Model Builder Tools**
+### **Model Builder Tools**
 
 The Model Builder provides advanced tools for iterative, conversational development of simulation models:
 
 #### **`validate_model`**
-Comprehensive validation with LLM-optimized feedback
+Comprehensive validation with LLM-optimised feedback
 - **Multi-mode validation**: `partial`, `strict`, `structure`
 - **Auto-schema detection**: Automatically detects DES/SD from model structure
 - **Actionable errors**: Quick fixes and examples for immediate problem resolution
@@ -167,13 +173,12 @@ Comprehensive schema documentation and learning system
 - **Detail levels**: Brief, standard, and detailed documentation modes
 - **Learning guidance**: Workflow patterns and development progressions
 
-### **🎯 Optimized LLM Experience**
+### **Optimised LLM Experience**
 
-Text2Sim is specifically optimized for seamless interaction with Large Language Models:
+Text2Sim is specifically optimised for seamless interaction with Large Language Models:
 
 - **Intelligent Error Messages**: Every validation error includes contextual examples and actionable suggestions
 - **Quick-Start Patterns**: Comprehensive configuration templates built into the tool description
-- **Reduced Trial-and-Error**: Advanced error handling reduces Claude's configuration attempts by 87%
 - **Domain-Specific Examples**: Ready-to-use patterns for manufacturing, healthcare, and service industries
 - **Progressive Assistance**: Smart error classification provides escalating levels of help
 
@@ -203,7 +208,7 @@ Text2Sim is specifically optimized for seamless interaction with Large Language 
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 Text2Sim is structured into modular components:
 
@@ -226,7 +231,7 @@ For detailed documentation of each module, see:
 
 ---
 
-## 🔐 Security Considerations
+## Security Considerations
 
 - **No `eval()` usage**  
   Regex-based parsing prevents arbitrary code execution.
@@ -239,12 +244,31 @@ For detailed documentation of each module, see:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Pull requests are welcome! Please fork the repo and submit a PR. Suggestions, bug reports, and feature ideas are always appreciated.
+Pull requests are welcome! Please fork the repo and submit a PR. Suggestions, bug reports, and feature ideas are always appreciated. 
+
+Please note: The project is under active development at the moment. Things may break and choices may change. 
+
+If you have suggestions for major changes, it would be helpful to discuss them prior your PR.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Citation
+
+If you use Text2Sim MCP Server in academic work, please cite:
+
+**Nikolaos Maniatis.** *Text2Sim MCP Server (v2.2)*.
+[https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
+Available at: [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
+Copyright The Cato Bot Company Limited and contributors. Licensed under MIT.
+
+**APA:**
+Maniatis, N. (2025). *Text2Sim MCP Server (v2.2)*. [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
+---

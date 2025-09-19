@@ -15,73 +15,65 @@
     "use_count": 0
   },
   "model": {
-    "entity_types": [
-      {
-        "name": "customer",
-        "arrival_distribution": {
-          "type": "exponential",
-          "rate": 1.0
+    "run_time": 100,
+    "arrival_pattern": {
+      "distribution": "exp(1.0)"
+    },
+    "entity_types": {
+      "customer": {
+        "probability": 1.0,
+        "priority": 1,
+        "value": {
+          "min": 10,
+          "max": 50
         },
         "attributes": {
-          "priority": 1,
           "customer_type": "standard"
         }
       }
-    ],
-    "resources": [
-      {
-        "name": "server",
+    },
+    "resources": {
+      "server": {
         "capacity": 1,
-        "schedule": "24/7",
-        "queue_discipline": "FIFO"
+        "resource_type": "fifo"
       }
-    ],
-    "processing_rules": [
-      {
-        "entity_type": "customer",
-        "steps": [
-          {
-            "resource": "server",
-            "duration": {
-              "type": "exponential",
-              "rate": 2.0
-            }
-          }
-        ]
+    },
+    "processing_rules": {
+      "steps": ["server"],
+      "server": {
+        "distribution": "exp(2.0)"
       }
-    ],
-    "simulation_parameters": {
-      "run_time": 100,
-      "warmup_time": 10,
-      "number_of_runs": 1
     },
     "statistics": {
-      "entity_statistics": ["wait_time", "service_time", "system_time"],
-      "resource_statistics": ["utilization", "queue_length"]
+      "collect_wait_times": true,
+      "collect_utilization": true,
+      "collect_queue_lengths": true,
+      "warmup_period": 10
     }
   },
   "usage_notes": "Perfect starting point for understanding basic queueing concepts. This template demonstrates the fundamental M/M/1 queue with exponential arrivals and service times. Ideal for learning simulation basics and testing simple scenarios.",
   "customization_tips": [
-    "Adjust 'arrival_distribution.rate' to change customer frequency (higher = more customers)",
-    "Modify 'processing_rules[0].steps[0].duration.rate' to change service speed (higher = faster service)",
-    "Increase 'resources[0].capacity' to add more servers (creates M/M/c queue)",
+    "Adjust 'arrival_pattern.distribution' to change customer frequency (e.g., 'exp(0.5)' for slower, 'exp(2.0)' for faster)",
+    "Modify 'processing_rules.server.distribution' to change service speed (e.g., 'exp(1.0)' for slower, 'exp(3.0)' for faster)",
+    "Increase 'resources.server.capacity' to add more servers (creates M/M/c queue)",
     "Change 'run_time' to simulate longer periods for stable results",
-    "Add 'balking_rules' to model customer abandonment behavior"
+    "Add 'balking_rules' to model customer abandonment behavior",
+    "Modify 'entity_types.customer.value' range to change customer value/revenue"
   ],
   "examples": [
     {
       "scenario": "Low Traffic",
       "changes": {
-        "entity_types[0].arrival_distribution.rate": 0.5,
-        "processing_rules[0].steps[0].duration.rate": 2.0
+        "arrival_pattern.distribution": "exp(0.5)",
+        "processing_rules.server.distribution": "exp(2.0)"
       },
       "description": "Light customer load with fast service (utilization ~25%)"
     },
     {
       "scenario": "High Traffic", 
       "changes": {
-        "entity_types[0].arrival_distribution.rate": 1.8,
-        "processing_rules[0].steps[0].duration.rate": 2.0
+        "arrival_pattern.distribution": "exp(1.8)",
+        "processing_rules.server.distribution": "exp(2.0)"
       },
       "description": "Heavy customer load approaching server capacity (utilization ~90%)"
     }
