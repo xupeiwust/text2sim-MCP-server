@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import sys
 import os
+from typing import List
 
 # Ensure the SD module is in the path
 current_dir = Path(__file__).parent
@@ -1239,6 +1240,174 @@ def save_template(
         return {
             "error": f"Template saving error: {str(e)}",
             "suggestion": "Check model validity and template name uniqueness"
+        }
+
+@mcp.tool()
+def run_multiple_simulations(
+    config: dict,
+    replications: int = 10,
+    random_seed_base: int = None,
+    confidence_levels: List[float] = None
+) -> dict:
+    """
+    Run multiple independent simulation replications with comprehensive statistical analysis.
+    
+    This tool provides industry-standard statistical reporting for simulation results,
+    including confidence intervals, variability measures, and distribution analysis.
+    Essential for reliable decision-making and professional simulation studies.
+    
+    Statistical Outputs Include:
+    - Central tendency: Mean, median, mode
+    - Variability: Standard deviation, coefficient of variation, range
+    - Confidence intervals: 90%, 95%, 99% (configurable)
+    - Distribution analysis: Percentiles, normality tests, outlier detection
+    - Sample statistics: Standard error, degrees of freedom, relative precision
+    
+    Industry Standard Format:
+    Results reported as "Mean ± Half-Width (CI%) [n=replications]"
+    Example: "Utilization: 0.785 ± 0.023 (95%) [n=20]"
+    
+    Args:
+        config: Complete simulation configuration (same as simulate_des)
+        replications: Number of independent runs (default: 10, minimum: 2)
+        random_seed_base: Base seed for reproducible results (optional)
+        confidence_levels: List of confidence levels (default: [0.90, 0.95, 0.99])
+        
+    Returns:
+        Comprehensive statistical analysis with individual replication data
+    """
+    try:
+        # Import required modules
+        from DES.replication_analysis import create_replication_analyzer
+        import random
+        import time
+        
+        # Validate inputs
+        if replications < 2:
+            return {
+                "error": "Minimum 2 replications required for statistical analysis",
+                "suggestion": "Increase replications to at least 2 for meaningful statistics"
+            }
+        
+        if replications > 100:
+            return {
+                "error": "Maximum 100 replications allowed to prevent excessive computation",
+                "suggestion": "Consider using 20-50 replications for most applications"
+            }
+        
+        # Set up confidence levels
+        if confidence_levels is None:
+            confidence_levels = [0.90, 0.95, 0.99]
+        
+        # Validate configuration
+        try:
+            validator = DESConfigValidator()
+            normalized_config, errors = validator.validate_and_normalize(config)
+            
+            if errors:
+                return {
+                    "error": "Invalid simulation configuration",
+                    "validation_errors": errors,
+                    "suggestion": "Fix configuration errors before running replications"
+                }
+            
+            # Use the normalized configuration for simulations
+            config = normalized_config
+            
+        except Exception as e:
+            return {
+                "error": f"Configuration validation failed: {str(e)}",
+                "suggestion": "Check configuration format and required fields"
+            }
+        
+        # Set up random seeds for reproducibility
+        if random_seed_base is None:
+            random_seed_base = int(time.time())
+        
+        # Run replications
+        replication_results = []
+        failed_replications = []
+        
+        print(f"Running {replications} simulation replications...")
+        
+        for i in range(replications):
+            try:
+                # Set unique seed for this replication
+                replication_seed = random_seed_base + i * 1000
+                random.seed(replication_seed)
+                
+                print(f"  Replication {i+1}/{replications}...")
+                
+                # Run single simulation
+                result = simulate_des(config)
+                
+                if "error" in result:
+                    failed_replications.append({
+                        "replication": i + 1,
+                        "error": result["error"],
+                        "seed": replication_seed
+                    })
+                else:
+                    # Add replication metadata
+                    result["_replication_info"] = {
+                        "replication_number": i + 1,
+                        "random_seed": replication_seed,
+                        "timestamp": time.time()
+                    }
+                    replication_results.append(result)
+                    
+            except Exception as e:
+                failed_replications.append({
+                    "replication": i + 1,
+                    "error": str(e),
+                    "seed": replication_seed
+                })
+        
+        # Check if we have enough successful replications
+        successful_count = len(replication_results)
+        if successful_count < 2:
+            return {
+                "error": f"Only {successful_count} successful replications out of {replications}",
+                "failed_replications": failed_replications,
+                "suggestion": "Check simulation configuration or reduce complexity"
+            }
+        
+        # Perform statistical analysis
+        analyzer = create_replication_analyzer()
+        statistical_analysis = analyzer.analyze_replications(replication_results)
+        
+        # Generate industry-standard summary
+        summary_report = analyzer.format_industry_summary(statistical_analysis)
+        
+        # Prepare final results
+        final_results = {
+            "statistical_analysis": statistical_analysis,
+            "summary_report": summary_report,
+            "execution_info": {
+                "total_replications_requested": replications,
+                "successful_replications": successful_count,
+                "failed_replications": len(failed_replications),
+                "random_seed_base": random_seed_base,
+                "confidence_levels": confidence_levels
+            }
+        }
+        
+        # Include failure details if any
+        if failed_replications:
+            final_results["failed_replications"] = failed_replications
+        
+        print(f"✅ Completed {successful_count} replications successfully!")
+        return final_results
+        
+    except ImportError as e:
+        return {
+            "error": f"Required statistical modules not available: {str(e)}",
+            "suggestion": "Install required dependencies: pip install scipy numpy"
+        }
+    except Exception as e:
+        return {
+            "error": f"Multiple replications failed: {str(e)}",
+            "suggestion": "Check configuration and try with fewer replications"
         }
 
 if __name__ == "__main__":
