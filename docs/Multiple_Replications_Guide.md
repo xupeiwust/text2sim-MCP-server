@@ -6,17 +6,17 @@ The Multiple Replications Tool enables users to run simulation studies with prop
 
 ## Key Features
 
-### 🎯 **MCP Client Integration**
+### **MCP Client Integration**
 Users can simply ask the LLM: *"Run the hospital triage simulation 10 times"* and get professional statistical analysis.
 
-### 📊 **Industry-Standard Statistical Outputs**
+### **Industry-Standard Statistical Outputs**
 - **Central Tendency:** Mean, median, mode
 - **Variability:** Standard deviation, coefficient of variation, range
 - **Confidence Intervals:** 90%, 95%, 99% (configurable)
 - **Distribution Analysis:** Percentiles, normality tests, outlier detection
 - **Sample Statistics:** Standard error, degrees of freedom, relative precision
 
-### 📋 **Professional Reporting Format**
+### **Professional Reporting Format**
 Results follow industry standard: `Mean ± Half-Width (CI%) [n=replications]`
 
 Example: `Utilization: 0.785 ± 0.023 (95%) [n=20]`
@@ -121,4 +121,3 @@ Average Wait Time:
   Relative Precision: ±21.9%
 ```
 
-This professional statistical output enables confident decision-making and meets industry standards for simulation studies.

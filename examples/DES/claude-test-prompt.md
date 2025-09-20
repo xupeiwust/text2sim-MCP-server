@@ -1,6 +1,6 @@
 # Complex DES Test Prompt for Claude
 
-## 🏭 **Manufacturing Plant Simulation Challenge**
+## **Manufacturing Plant Simulation Challenge**
 
 I need you to create a comprehensive discrete-event simulation for a **high-tech electronics manufacturing plant** that produces smartphones. This is a complex multi-stage operation with various challenges that need to be modeled accurately.
 

@@ -271,10 +271,10 @@ class MultiSchemaValidator:
             return "Value not in allowed list"
         elif "is greater than the maximum" in error.message:
             maximum = error.schema.get("maximum", "unknown")
-            return f"Value must be ≤ {maximum}"
+            return f"Value must be <= {maximum}"
         elif "is less than the minimum" in error.message:
             minimum = error.schema.get("minimum", "unknown")
-            return f"Value must be ≥ {minimum}"
+            return f"Value must be >= {minimum}"
         else:
             return "Review the field value against schema requirements"
     

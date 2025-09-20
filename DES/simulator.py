@@ -1,8 +1,8 @@
 """
-Unified SimPy-based discrete-event simulation model.
+SimPy-based discrete-event simulation model.
 
 This module provides a single, comprehensive simulation model that handles all DES
-scenarios through schema-driven configuration, replacing the previous two-tier system.
+scenarios through schema-driven configuration.
 """
 
 import simpy

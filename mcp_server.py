@@ -31,31 +31,31 @@ def _generate_quick_fixes(errors):
     
     for error in errors:
         if "wait_times" in error and "collect_wait_times" not in error:
-            fixes.append("🔧 Replace 'wait_times' with 'collect_wait_times' in statistics section")
+            fixes.append("Replace 'wait_times' with 'collect_wait_times' in statistics section")
         elif "resource_utilization" in error:
-            fixes.append("🔧 Replace 'resource_utilization' with 'collect_utilization' in statistics section")
+            fixes.append("Replace 'resource_utilization' with 'collect_utilization' in statistics section")
         elif "abandon_time" in error and "required property" in error:
-            fixes.append("🔧 Add 'abandon_time': 'normal(30, 10)' to reneging rules (use distribution string)")
+            fixes.append("Add 'abandon_time': 'normal(30, 10)' to reneging rules (use distribution string)")
         elif "mtbf" in error and "not of type 'string'" in error:
-            fixes.append("🔧 Change MTBF to distribution string: 'exp(300)' instead of 300")
+            fixes.append("Change MTBF to distribution string: 'exp(300)' instead of 300")
         elif "conditions" in error and "required property" in error:
-            fixes.append("🔧 Use 'conditions' array in simple_routing, not 'from_step'/'to_step'")
+            fixes.append("Use 'conditions' array in simple_routing, not 'from_step'/'to_step'")
         elif "probabilities sum to" in error:
-            fixes.append("🔧 Adjust entity_types probabilities to sum exactly to 1.0")
+            fixes.append("Adjust entity_types probabilities to sum exactly to 1.0")
         elif "does not match" in error and "distribution" in error:
-            fixes.append("🔧 Fix distribution format: use 'uniform(5,10)', 'normal(8,2)', or 'exp(5)'")
+            fixes.append("Fix distribution format: use 'uniform(5,10)', 'normal(8,2)', or 'exp(5)'")
         elif "Additional properties are not allowed" in error:
-            fixes.append("🔧 Check for typos in property names or unsupported properties")
+            fixes.append("Check for typos in property names or unsupported properties")
         elif "resource" in error and "not found" in error:
-            fixes.append("🔧 Ensure resource names in rules match those defined in 'resources' section")
+            fixes.append("Ensure resource names in rules match those defined in 'resources' section")
     
     # Add generic helpful tips if no specific fixes found
     if not fixes:
         fixes.extend([
-            "🔍 Check property names for typos",
-            "📝 Ensure all distributions are strings: 'uniform(a,b)', 'normal(mean,std)', 'exp(mean)'",
-            "🎯 Verify resource names match between sections",
-            "⚖️ Confirm entity probabilities sum to 1.0"
+            "Check property names for typos",
+            "Ensure all distributions are strings: 'uniform(a,b)', 'normal(mean,std)', 'exp(mean)'",
+            "Verify resource names match between sections",
+            "Confirm entity probabilities sum to 1.0"
         ])
     
     return fixes[:3]  # Limit to top 3 most relevant fixes
@@ -65,7 +65,7 @@ def simulate_des(config: dict) -> dict:
     """
     Advanced discrete-event simulation with comprehensive schema validation and SimPy integration.
     
-    🎯 QUICK START - Basic Configuration:
+    QUICK START - Basic Configuration:
     {
       "run_time": 480,
       "arrival_pattern": {"distribution": "exp(5)"},
@@ -81,9 +81,9 @@ def simulate_des(config: dict) -> dict:
       }
     }
     
-    📋 COMMON CONFIGURATION PATTERNS:
+    COMMON CONFIGURATION PATTERNS:
     
-    ✅ Statistics Collection:
+    Statistics Collection:
     "statistics": {
       "collect_wait_times": true,
       "collect_utilization": true,
@@ -91,12 +91,12 @@ def simulate_des(config: dict) -> dict:
       "warmup_period": 60
     }
     
-    ✅ Balking (Customers Leave):
+    Balking (Customers Leave):
     "balking_rules": {
       "overcrowding": {"type": "queue_length", "resource": "server_name", "max_length": 8}
     }
     
-    ✅ Reneging (Customers Abandon Queue):
+    Reneging (Customers Abandon Queue):
     "reneging_rules": {
       "impatience": {
         "abandon_time": "normal(30, 10)",
@@ -104,7 +104,7 @@ def simulate_des(config: dict) -> dict:
       }
     }
     
-    ✅ Resource Failures:
+    Resource Failures:
     "basic_failures": {
       "machine_name": {
         "mtbf": "exp(480)",
@@ -112,7 +112,7 @@ def simulate_des(config: dict) -> dict:
       }
     }
     
-    ✅ Conditional Routing:
+    Conditional Routing:
     "simple_routing": {
       "priority_check": {
         "conditions": [
@@ -122,25 +122,25 @@ def simulate_des(config: dict) -> dict:
       }
     }
     
-    ✅ Custom Metrics Names:
+    Custom Metrics Names:
     "metrics": {
       "arrival_metric": "customers_arrived",
       "served_metric": "customers_served",
       "value_metric": "total_revenue"
     }
     
-    🔧 DISTRIBUTION FORMATS (All strings):
+    DISTRIBUTION FORMATS (All strings):
     - "uniform(5, 10)" - Uniform between 5 and 10
     - "normal(8, 2)" - Normal with mean=8, std=2
     - "exp(5)" - Exponential with mean=5 (NOT rate=5)
     - "gauss(10, 3)" - Same as normal
     
-    🏭 RESOURCE TYPES:
+    RESOURCE TYPES:
     - "fifo" - First-in-first-out (default)
     - "priority" - Priority queue (1=highest, 10=lowest)
     - "preemptive" - Priority with preemption capability
     
-    📊 ENTITY CONFIGURATION:
+    ENTITY CONFIGURATION:
     "entity_types": {
       "vip": {
         "probability": 0.2,           // Must sum to 1.0 across all types
@@ -150,7 +150,7 @@ def simulate_des(config: dict) -> dict:
       }
     }
     
-    🔄 PROCESSING FLOW:
+    PROCESSING FLOW:
     "processing_rules": {
       "steps": ["reception", "service", "checkout"],  // Sequential steps
       "reception": {"distribution": "uniform(2, 5)"},
@@ -163,7 +163,7 @@ def simulate_des(config: dict) -> dict:
       }
     }
     
-    ⚠️ COMMON MISTAKES TO AVOID:
+    COMMON MISTAKES TO AVOID:
     - Don't use "wait_times" → Use "collect_wait_times"
     - Don't use numbers for distributions → Use strings like "exp(300)"
     - Don't use "from_step"/"to_step" → Use "conditions" array in routing
@@ -171,14 +171,14 @@ def simulate_des(config: dict) -> dict:
     - Ensure probabilities sum to exactly 1.0
     - Resource names in steps must match resource definitions
     
-    💡 PRO TIPS:
+    PRO TIPS:
     - Start simple, add complexity gradually
     - Use priority 1-3 for urgent, 4-6 for normal, 7-10 for low priority
     - Set warmup_period to exclude initial transient behavior
     - Use conditional_distributions for different entity types
     - Resource failures use resource names as keys, not separate "resource" field
     
-    🎯 COMPLETE MANUFACTURING EXAMPLE:
+    COMPLETE MANUFACTURING EXAMPLE:
     {
       "run_time": 960,
       "entity_types": {
@@ -222,12 +222,12 @@ def simulate_des(config: dict) -> dict:
                 "error": "Configuration validation failed",
                 "details": errors,
                 "quick_fixes": _generate_quick_fixes(errors),
-                "help": "💡 Common issues: Check property names, ensure distributions are strings, verify probabilities sum to 1.0"
+                "help": "Common issues: Check property names, ensure distributions are strings, verify probabilities sum to 1.0"
             }
             
             # Add schema examples if validation failed
             if any("Schema validation error" in error for error in errors):
-                error_response["schema_help"] = "📋 Use the patterns shown in the tool description above for correct formatting"
+                error_response["schema_help"] = "Use the patterns shown in the tool description above for correct formatting"
             
             return error_response
         
@@ -340,25 +340,25 @@ def validate_model(
     This tool provides comprehensive validation for simulation models with detailed error
     messages, quick fixes, and actionable suggestions designed for AI assistant comprehension.
     
-    🎯 VALIDATION MODES:
+    VALIDATION MODES:
     - "partial": Validate only provided sections (default for iterative development)
     - "strict": Full schema compliance required (use before simulation execution)
     - "structure": Check structure without business rules (quick structural check)
     
-    🔍 SCHEMA AUTO-DETECTION:
+    SCHEMA AUTO-DETECTION:
     The tool automatically detects schema type from model structure:
     - DES: Looks for entity_types, resources, processing_rules
     - SD: Looks for stocks, flows, variables (future)
     - Explicit: Use "schema_type": "DES" in model for explicit declaration
     
-    📊 RESPONSE INCLUDES:
+    RESPONSE INCLUDES:
     - Detailed validation errors with quick fixes
     - Missing required sections with examples
     - Completeness percentage (0.0 to 1.0)
     - Actionable suggestions for improvement
     - Prioritized next steps for development
     
-    🛠️ LLM-OPTIMIZED ERROR MESSAGES:
+    LLM-OPTIMIZED ERROR MESSAGES:
     Each error includes:
     - Exact path to problematic field
     - Clear explanation of the issue
@@ -366,7 +366,7 @@ def validate_model(
     - Correct example for reference
     - Schema reference for deeper understanding
     
-    💡 COMMON USAGE PATTERNS:
+    COMMON USAGE PATTERNS:
     
     # Basic validation during development
     validate_model({"entity_types": {"customer": {"probability": 0.8}}})
@@ -438,13 +438,13 @@ def save_model(
     This tool enables persistent model development across multiple conversation rounds,
     supporting both user-defined names and intelligent auto-generation with domain detection.
     
-    🏷️ HYBRID NAMING SYSTEM:
+    HYBRID NAMING SYSTEM:
     - User-provided names have priority: save_model(model, "hospital_triage")
     - Auto-generated names when none provided: "DES_healthcare_20250118_143022"
     - Conflict resolution: Automatic versioning (hospital_triage_v2, hospital_triage_v3)
     - Domain detection: Analyzes model content for intelligent naming
     
-    🏥 DOMAIN AUTO-DETECTION:
+    DOMAIN AUTO-DETECTION:
     The system detects domains from model content for better auto-naming:
     - Healthcare: hospital, patient, doctor, triage, emergency
     - Manufacturing: production, assembly, quality, inspection
@@ -452,7 +452,7 @@ def save_model(
     - Transportation: airport, passenger, logistics, delivery
     - Finance: bank, transaction, account, investment
     
-    📝 METADATA TRACKING:
+    METADATA TRACKING:
     - Creation and modification timestamps
     - User notes and descriptions
     - Tags for categorization and search
@@ -460,14 +460,14 @@ def save_model(
     - Validation status caching
     - Completeness percentage
     
-    🔄 CONVERSATION CONTINUITY:
+    CONVERSATION CONTINUITY:
     Saved models persist across conversation sessions, enabling:
     - Resume development in new conversations
     - Share models between team members
     - Version tracking and comparison
     - Export for external use
     
-    💡 USAGE PATTERNS:
+    USAGE PATTERNS:
     
     # Save with user-defined name
     save_model(model, "my_hospital_simulation", "Added VIP patients")
@@ -531,7 +531,7 @@ def load_model(
     This tool supports both loading specific models and discovering available models
     with advanced filtering options for efficient model management.
     
-    🔍 TWO OPERATION MODES:
+    TWO OPERATION MODES:
     
     1. LOAD MODE (name provided):
        - Returns complete model with metadata
@@ -545,19 +545,19 @@ def load_model(
        - Sorted by last modified (newest first)
        - Includes metadata preview
     
-    🏷️ FILTERING OPTIONS:
+    FILTERING OPTIONS:
     - schema_type: Filter by "DES", "SD", etc.
     - tags: Filter by any matching tags
     - Combined filters: Use both for precise selection
     
-    📊 MODEL METADATA INCLUDED:
+    MODEL METADATA INCLUDED:
     - Schema type and validation status
     - Creation and modification dates
     - User notes and tags
     - Completeness percentage
     - Domain classification
     
-    💡 USAGE PATTERNS:
+    USAGE PATTERNS:
     
     # Load specific model
     load_model("hospital_triage_v3")
@@ -574,7 +574,7 @@ def load_model(
     # Combined filtering
     load_model(schema_type="DES", tags=["manufacturing"])
     
-    🔄 CONVERSATION FLOW:
+    CONVERSATION FLOW:
     After loading a model, you can:
     1. Continue development with validate_model()
     2. Make modifications and save_model() again
@@ -613,26 +613,26 @@ def export_model(
     that can be easily copied and pasted into new conversation sessions for continued
     model development.
     
-    📋 EXPORT FORMATS:
+    EXPORT FORMATS:
     - "pretty": Human-readable with proper indentation (default)
     - "compact": Minimized JSON for token efficiency
     - "conversation": Includes template text for easy pasting
     
-    🔄 CONVERSATION CONTINUITY:
+    CONVERSATION CONTINUITY:
     The exported JSON can be used to:
     - Continue development in new conversation sessions
     - Share models with team members
     - Create backups of work-in-progress
     - Transfer models between different AI assistants
     
-    📊 INCLUDES:
+    INCLUDES:
     - Complete model JSON in specified format
     - Character and estimated token counts
     - Copy-paste ready formatting
     - Optional metadata inclusion
     - Conversation template for easy use
     
-    💡 USAGE PATTERNS:
+    USAGE PATTERNS:
     
     # Export last loaded model (pretty format)
     export_model()
@@ -649,7 +649,7 @@ def export_model(
     # Conversation-ready format
     export_model("my_model", format="conversation")
     
-    🎯 CONVERSATION TEMPLATE:
+    CONVERSATION TEMPLATE:
     When format="conversation", includes ready-to-use text:
     "Here's my current simulation model:
     
@@ -758,13 +758,13 @@ def get_schema_help(
     This tool provides dynamic, context-aware help for building simulation models with
     extensive examples, validation rules, and LLM-optimized guidance for any schema section.
     
-    🎯 FLEXIBLE PATH RESOLUTION:
+    FLEXIBLE PATH RESOLUTION:
     - Full schema: get_schema_help("DES")
     - Main sections: get_schema_help("DES", "entity_types")  
     - Nested paths: get_schema_help("DES", "processing_rules.steps")
     - Templates: get_schema_help("DES", "templates")
     
-    📚 COMPREHENSIVE DOCUMENTATION:
+    COMPREHENSIVE DOCUMENTATION:
     Each response includes:
     - Clear descriptions and requirements
     - Structural information and constraints
@@ -773,14 +773,14 @@ def get_schema_help(
     - Related sections and common patterns
     - LLM-optimized guidance
     
-    🏥 DOMAIN-SPECIFIC EXAMPLES:
+    DOMAIN-SPECIFIC EXAMPLES:
     Examples cover major domains:
     - Healthcare: Hospital triage, patient flow, emergency departments
     - Manufacturing: Production lines, quality control, equipment failures
     - Service: Customer segments, queue management, service levels
     - Transportation: Logistics, scheduling, resource allocation
     
-    📊 DETAIL LEVELS:
+    DETAIL LEVELS:
     - "brief": Essential information only
     - "standard": Comprehensive documentation (default)
     - "detailed": Full technical specifications
@@ -802,7 +802,7 @@ def get_schema_help(
     # Discover available templates
     get_schema_help("DES", "templates")
     
-    🔍 SECTION COVERAGE:
+    SECTION COVERAGE:
     
     DES Sections:
     - entity_types: Different entity classes with priorities and attributes
@@ -815,13 +815,13 @@ def get_schema_help(
     - statistics: Data collection configuration
     - metrics: Custom metric names for domain-specific terminology
     
-    🚀 DEVELOPMENT WORKFLOWS:
+    DEVELOPMENT WORKFLOWS:
     Includes common development patterns:
     - Basic Service System: entity_types → resources → processing_rules
     - Advanced Queue Management: Add balking/reneging rules
     - Multi-Stage Process: Complex routing and failure handling
     
-    🎓 LEARNING PROGRESSION:
+    LEARNING PROGRESSION:
     - Start with schema overview to understand structure
     - Focus on entity_types and resources for basic setup
     - Add processing_rules to define flow
@@ -871,7 +871,7 @@ def list_templates(
     templates covering major simulation domains. Templates serve as starting points for
     model development, offering tested configurations with domain-specific examples.
     
-    🎯 BUILT-IN TEMPLATE COLLECTION:
+    BUILT-IN TEMPLATE COLLECTION:
     
     Basic Templates:
     - Single Server Queue: FIFO processing with exponential arrivals
@@ -893,7 +893,7 @@ def list_templates(
     - Bank Teller System: Multiple service types
     - Restaurant Operations: Dining and takeout service
     
-    📊 FILTERING OPTIONS:
+    FILTERING OPTIONS:
     
     By Schema Type:
     - "DES": Discrete-Event Simulation templates
@@ -910,7 +910,7 @@ def list_templates(
     - "intermediate": Multi-resource with routing
     - "advanced": Complex systems with failures
     
-    🔍 SEARCH AND DISCOVERY:
+    SEARCH AND DISCOVERY:
     
     # List all templates
     list_templates()
@@ -927,17 +927,17 @@ def list_templates(
     # Filter by multiple criteria
     list_templates(domain="manufacturing", complexity="intermediate")
     
-    🏷️ TAG-BASED FILTERING:
+    TAG-BASED FILTERING:
     Templates include descriptive tags for precise filtering:
     - Process types: ["queue", "batch", "priority", "scheduling"]
     - Industries: ["hospital", "factory", "call-center", "restaurant"]
     - Features: ["routing", "failures", "statistics", "multi-resource"]
     
-    👤 USER TEMPLATES:
+    USER TEMPLATES:
     Include your own saved templates alongside built-in collection.
     Set include_user=False to see only built-in templates.
     
-    📈 USAGE TRACKING:
+    USAGE TRACKING:
     Templates are sorted by popularity (use count) to highlight
     the most successful starting points for model development.
     
@@ -993,7 +993,7 @@ def load_template(
     model structure, metadata, usage notes, and customization guidance. Templates
     provide tested starting points that can be immediately used or customized.
     
-    🎯 TEMPLATE ACCESS:
+    TEMPLATE ACCESS:
     
     By Template ID (recommended):
     load_template(template_id="abc123...")
@@ -1001,7 +1001,7 @@ def load_template(
     By Template Name:
     load_template(name="Hospital Triage System")
     
-    📦 COMPLETE TEMPLATE DATA:
+    COMPLETE TEMPLATE DATA:
     
     Each loaded template includes:
     - Full model configuration (ready for validation/simulation)
@@ -1011,7 +1011,7 @@ def load_template(
     - Domain-specific examples and variations
     - Usage statistics and popularity metrics
     
-    🏥 TEMPLATE EXAMPLES:
+    TEMPLATE EXAMPLES:
     
     Healthcare Templates:
     - Hospital Triage: Emergency vs routine patient prioritization
@@ -1028,7 +1028,7 @@ def load_template(
     - Bank Branch: Multiple teller types with specialized services
     - Restaurant: Dining room and takeout with shared kitchen resources
     
-    💡 IMMEDIATE USAGE:
+    IMMEDIATE USAGE:
     
     # Load and validate template
     template = load_template(name="Single Server Queue")
@@ -1042,7 +1042,7 @@ def load_template(
     template = load_template(name="Hospital Triage System")
     simulate_des(template["model"])
     
-    🔧 CUSTOMIZATION GUIDANCE:
+    CUSTOMIZATION GUIDANCE:
     
     Each template provides specific customization tips:
     - Parameter ranges and typical values
@@ -1050,7 +1050,7 @@ def load_template(
     - Extension points for additional complexity
     - Performance considerations and trade-offs
     
-    📊 TEMPLATE METADATA:
+    TEMPLATE METADATA:
     
     Comprehensive information for informed selection:
     - Domain classification and use cases
@@ -1059,7 +1059,7 @@ def load_template(
     - Usage statistics and community feedback
     - Related templates and alternatives
     
-    🚀 DEVELOPMENT WORKFLOW:
+    DEVELOPMENT WORKFLOW:
     
     1. Browse available templates: list_templates()
     2. Load promising template: load_template(name="...")
@@ -1109,7 +1109,7 @@ def save_template(
     configurations available for reuse and sharing. Templates include comprehensive
     metadata and guidance to facilitate future customization and learning.
     
-    🎯 TEMPLATE CREATION WORKFLOW:
+    TEMPLATE CREATION WORKFLOW:
     
     1. Develop and validate your model
     2. Test through simulation to ensure correctness
@@ -1117,7 +1117,7 @@ def save_template(
     4. Add usage notes and customization guidance
     5. Template becomes available in list_templates()
     
-    📝 COMPREHENSIVE METADATA:
+    COMPREHENSIVE METADATA:
     
     Required Information:
     - name: Descriptive template name
@@ -1131,7 +1131,7 @@ def save_template(
     - usage_notes: Instructions and context for users
     - customization_tips: Specific guidance for modifications
     
-    🤖 INTELLIGENT AUTO-DETECTION:
+    INTELLIGENT AUTO-DETECTION:
     
     Domain Detection:
     System analyzes model content to classify domain:
@@ -1170,14 +1170,14 @@ def save_template(
         ]
     )
     
-    🏷️ EFFECTIVE TAGGING:
+    EFFECTIVE TAGGING:
     
     Process Tags: ["queue", "batch", "priority", "routing"]
     Industry Tags: ["hospital", "factory", "service", "logistics"]  
     Feature Tags: ["failures", "scheduling", "multi-resource", "statistics"]
     Complexity Tags: ["beginner", "tutorial", "advanced", "research"]
     
-    📚 USAGE NOTES GUIDELINES:
+    USAGE NOTES GUIDELINES:
     
     Effective usage notes include:
     - Template purpose and intended use cases
@@ -1186,7 +1186,7 @@ def save_template(
     - Performance characteristics and scalability
     - Related templates and alternatives
     
-    🔧 CUSTOMIZATION TIPS:
+    CUSTOMIZATION TIPS:
     
     Helpful customization guidance:
     - Common parameter modifications
@@ -1195,7 +1195,7 @@ def save_template(
     - Domain-specific variations
     - Integration with other templates
     
-    🔄 TEMPLATE MANAGEMENT:
+    TEMPLATE MANAGEMENT:
     
     Overwrite Protection:
     - Default: Prevents accidental overwrites
@@ -1396,7 +1396,7 @@ def run_multiple_simulations(
         if failed_replications:
             final_results["failed_replications"] = failed_replications
         
-        print(f"✅ Completed {successful_count} replications successfully!")
+        print(f"Completed {successful_count} replications successfully!")
         return final_results
         
     except ImportError as e:

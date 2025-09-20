@@ -4,7 +4,7 @@ This module provides comprehensive Discrete Event Simulation (DES) capabilities 
 
 ## Architecture Overview
 
-The DES module follows a unified, schema-driven architecture that provides professional-grade simulation capabilities:
+The DES module follows a schema-driven architecture that provides professional-grade simulation capabilities:
 
 - **Single Simulation Engine**: `SimulationModel` handles all DES scenarios
 - **JSON Schema Validation**: Comprehensive configuration validation and normalization
@@ -24,7 +24,7 @@ g
 
 ### SimulationModel (Primary Engine)
 
-The unified simulation engine that handles all DES scenarios:
+The simulation engine that handles all DES scenarios:
 
 **Key Features:**
 - **Multi-entity types** with custom attributes, priorities, and value tracking

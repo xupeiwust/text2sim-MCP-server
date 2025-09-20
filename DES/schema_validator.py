@@ -242,7 +242,7 @@ class DESConfigValidator:
         suggestion = self._get_error_suggestion(error, path)
         
         if suggestion:
-            return f"{base_message}\n💡 Suggestion: {suggestion['tip']}\n📋 Example: {json.dumps(suggestion['example'], indent=2)}"
+            return f"{base_message}\nSuggestion: {suggestion['tip']}\nExample: {json.dumps(suggestion['example'], indent=2)}"
         else:
             return base_message
     

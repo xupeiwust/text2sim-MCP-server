@@ -1,6 +1,6 @@
-# 🔄 From JSON to Simulation: The Complete Transformation
+# From JSON to Simulation: The Complete Transformation
 
-## 📋 **Overview: JSON → SimPy Code Flow**
+## **Overview: JSON → SimPy Code Flow**
 
 ```
 JSON Config → Schema Validation → Normalization → SimPy Objects → Execution → Results
@@ -8,7 +8,7 @@ JSON Config → Schema Validation → Normalization → SimPy Objects → Execut
 User Input    Error Checking    Apply Defaults   Create Resources  Run Sim   Metrics
 ```
 
-## 🔍 **Step-by-Step Transformation**
+## **Step-by-Step Transformation**
 
 ### **Step 1: JSON Input**
 ```json
@@ -213,7 +213,7 @@ class EnhancedMetricsCollector:
         return results
 ```
 
-## 🎯 **Complete Example: JSON → SimPy Code**
+## **Complete Example: JSON → SimPy Code**
 
 ### **Input JSON:**
 ```json
@@ -281,7 +281,7 @@ env.process(customer_arrivals(env, server))
 env.run(until=120)  # run_time from JSON
 ```
 
-## 🔧 **Key Transformation Points**
+## **Key Transformation Points**
 
 1. **JSON Schema → Python Types**
    - `"capacity": 4` → `simpy.Resource(env, capacity=4)`
@@ -299,11 +299,11 @@ env.run(until=120)  # run_time from JSON
    - JSON steps array → Python for loop over resources
    - JSON metrics names → Dynamic result dictionary keys
 
-## 🎉 **The Magic**
+## **The Magic**
 
 The beauty of our system is that **users write declarative JSON** (what they want) and our code generates **imperative SimPy processes** (how to do it). The JSON becomes a high-level specification that gets compiled into executable simulation logic!
 
 **User thinks:** "I want a server with capacity 2 that takes 10±2 minutes per customer"
 **System creates:** Full SimPy resource with priority queues, random service times, and metrics collection
 
-This is why non-coders can create sophisticated simulations - they describe the system in business terms, and our schema-driven engine handles all the SimPy complexity! 🚀
+This is why non-coders can create sophisticated simulations - they describe the system in business terms, and our schema-driven engine handles all the SimPy complexity!
