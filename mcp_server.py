@@ -319,11 +319,11 @@ def get_sd_model_info(model_name: str) -> dict:
         return {"error": f"Error retrieving model info: {str(e)}"}
 
 # Import new model builder infrastructure
-from common.multi_schema_validator import MultiSchemaValidator
-from common.model_state_manager import model_state_manager
-from common.schema_registry import schema_registry
-from common.schema_documentation import schema_documentation_provider
-from common.template_manager import template_manager
+from model_builder.multi_schema_validator import MultiSchemaValidator
+from model_builder.model_state_manager import model_state_manager
+from model_builder.schema_registry import schema_registry
+from model_builder.schema_documentation import schema_documentation_provider
+from model_builder.template_manager import template_manager
 
 # Initialize model builder components
 multi_validator = MultiSchemaValidator()
