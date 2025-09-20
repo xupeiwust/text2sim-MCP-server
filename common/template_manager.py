@@ -24,7 +24,7 @@ class TemplateInfo:
     author: str
     version: str
     tags: List[str]
-    schema_type: str  # "DES", "SD", etc.
+    schema_type: str  # "DES", "SD"
     category: str  # "basic", "healthcare", "manufacturing", etc.
     created: datetime
     last_modified: datetime

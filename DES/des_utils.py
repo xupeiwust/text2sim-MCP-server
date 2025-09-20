@@ -45,9 +45,9 @@ def parse_distribution(dist_str: str) -> Callable[[], float]:
 
 def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Run unified DES simulation with schema validation.
+    Run DES simulation with schema validation.
     
-    This function uses the new schema-driven unified simulation model that
+    This function uses the new schema-driven  simulation model that
     handles all scenarios through comprehensive configuration validation.
     
     Args:
@@ -82,4 +82,4 @@ def run_simulation(config: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         return {"error": f"Simulation error: {str(e)}"}
 
-# Legacy functions removed - now using unified schema-driven approach 
+# Legacy functions removed - now using  schema-driven approach 

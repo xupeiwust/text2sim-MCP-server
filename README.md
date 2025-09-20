@@ -244,6 +244,18 @@ For detailed documentation of each module, see:
 
 ---
 
+## Disclaimer
+
+**Text2Sim MCP Server** is a project under active development. While we strive for accuracy and stability, please be aware of the following:
+
+- **Work in Progress:** The software is continuously evolving. Features may change, and you may encounter bugs or incomplete functionality. We welcome bug reports and contributions to help us improve!
+- **LLM-Powered Tool:** This server is designed to be used with Large Language Models (LLMs). The quality of the simulation models and the accuracy of the results depend heavily on the LLM's capabilities.
+- **Verify Your Results:** Always critically review and validate any simulation models and their outputs. The results should be used as a guide and not as a substitute for professional validation.
+
+We are excited for you to use Text2Sim and hope you find it valuable. Your feedback is crucial to its development.
+
+---
+
 ## Contributing
 
 Pull requests are welcome! Please fork the repo and submit a PR. Suggestions, bug reports, and feature ideas are always appreciated. 

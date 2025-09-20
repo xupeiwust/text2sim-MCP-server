@@ -10,8 +10,8 @@
     "tags": ["healthcare", "triage", "priority", "emergency", "hospital", "medical", "patient-flow"],
     "schema_type": "DES",
     "category": "healthcare",
-    "created": "2025-01-18T12:00:00Z",
-    "last_modified": "2025-01-18T12:00:00Z",
+    "created": "2025-09-18T12:00:00Z",
+    "last_modified": "2025-09-18T12:00:00Z",
     "use_count": 0
   },
   "model": {

@@ -1,6 +1,6 @@
 """
 Statistical analysis module for multiple simulation replications.
-Provides industry-standard statistical reporting for simulation results.
+Provides statistical reporting for simulation results.
 """
 
 import statistics

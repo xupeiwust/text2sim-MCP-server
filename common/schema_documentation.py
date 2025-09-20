@@ -659,7 +659,7 @@ class SchemaDocumentationProvider:
                     "Emergency/Urgent/Routine classification"
                 ],
                 "resources": [
-                    "Reception → Service → Checkout flow",
+                    "Reception -> Service -> Checkout flow",
                     "Priority queues for VIP customers",
                     "Preemptive resources for emergencies",
                     "Multiple parallel servers"
@@ -692,15 +692,15 @@ class SchemaDocumentationProvider:
             "DES": [
                 {
                     "name": "Basic Service System",
-                    "steps": "1. Define entity_types → 2. Add resources → 3. Configure processing_rules → 4. Run simulation"
+                    "steps": "1. Define entity_types -> 2. Add resources -> 3. Configure processing_rules -> 4. Run simulation"
                 },
                 {
                     "name": "Advanced Queue Management",
-                    "steps": "1. Basic setup → 2. Add balking_rules → 3. Add reneging_rules → 4. Configure statistics"
+                    "steps": "1. Basic setup -> 2. Add balking_rules -> 3. Add reneging_rules -> 4. Configure statistics"
                 },
                 {
                     "name": "Multi-Stage Process",
-                    "steps": "1. Define entity_types → 2. Create resource chain → 3. Add routing logic → 4. Configure failures"
+                    "steps": "1. Define entity_types -> 2. Create resource chain -> 3. Add routing logic -> 4. Configure failures"
                 }
             ]
         }
