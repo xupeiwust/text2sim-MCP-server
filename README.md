@@ -3,7 +3,7 @@
 # **Text2Sim MCP Server**  
 ### *Multi-paradigm Simulation Engine for LLM Integration*
 
-**Text2Sim MCP Server** is a simulation engine that supports multiple modeling paradigms, including Discrete-Event Simulation (DES) and System Dynamics (SD). It integrates with LLMs using the **Model Context Protocol (MCP)**, enabling powerful simulation capabilities within natural language environments like Claude Desktop.
+**Text2Sim MCP Server** is a conversational simulation engine that transforms natural language into working simulation models. Supporting Discrete-Event Simulation (DES) and System Dynamics (SD), it integrates with LLMs via the **Model Context Protocol (MCP)** to transform plain English descriptions into validated simulation models within environments like Claude Desktop.
 
 [![Text2Sim MCP Server (demo)](assets/youtube_screen.png)](https://www.youtube.com/watch?v=qkdV-HtTtLs "Text2Sim MCP Server (demo)")
 
