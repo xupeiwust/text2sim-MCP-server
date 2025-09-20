@@ -1,397 +1,406 @@
-# 📋 Changelog
+# Changelog
 
-All notable changes to the Text2Sim MCP Server project are documented in this file.
+All notable changes to the **Text2Sim MCP Server** project are recorded here.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
----
-
-## [2.2.0] - **Schema Help System**
-
-### 🎯 **Advanced Documentation & Learning System**
-
-This release introduces the **Schema Help System**, a comprehensive documentation and learning platform that transforms simulation model development from trial-and-error into guided, example-driven learning. The system provides dynamic, context-aware help with extensive examples designed specifically for AI assistant comprehension.
-
-### ✨ **Added**
-
-#### **🔍 Dynamic Schema Documentation**
-- **`get_schema_help`**: New MCP tool providing comprehensive schema documentation
-- **Flexible Path Resolution**: Support for nested paths (e.g., "processing_rules.steps")
-- **Multi-Detail Levels**: Brief, standard, and detailed documentation modes
-- **Context-Aware Help**: Dynamic responses based on requested section and detail level
-
-#### **📚 Comprehensive Example Library**
-- **50+ Practical Examples**: Domain-specific examples across all major DES sections
-- **Multi-Domain Coverage**: Healthcare, manufacturing, service, transportation patterns
-- **Real-World Scenarios**: Hospital triage, production lines, customer service, logistics
-- **Progressive Complexity**: From basic setups to advanced multi-stage processes
-
-#### **🤖 LLM-Optimized Learning Experience**
-- **Example-Driven Documentation**: Learn by seeing practical implementations
-- **Workflow Guidance**: Common development patterns and step-by-step progressions
-- **Cross-References**: Related sections and common patterns for comprehensive understanding
-- **Action-Oriented Responses**: Clear next steps and development suggestions
-
-#### **⚡ Enhanced Error Messages**
-- **Context-Aware Quick Fixes**: Error-specific suggestions with actionable guidance
-- **Rich Examples**: Contextual examples for fixing validation errors instantly
-- **Path-Based Suggestions**: Examples tailored to specific schema sections
-- **Progressive Guidance**: Development stage-appropriate recommendations
-
-### 🔄 **Changed**
-
-#### **📈 Intelligent Validation System**
-- **Enhanced Error Analysis**: 10+ error patterns with specific quick fixes
-- **Smart Suggestions**: Development stage-aware recommendations
-- **Domain-Aware Guidance**: Industry-specific validation explanations
-- **Business Rule Integration**: Clear explanations of schema constraints
-
-#### **🧠 AI Assistant Optimization**
-- **Structured Documentation**: Consistent response format across all help requests
-- **Learning Progression**: Guided workflow from basic to advanced features
-- **Error Recovery**: Transform validation failures into learning opportunities
-- **Development Flow**: Smart suggestions based on current model completeness
-
-### 🏗️ **Architecture**
-
-#### **🔧 New Components**
-- **`common/schema_documentation.py`**: Dynamic documentation provider (713 lines)
-- **Enhanced `mcp_server.py`**: Added `get_schema_help` tool with comprehensive documentation
-- **Enhanced `common/multi_schema_validator.py`**: Improved error messages and examples
-
-#### **📊 Content Statistics**
-- **50+ comprehensive examples** across all major DES sections
-- **15+ validation rules** with clear explanations
-- **25+ common patterns** for different simulation domains
-- **10+ workflow guides** for development progression
-- **100+ quick fixes** and suggestions for common issues
-
-### 💡 **Learning & Development Features**
-
-#### **🎓 Guided Learning Paths**
-```
-# Complete schema overview
-get_schema_help("DES")
-
-# Learn specific concepts
-get_schema_help("DES", "entity_types")
-
-# Deep dive into complex topics
-get_schema_help("DES", "processing_rules", detail_level="detailed")
-
-# Quick reference
-get_schema_help("DES", "balking_rules", detail_level="brief")
-```
-
-#### **🏥 Domain-Specific Examples**
-- **Healthcare**: Emergency triage, patient flow optimization, resource allocation
-- **Manufacturing**: Production lines, quality control, equipment failure modeling
-- **Service Industries**: Customer segmentation, queue management, service levels
-- **Transportation**: Logistics optimization, scheduling, resource planning
-
-#### **🚀 Development Workflows**
-- **Basic Service System**: entity_types → resources → processing_rules
-- **Advanced Queue Management**: Add balking/reneging for realistic behavior
-- **Multi-Stage Processes**: Complex routing and failure handling
-- **Performance Optimization**: Statistics configuration and metrics customization
-
-### 🔮 **Enhanced User Experience**
-
-#### **📋 Flexible Help Access**
-- **Full Schema Overview**: Complete understanding of available features
-- **Section-Specific Help**: Focused guidance for specific concepts
-- **Nested Path Support**: Detailed help for complex nested structures
-- **Template Discovery**: Foundation for Phase 3 template system
-
-#### **⚡ Intelligent Error Recovery**
-- **Contextual Examples**: See exactly how to fix validation errors
-- **Quick Fix Suggestions**: Immediate, actionable solutions
-- **Progressive Assistance**: Escalating levels of help based on error complexity
-- **Learning Integration**: Turn errors into learning opportunities
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [2.1.0] - **Model Builder Integration**
+## \[2.3.0] – Engine Quality & Statistical Analysis
 
-### 🎯 **Advanced Model Development Capabilities**
+### Added
 
-This major feature release introduces the **Text2Sim Model Builder**, a comprehensive system for iterative, conversational development of complex simulation models. The Model Builder enables multi-round conversations for sophisticated model construction, with persistent state management and intelligent validation.
+**Multiple Replications Analysis System**
 
-### ✨ **Added**
+* New `run_multiple_simulations` MCP tool for statistical analysis across simulation runs.
+* Standardised reporting: confidence intervals, variability measures, and industry-accepted formatting.
+* New `replication_analysis.py` module with SciPy/NumPy integration.
+* Support for reproducible results via seed-based random number control.
+* Output in the format: *Mean ± Half-Width (CI%) \[n=reps]*.
 
-#### **🛠️ Model Builder MCP Tools**
-- **`validate_model`**: Advanced validation with LLM-optimized error messages and quick fixes
-- **`save_model`**: Persistent model storage with intelligent naming and metadata tracking
-- **`load_model`**: Model discovery and loading with filtering by type and tags
-- **`export_model`**: JSON export for conversation continuity and sharing
+**Statistical Analysis**
 
-#### **🏗️ Multi-Schema Infrastructure**
-- **Schema Registry**: Extensible system supporting multiple simulation paradigms (DES, SD, future types)
-- **Auto-Detection**: Intelligent schema type detection from model structure
-- **Generic Validation**: Schema-agnostic validation engine with specialized handlers
-- **Future-Proof Design**: Easy addition of new simulation types without breaking changes
+* Statistical analysis with confidence intervals, normality tests, and reliability scoring.
+* Variability analysis including standard deviation and coefficient of variation.
+* Distribution testing via Shapiro-Wilk normality tests and outlier detection.
+* Statistical reporting for business decision-making.
 
-#### **💾 Intelligent Model Management**
-- **Hybrid Naming**: User-provided names with intelligent auto-generation and domain detection
-- **Metadata Tracking**: Comprehensive model metadata with creation time, notes, tags, and validation status
-- **Domain Detection**: Automatic classification (healthcare, manufacturing, service, transportation, finance)
-- **Conflict Resolution**: Automatic versioning for duplicate names (model_v2, model_v3)
+**Documentation**
 
-#### **🔄 Conversation Continuity**
-- **Session Persistence**: Models saved across conversation rounds for iterative development
-- **Export Functionality**: Formatted JSON output for sharing between conversations
-- **Progress Tracking**: Completeness percentage and development status monitoring
-- **State Management**: Last-loaded model tracking for seamless workflow
+* User guide for multiple replications and statistical analysis.
+* Updated DES README with examples and metrics.
+* Documentation reflecting current architecture capabilities.
+* Security and reliability feature documentation.
 
-#### **🎯 LLM-First Design**
-- **Actionable Error Messages**: Structured errors with quick fixes and examples
-- **Workflow Guidance**: Step-by-step suggestions for model development
-- **Context-Aware Help**: Smart suggestions based on current model state
-- **Example-Rich Documentation**: Comprehensive usage patterns and common scenarios
+### Fixed
 
-### 🔄 **Changed**
+**Exponential Distribution Parameter (Critical)**
 
-#### **📈 Enhanced Validation System**
-- **Multi-Mode Validation**: `partial`, `strict`, and `structure` validation modes
-- **Completeness Scoring**: Quantitative assessment of model development progress
-- **Missing Requirements**: Clear identification of required sections with examples
-- **Next Steps Guidance**: Prioritized recommendations for continued development
+* Corrected misinterpretation of `exp(x)` as rate instead of mean, which caused a 6.25x overestimation of arrivals.
+* Affected all templates (`hospital_triage.json`, `single_server_queue.json`) and simulation results.
+* Fixed in `des_utils.py` by ensuring correct conversion: `rate = 1.0 / mean`.
+* All templates updated to use correct exponential parameter interpretation.
 
-#### **🧠 Improved AI Interaction**
-- **Tool Documentation**: Extensive examples and usage patterns for better LLM comprehension
-- **Error Recovery**: Enhanced error messages enable AI assistants to self-correct issues
-- **Workflow Support**: Tools designed specifically for conversational model building
+**Simulation Engine Routing**
 
-### 🏗️ **Architecture**
+* Fixed incorrect routing logic in hospital triage template, which previously resulted in 0% triage utilisation.
+* Introduced `_apply_after_routing` method for conditional routing after resource processing.
+* Triage now correctly routes patients from triage to specialist assignment.
 
-#### **🔧 New Components**
-- **`common/schema_registry.py`**: Multi-schema registration and auto-detection
-- **`common/multi_schema_validator.py`**: Generic validation engine
-- **`common/model_state_manager.py`**: Intelligent state management 
-- **Enhanced `mcp_server.py`**: 4 new MCP tools integrated seamlessly
+**Utilisation Calculations**
 
-### 💡 **Use Cases**
+* Resolved >100% utilisation errors caused by double-counting.
+* Corrected formula: `busy_time / (simulation_time * capacity)`.
+* Removed redundant `_track_resource_utilization` method.
 
-#### **🏥 Iterative Healthcare Model Development**
-```
-User: "Help me build a hospital triage simulation"
-AI: Creates basic template → saves as "hospital_v1"
-User: "Add VIP patients with 20% probability"  
-AI: Updates model → validates → saves as "hospital_v2"
-User: "Export this for my colleague"
-AI: Provides formatted JSON with conversation template
-```
+### Changed
 
-#### **🏭 Manufacturing Process Design**
-```
-User: "Design a production line with quality control"
-AI: Builds model incrementally across multiple conversation rounds
-AI: Validates each addition → tracks progress → suggests improvements
-User: Can export model and continue development in new conversation
-```
+**Architecture Simplification**
 
-#### **📊 Cross-Conversation Development**
-```
-User: Pastes exported model from previous conversation
-AI: Loads model → validates current state → continues development
-AI: Maintains full development history and metadata
-```
+* `unified_simulator.py` renamed to `simulator.py`.
+* `UnifiedSimulationModel` renamed to `SimulationModel` for a cleaner API.
+* Legacy models removed from `des_simulator.py` (550 → 149 lines).
+* All imports updated across codebase.
 
+**Metrics Collection**
 
-## [2.0.1] - **Conversation Optimization**
+* Added `_add_confidence_metadata` method with reliability scoring.
+* Automatic detection of insufficient replication runs or short simulation durations.
+* Recommendations for replication counts and simulation parameters.
+* Improved business-oriented metrics and efficiency calculations.
 
-### 🎯 **Enhanced LLM Interaction Experience**
+**Template Updates**
 
-This release dramatically improves the interaction experience between LLMs (like Claude) and the DES simulation system. Based on real-world usage analysis showing Claude requiring 8+ validation attempts to generate correct configurations, this update reduces trial-and-error cycles by 87%.
+* Fixed schema compliance issues in `single_server_queue.json` and `hospital_triage.json`.
+* Standardised distribution formats to strings (e.g. `"exp(1.0)"`).
+* Updated entity types and resource definitions for proper probability and type handling.
+* Implemented correct conditional logic in `simple_routing`.
 
-### ✨ **Added**
+### Architecture
 
-#### **🤖 LLM-Optimized Error Messages**
-- **Contextual Examples**: Every validation error now includes specific JSON examples
-- **Actionable Suggestions**: Clear, step-by-step guidance for common mistakes
-- **Pattern-Based Tips**: Smart error detection with targeted advice
-- **Quick Fix Recommendations**: Immediate solutions for frequent issues
+* **ReplicationAnalyzer**: statistical engine supporting multiple confidence levels (90%, 95%, 99%).
 
-#### **📋 Enhanced Tool Documentation**
-- **Quick-Start Examples**: Comprehensive configuration patterns in tool description
-- **Common Patterns Library**: Ready-to-use templates for typical scenarios
-- **Distribution Format Guide**: Clear examples of all supported distribution formats
-- **Resource Type Reference**: Complete mapping of schema types to SimPy resources
-- **Anti-Pattern Warnings**: Common mistakes to avoid with explanations
-- **Pro Tips Section**: Advanced configuration techniques and optimizations
+### Documentation
 
-#### **🔧 Smart Error Handling**
-- **Error Classification**: Automatic categorization of validation errors
-- **Progressive Help**: Escalating assistance based on error complexity  
-- **Schema References**: Direct links to relevant schema sections
-- **Example Mapping**: Context-aware example suggestions
-
-### 🔄 **Changed**
-
-#### **🎛️ Validation Response Format**
-- **Structured Error Responses**: `error`, `details`, `quick_fixes`, `help`, `schema_help` fields
-- **Priority-Based Suggestions**: Most relevant fixes presented first
-- **Reduced Cognitive Load**: Clear separation of error types and solutions
-
-#### **📖 Tool Description Enhancement**
-- **87% Faster Configuration**: Reduced Claude's trial-and-error from 8+ attempts to 1-2
-- **Comprehensive Examples**: Manufacturing, healthcare, service industry patterns
-- **Distribution Cookbook**: All supported formats with practical examples
-- **Configuration Workflow**: Step-by-step guidance for complex scenarios
-
-### 🐛 **Fixed**
-
-#### **🤖 LLM Interaction Issues**
-- **Validation Loop Reduction**: Eliminated repetitive error-correction cycles
-- **Context Loss Prevention**: Better error messages maintain conversation context
-- **Example Relevance**: Schema examples now match actual usage patterns
-- **Error Message Clarity**: Removed technical jargon, added business context
+* Updated DES README with current architecture and examples.
 
 ---
 
-## [2.0.0] - **Schema-Driven Architecture**
+## \[2.2.0] – Schema Help System
 
-### 🎯 **Major Release: Complete System Redesign**
+### Added
 
-This release represents a fundamental transformation from a basic DES tool to a comprehensive, schema-driven simulation platform. The system now enables non-coders to create sophisticated simulations through declarative JSON configuration.
+**Schema Documentation**
 
-### ✨ **Added**
+* New `get_schema_help` MCP tool providing schema documentation.
+* Supports nested paths (e.g. `"processing_rules.steps"`).
+* Three levels of detail: brief, standard, and detailed.
+* Responses tailored to section and requested detail.
 
-#### **🏗️ Core Architecture**
-- **Schema-Driven Validation**: JSON Schema 2020-12 for comprehensive input validation
-- **Unified Simulation Model**: Single model handling all complexity levels
-- **Enhanced Metrics Collection**: Configurable metric names and advanced statistics
-- **Comprehensive Error Handling**: Clear, actionable error messages
+**Example Library**
 
-#### **📊 Schema Features**
-- **Entity Management**: Multiple entity types with priorities, values, and custom attributes
-- **Resource Types**: Full SimPy resource support (FIFO, Priority, Preemptive)
-- **Processing Rules**: Sequential steps with conditional service time distributions
-- **Behavioral Rules**: Balking and reneging with priority-based multipliers
-- **Simple Routing**: Conditional routing based on entity attributes
-- **Failure Modeling**: Basic resource failure and repair cycles
-- **Arrival Patterns**: Both continuous arrival and fixed batch support
-- **Custom Metrics**: Domain-specific terminology (customers, patients, orders)
-- **Statistics Control**: Warmup periods, utilization tracking, queue length monitoring
+* Over 50 examples covering all major DES sections.
+* Multi-domain coverage: healthcare, manufacturing, services, and transport.
+* Scenarios including hospital triage, production lines, and logistics.
+* Examples from basic to advanced multi-stage processes.
 
-#### **🔧 Implementation Components**
-- **`DESConfigValidator`**: Schema loading, validation, and normalization
-- **`UnifiedSimulationModel`**: Comprehensive SimPy-based simulation engine
-- **`EnhancedMetricsCollector`**: Advanced metrics with custom naming
-- **Distribution Parser**: Support for uniform, normal, exponential distributions
+**Documentation Features**
 
-#### **📁 File Organization**
-- **`schemas/DES/`**: Organized schema directory with comprehensive documentation
-- **`des-simpy-compatible-schema.json`**: Complete JSON Schema specification
-- **`schemas/DES/README.md`**: Detailed schema documentation with examples
-- **`schemas/DES/json-to-simulation-flow.md`**: Technical transformation guide
+* Documentation with examples for comprehension.
+* Guidance on common development patterns.
+* Cross-references to related schema sections.
+* Suggestions for next steps.
 
-#### **🎯 Example Configurations**
-- **Coffee Shop**: Basic service system with balking and priority
-- **Hospital Triage**: Complex multi-stage system with routing and preemption
-- **Manufacturing**: Process flow with failures and quality control
+**Error Handling**
 
-### 🔄 **Changed**
+* Fixes tailored to specific schema errors.
+* Examples provided directly within error messages.
+* Path-specific suggestions for nested schema issues.
+* Progressive guidance adapting to model complexity level.
 
-#### **🎛️ API Evolution**
-- **`simulate_des` tool**: Now accepts rich JSON configurations instead of simple parameters
-- **Error Reporting**: Detailed schema validation errors with path information
-- **Result Format**: Enhanced metrics with efficiency calculations and custom names
+### Changed
 
-#### **🏗️ Architecture Improvements**
-- **Single Model**: Replaced two-tier system (basic/advanced) with unified approach
-- **Configuration-Driven**: Business logic now defined in JSON rather than code
-- **Validation-First**: All inputs validated against schema before simulation
+**Validation System**
 
-### 🗑️ **Removed**
+* Improved error analysis with over 10 recognised error patterns.
+* Recommendations based on model completeness.
+* Domain-specific validation guidance.
+* Integration of business rules.
 
-#### **🧹 Legacy Components**
-- **`SimulationModel`**: Replaced by `UnifiedSimulationModel`
-- **`AdvancedSimulationModel`**: Functionality merged into unified model
-- **`CoffeeShopModel`**: Replaced by generic, configurable approach
-- **Two-Tier Detection**: No longer needed with unified architecture
-- **Hard-coded Scenarios**: All scenarios now configuration-driven
+**AI Assistant Support**
 
-#### **🔧 Deprecated Functions**
-- **`validate_config()`**: Replaced by `DESConfigValidator`
-- **`prepare_simulation_config()`**: Functionality integrated into validator
-- **`_is_complex_scenario()`**: No longer needed with unified model
+* Consistent, structured documentation responses.
+* Learning progression from simple to advanced.
+* Validation errors reframed as learning opportunities.
+* Recommendations based on model completeness.
 
-### 🐛 **Fixed**
+### Architecture
 
-#### **🔧 Simulation Engine**
-- **Generator Return Issue**: Fixed `simulate_des` returning generator instead of results
-- **Entity Accounting**: Corrected customer counting discrepancies
-- **Metric Calculations**: Fixed efficiency and average value calculations
-- **Priority Handling**: Proper SimPy priority implementation (lower = higher priority)
+* New `common/schema_documentation.py` (713 lines).
+* Extended `mcp_server.py` with the `get_schema_help` tool.
+* Updated `common/multi_schema_validator.py` with improved examples and error clarity.
 
-#### **📊 Schema Validation**
-- **Pattern Properties**: Fixed regex conflicts in `processing_rules`
-- **Distribution Parsing**: Corrected function vs. value return issues
-- **Priority Multipliers**: Fixed regex validation for priority ranges
-- **Mutual Exclusivity**: Proper enforcement of `arrival_pattern` XOR `num_entities`
+**Content Statistics**
 
-#### **🎯 Configuration Handling**
-- **Resource References**: Validated all resource references in rules
-- **Probability Validation**: Ensured entity type probabilities sum to 1.0
-- **Default Application**: Proper schema default value application
+* 20+ examples, 15+ validation rules, 20+ common patterns, 3 workflow guides.
+* 35+ quick fixes and suggestions.
+
+### Learning Features
+
+* Learning paths using `get_schema_help` across schema sections.
+* Domain-specific examples for healthcare, manufacturing, services, and transport.
+* Recommended workflows for basic and advanced model development.
+
+### User Experience
+
+* Help access: full schema overview or section-specific queries.
+* Nested path support for complex structures.
+* Error recovery with contextual examples and progressive suggestions.
 
 ---
 
-## [1.0.0] - **Initial Release**
+## \[2.1.0] – Model Builder Integration
 
-### ✨ **Added**
+### Added
 
-#### **🏗️ Foundation**
-- **MCP Server**: Basic Model Context Protocol server implementation
-- **SimPy Integration**: Discrete-event simulation using SimPy library
-- **PySD Integration**: System dynamics simulation capability
-- **FastMCP Framework**: Modern MCP server architecture
+**Model Builder MCP Tools**
 
-#### **🎯 Core Features**
-- **`simulate_des` Tool**: Basic discrete-event simulation
-- **`simulate_sd` Tool**: System dynamics simulation
-- **Distribution Support**: Uniform, normal, exponential distributions
-- **Basic Metrics**: Entity counting and processing statistics
+* `validate_model`: advanced validation with quick fixes.
+* `save_model`: persistent model storage with intelligent naming and metadata.
+* `load_model`: discovery and retrieval by type or tags.
+* `export_model`: JSON export for portability.
 
-#### **📊 Simulation Capabilities**
-- **Single Resource**: Basic queue-server systems
-- **Entity Flow**: Simple arrival and service patterns
-- **Time-based Simulation**: Configurable simulation duration
-- **Result Reporting**: Basic metrics and statistics
+**Multi-Schema Infrastructure**
 
-#### **🔧 Technical Components**
-- **`SimulationModel`**: Core DES simulation engine
-- **`Entity` Class**: Basic entity representation
-- **`MetricsCollector`**: Simple metrics gathering
-- **Distribution Parsing**: String-to-function conversion
+* Schema registry supporting multiple simulation paradigms (DES, SD).
+* Auto-detection of schema type from model structure.
+* Schema-agnostic validation with specialised handlers.
 
-### 🏗️ **Infrastructure**
-- **Project Structure**: Organized DES/ and SD/ directories
-- **Dependencies**: SimPy, PySD, FastMCP integration
-- **Documentation**: Basic README and setup instructions
+**Model Management**
+
+* Hybrid naming with automatic versioning.
+* Metadata including tags, notes, and validation status.
+* Domain detection for healthcare, manufacturing, services, transport, and finance.
+
+**Conversation Continuity**
+
+* Models persist across conversations for continued development.
+* Export function for reuse and sharing.
+* Progress tracking with completeness percentage.
+* State management for last-loaded models.
+
+**Error Handling Design**
+
+* Structured error messages with quick fixes.
+* Workflow guidance.
+* Example-rich documentation with usage patterns.
+
+### Changed
+
+**Validation System**
+
+* Multiple validation modes: `partial`, `strict`, and `structure`.
+* Completeness scoring with quantitative progress feedback.
+* Identification of missing schema requirements.
+* Recommendations for continued development.
+
+**AI Interaction**
+
+* Examples to improve LLM comprehension.
+* Error handling for self-correction.
+* Tools designed for conversational building.
+
+### Architecture
+
+* New `common/schema_registry.py` for schema management.
+* `common/multi_schema_validator.py` for generic validation.
+* `common/model_state_manager.py` for state handling.
+* Extended `mcp_server.py` with four new MCP tools.
+
+### Use Cases
+
+* Iterative healthcare model building (e.g. hospital triage with VIP patients).
+* Manufacturing process design across multiple conversation rounds.
+* Cross-conversation development via model export and import.
 
 ---
 
-## 📊 **Migration Guide**
+## \[2.0.1] – Conversation Optimisation
 
-### **From v1.0.0 to v2.0.0**
+### Added
 
-#### **⚠️ Breaking Changes**
-- **Configuration Format**: JSON schema-based instead of simple parameters
-- **Tool Interface**: Enhanced `simulate_des` with validation
-- **Result Structure**: Enriched metrics with custom names
+**Error Messages**
 
-#### **🔄 Migration Steps**
-1. **Update Configurations**: Convert simple parameters to schema format
-2. **Review Examples**: Use provided templates for common scenarios
-3. **Test Validation**: Ensure configurations pass schema validation
-4. **Update Integrations**: Handle new result format structure
+* Every validation error includes JSON examples.
+* Step-by-step corrective suggestions.
+* Pattern-based detection with targeted advice.
+* Quick fixes for common mistakes.
 
-#### **📋 Example Migration**
+**Tool Documentation**
 
-**v1.0.0 (Old)**:
+* Quick-start configuration examples.
+* Library of common simulation patterns.
+* Distribution format guide with examples.
+* Full reference for resource types.
+* Warnings on common anti-patterns.
+* Configuration tips.
+
+**Error Handling**
+
+* Automatic error classification.
+* Progressive help based on error complexity.
+* Direct schema references in messages.
+* Example mapping to specific contexts.
+
+### Changed
+
+**Validation Response Format**
+
+* Structured responses with `error`, `details`, `quick_fixes`, and `schema_help`.
+* Priority-based presentation of fixes.
+* Reduced complexity by clear separation of error categories.
+
+**Tool Descriptions**
+
+* Reduction in trial-and-error cycles (87% improvement).
+* Examples across domains.
+* Workflow documentation.
+
+### Fixed
+
+* Validation loop issues leading to repetitive error correction.
+* Loss of context across conversation rounds.
+* Mismatched schema examples corrected.
+* Improved clarity with less technical jargon.
+
+---
+
+## \[2.0.0] – Schema-Driven Architecture
+
+### Added
+
+**Core Architecture**
+
+* Schema-based validation (JSON Schema 2020-12).
+* Unified simulation model handling all complexity levels.
+* Configurable metrics and statistics.
+* Error handling.
+
+**Schema Features**
+
+* Support for multiple entity types, priorities, and attributes.
+* Full resource coverage (FIFO, priority, pre-emptive).
+* Sequential processing rules with conditional service times.
+* Balking and reneging behaviours.
+* Conditional routing by entity attributes.
+* Resource failure and repair modelling.
+* Arrival patterns: continuous or fixed batch.
+* Domain-specific metrics and statistics control.
+
+**Implementation Components**
+
+* `DESConfigValidator` for schema handling.
+* `UnifiedSimulationModel` as the simulation engine.
+* `EnhancedMetricsCollector` for statistics.
+* Distribution parser for uniform, normal, and exponential distributions.
+
+**File Organisation**
+
+* Dedicated `schemas/DES/` directory with documentation.
+* Full schema specification (`des-simpy-compatible-schema.json`).
+* Technical guides and worked examples.
+
+**Examples**
+
+* Coffee shop with balking and priority.
+* Hospital triage with routing and pre-emption.
+* Manufacturing with failures and quality control.
+
+### Changed
+
+* `simulate_des` tool now accepts schema-based configurations.
+* Validation errors with path references.
+* Metrics output with efficiency calculations.
+* Single unified model replaces tiered system.
+* Declarative configuration replaces code-based logic.
+
+### Removed
+
+* Legacy models (`SimulationModel`, `AdvancedSimulationModel`, `CoffeeShopModel`).
+* Hard-coded scenarios replaced with configuration-driven approach.
+* Deprecated functions replaced by schema-driven equivalents.
+
+### Fixed
+
+* Generator return issue in `simulate_des`.
+* Entity counting errors.
+* Metric calculation issues.
+* Priority handling corrected.
+* Regex and schema validation fixes.
+* Proper enforcement of probability and exclusivity constraints.
+
+---
+
+## \[1.0.0] – Initial Release
+
+### Added
+
+**Foundation**
+
+* Initial MCP server implementation.
+* SimPy integration for discrete-event simulation.
+* PySD integration for system dynamics.
+* FastMCP server architecture.
+
+**Core Features**
+
+* `simulate_des` for DES simulations.
+* `simulate_sd` for system dynamics.
+* Support for uniform, normal, and exponential distributions.
+* Basic metrics collection.
+
+**Simulation Capabilities**
+
+* Single resource queue-server systems.
+* Configurable arrival and service patterns.
+* Time-based simulation duration.
+* Basic reporting of results.
+
+**Technical Components**
+
+* `SimulationModel` and `Entity` classes.
+* `MetricsCollector` for statistics.
+* Distribution parsing from strings.
+
+**Infrastructure**
+
+* Organised project structure with DES/ and SD/ directories.
+* Dependencies: SimPy, PySD, FastMCP.
+* Initial README and setup instructions.
+
+---
+
+## Migration Guide
+
+### From v1.0.0 to v2.0.0
+
+**Breaking Changes**
+
+* Configuration format changed from simple parameters to schema-based JSON.
+* `simulate_des` interface extended with validation.
+* Result structure enhanced with custom metrics.
+
+**Migration Steps**
+
+1. Convert simple configurations to schema format.
+2. Review provided templates for common scenarios.
+3. Validate configurations against schema.
+4. Update integrations to handle enriched result structure.
+
+**Example**
+
+*Old (v1.0.0)*:
+
 ```json
 {
   "run_time": 480,
@@ -400,7 +409,8 @@ This release represents a fundamental transformation from a basic DES tool to a 
 }
 ```
 
-**v2.0.0 (New)**:
+*New (v2.0.0)*:
+
 ```json
 {
   "run_time": 480,
@@ -417,17 +427,3 @@ This release represents a fundamental transformation from a basic DES tool to a 
   }
 }
 ```
-
----
-
-*For detailed technical documentation, see `schemas/DES/README.md` and `schemas/DES/json-to-simulation-flow.md`.*
-
----
-
-**Legend:**
-- ✨ Added: New features
-- 🔄 Changed: Modifications to existing features  
-- 🗑️ Removed: Deleted features
-- 🐛 Fixed: Bug fixes
-- 🚀 Performance: Performance improvements
-- 🧪 Testing: Testing and validation
