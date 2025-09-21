@@ -795,6 +795,171 @@ def get_schema_help(
         }
 
 @mcp.tool()
+def get_sd_templates(
+    template_name: str = None,
+    difficulty: str = None,
+    domain: str = None
+) -> dict:
+    """
+    Get SD model templates to accelerate model building.
+
+    This tool provides access to a curated collection of SD model templates
+    covering common patterns, domains, and complexity levels. Templates include
+    complete model structures, customization guidance, and domain-specific examples.
+
+    Args:
+        template_name: Specific template to retrieve (optional)
+        difficulty: Filter by complexity ("beginner", "intermediate", "advanced")
+        domain: Filter by domain ("demographics", "supply_chain", "economics", etc.)
+
+    Returns:
+        Template(s) with complete model structure, usage notes, and examples
+    """
+    try:
+        from pathlib import Path
+        import json
+
+        templates_dir = Path(__file__).parent / "templates" / "SD"
+        if not templates_dir.exists():
+            return {"error": "SD templates directory not found"}
+
+        templates = {}
+
+        # Load all SD templates
+        for template_file in templates_dir.glob("*.json"):
+            try:
+                with open(template_file, 'r') as f:
+                    template_data = json.load(f)
+                    template_id = template_data.get("template_info", {}).get("template_id", template_file.stem)
+                    templates[template_id] = template_data
+            except Exception as e:
+                continue
+
+        if not templates:
+            return {"error": "No SD templates found"}
+
+        # Filter templates based on criteria
+        filtered_templates = templates.copy()
+
+        if template_name:
+            # Look for exact match or partial match
+            matched_template = None
+            for tid, template in templates.items():
+                if (tid == template_name or
+                    template.get("template_info", {}).get("name", "").lower() == template_name.lower()):
+                    matched_template = template
+                    break
+
+            if matched_template:
+                return {
+                    "template": matched_template,
+                    "template_id": tid,
+                    "usage": "Use this template as starting point for your SD model"
+                }
+            else:
+                return {"error": f"Template '{template_name}' not found"}
+
+        if difficulty:
+            filtered_templates = {
+                tid: template for tid, template in filtered_templates.items()
+                if template.get("template_info", {}).get("difficulty") == difficulty
+            }
+
+        if domain:
+            filtered_templates = {
+                tid: template for tid, template in filtered_templates.items()
+                if template.get("template_info", {}).get("domain") == domain
+            }
+
+        # Return summary of available templates
+        template_summaries = []
+        for tid, template in filtered_templates.items():
+            info = template.get("template_info", {})
+            template_summaries.append({
+                "template_id": tid,
+                "name": info.get("name", "Unnamed"),
+                "description": info.get("description", "No description"),
+                "difficulty": info.get("difficulty", "unknown"),
+                "domain": info.get("domain", "general"),
+                "estimated_build_time": info.get("estimated_build_time", "unknown"),
+                "tags": info.get("tags", [])
+            })
+
+        return {
+            "available_templates": template_summaries,
+            "total_count": len(template_summaries),
+            "usage": "Specify template_name to get full template details, or use filters to narrow results"
+        }
+
+    except Exception as e:
+        return {"error": f"Error loading SD templates: {str(e)}"}
+
+@mcp.tool()
+def get_sd_model_examples(
+    complexity_level: str = "basic",
+    domain: str = None,
+    include_explanations: bool = True
+) -> dict:
+    """
+    Get comprehensive SD model examples with detailed explanations.
+
+    This tool provides working SD model examples across different complexity levels
+    and domains, with explanations of System Dynamics concepts, model structure,
+    and customization patterns. Perfect for learning SD modeling step-by-step.
+
+    Args:
+        complexity_level: "basic", "intermediate", or "advanced"
+        domain: Optional domain filter ("demographics", "supply_chain", "economics")
+        include_explanations: Include detailed explanations of SD concepts
+
+    Returns:
+        Curated examples with model code, explanations, and learning objectives
+    """
+    try:
+        # Get templates and convert to educational examples
+        templates_result = get_sd_templates(difficulty=complexity_level, domain=domain)
+
+        if "error" in templates_result:
+            return templates_result
+
+        examples = []
+        for template_summary in templates_result.get("available_templates", []):
+            # Get full template details
+            full_template = get_sd_templates(template_name=template_summary["template_id"])
+            if "template" in full_template:
+                template_data = full_template["template"]
+
+                example = {
+                    "name": template_summary["name"],
+                    "description": template_summary["description"],
+                    "difficulty": template_summary["difficulty"],
+                    "domain": template_summary["domain"],
+                    "model_structure": template_data.get("model", {}),
+                    "customization_tips": template_data.get("customization_tips", []),
+                    "common_modifications": template_data.get("common_modifications", []),
+                    "learning_objectives": template_data.get("learning_objectives", [])
+                }
+
+                if include_explanations:
+                    example["usage_notes"] = template_data.get("usage_notes", "")
+                    example["related_concepts"] = template_data.get("related_concepts", [])
+                    example["examples"] = template_data.get("examples", [])
+
+                examples.append(example)
+
+        return {
+            "examples": examples,
+            "complexity_level": complexity_level,
+            "domain_filter": domain,
+            "count": len(examples),
+            "learning_path": f"Start with {complexity_level} examples and progress to higher complexity",
+            "next_steps": "Use examples as templates, modify parameters, and validate with validate_sd_model"
+        }
+
+    except Exception as e:
+        return {"error": f"Error generating SD examples: {str(e)}"}
+
+@mcp.tool()
 def list_templates(
     schema_type: str = None,
     domain: str = None,
