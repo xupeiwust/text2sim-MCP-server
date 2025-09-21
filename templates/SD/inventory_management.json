@@ -1,0 +1,220 @@
+{
+  "template_info": {
+    "template_id": "inventory-management-v1",
+    "name": "Inventory Management System",
+    "description": "Supply chain model with inventory control and ordering delays",
+    "domain": "supply_chain",
+    "complexity": "intermediate",
+    "schema_type": "SD",
+    "author": "Supply Chain Team",
+    "version": "1.0.0",
+    "created": "2025-09-21",
+    "tags": ["inventory", "supply_chain", "delays", "feedback"],
+    "estimated_build_time": "25-30 minutes",
+    "difficulty": "intermediate"
+  },
+  "model": {
+    "abstractModel": {
+      "originalPath": "inventory_management.json",
+      "sections": [
+        {
+          "name": "__main__",
+          "type": "main",
+          "path": "/",
+          "params": [],
+          "returns": [],
+          "subscripts": [],
+          "constraints": [],
+          "testInputs": [],
+          "split": false,
+          "viewsDict": {},
+          "elements": [
+            {
+              "name": "Inventory System",
+              "components": [
+                {
+                  "type": "Stock",
+                  "subtype": "Normal",
+                  "name": "inventory",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "INTEG",
+                    "expression": "INTEG(shipment_rate - sales_rate, 500)"
+                  }
+                },
+                {
+                  "type": "Stock",
+                  "subtype": "Normal",
+                  "name": "on_order",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "INTEG",
+                    "expression": "INTEG(order_rate - shipment_rate, 0)"
+                  }
+                },
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "name": "order_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "MAX(0, desired_order_quantity)"
+                  }
+                },
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "name": "shipment_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "on_order / supply_delay"
+                  }
+                },
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "name": "sales_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "MIN(demand, inventory)"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "desired_order_quantity",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "(target_inventory - inventory) / adjustment_time"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "target_inventory",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "demand * safety_stock_coverage"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "demand",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "100"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "safety_stock_coverage",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "4"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "adjustment_time",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "1"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "supply_delay",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "3"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "inventory_coverage",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "inventory / demand"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "usage_notes": "Demonstrates classic inventory management with ordering delays and feedback loops. Perfect for understanding supply chain dynamics, inventory oscillations, and the bullwhip effect. Shows how delays and feedback create complex behavior.",
+  "customization_tips": [
+    "Modify demand (default 100 units/period) for different market sizes",
+    "Adjust safety_stock_coverage (default 4 periods) for risk tolerance",
+    "Change supply_delay (default 3 periods) for different supplier performance",
+    "Vary adjustment_time (default 1 period) for ordering responsiveness",
+    "Update initial inventory (default 500 units) for different starting conditions"
+  ],
+  "common_modifications": [
+    "Add demand variability with random or cyclical patterns",
+    "Include multiple suppliers with different delays",
+    "Add capacity constraints on ordering or receiving",
+    "Implement economic order quantity (EOQ) logic",
+    "Include costs for holding inventory and stockouts"
+  ],
+  "examples": [
+    {
+      "name": "Fast Fashion Retailer",
+      "changes": {
+        "demand": 500,
+        "supply_delay": 8,
+        "safety_stock_coverage": 2,
+        "adjustment_time": 0.5
+      },
+      "description": "High demand, long supply delays, low safety stock, quick adjustments"
+    },
+    {
+      "name": "Industrial Components",
+      "changes": {
+        "demand": 50,
+        "supply_delay": 12,
+        "safety_stock_coverage": 8,
+        "adjustment_time": 2
+      },
+      "description": "Lower demand, very long delays, high safety stock, slower adjustments"
+    }
+  ],
+  "related_concepts": [
+    "Bullwhip effect",
+    "Supply chain delays",
+    "Inventory oscillations",
+    "Safety stock optimization",
+    "Order batching effects"
+  ],
+  "extensions": [
+    "Multi-echelon supply chains",
+    "Demand forecasting integration",
+    "Supplier capacity constraints",
+    "Transportation delays",
+    "Cost optimization models"
+  ],
+  "learning_objectives": [
+    "Understand delays in System Dynamics",
+    "Learn feedback loop behavior",
+    "Explore inventory policy impacts",
+    "Practice multi-stock modeling",
+    "Master supply chain dynamics"
+  ]
+}

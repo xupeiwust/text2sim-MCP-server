@@ -342,25 +342,227 @@ class SchemaDocumentationProvider:
                 ]
             },
             "SD": {
-                # Future: System Dynamics examples
+                "abstractModel": [
+                    {
+                        "title": "Population Growth Model",
+                        "description": "Basic demographic system with birth and death rates",
+                        "example": {
+                            "originalPath": "population_growth.json",
+                            "sections": [
+                                {
+                                    "name": "__main__",
+                                    "type": "main",
+                                    "path": "/",
+                                    "params": [],
+                                    "returns": [],
+                                    "subscripts": [],
+                                    "constraints": [],
+                                    "testInputs": [],
+                                    "split": False,
+                                    "viewsDict": {},
+                                    "elements": [
+                                        {
+                                            "name": "Population Dynamics",
+                                            "components": [
+                                                {
+                                                    "type": "Stock",
+                                                    "subtype": "Normal",
+                                                    "name": "population",
+                                                    "subscripts": [],
+                                                    "ast": {
+                                                        "kind": "INTEG",
+                                                        "expression": "INTEG(birth_rate - death_rate, 1000)"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "Flow",
+                                                    "subtype": "Normal",
+                                                    "name": "birth_rate",
+                                                    "subscripts": [],
+                                                    "ast": {
+                                                        "kind": "EQUATION",
+                                                        "expression": "population * birth_rate_fraction"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "Auxiliary",
+                                                    "subtype": "Normal",
+                                                    "name": "birth_rate_fraction",
+                                                    "subscripts": [],
+                                                    "ast": {
+                                                        "kind": "CONSTANT",
+                                                        "expression": "0.02"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Inventory Management",
+                        "description": "Supply chain with inventory control and ordering delays",
+                        "example": {
+                            "originalPath": "inventory_system.json",
+                            "sections": [
+                                {
+                                    "name": "__main__",
+                                    "type": "main",
+                                    "path": "/",
+                                    "params": [],
+                                    "returns": [],
+                                    "subscripts": [],
+                                    "constraints": [],
+                                    "testInputs": [],
+                                    "split": False,
+                                    "viewsDict": {},
+                                    "elements": [
+                                        {
+                                            "name": "Inventory System",
+                                            "components": [
+                                                {
+                                                    "type": "Stock",
+                                                    "subtype": "Normal",
+                                                    "name": "inventory",
+                                                    "subscripts": [],
+                                                    "ast": {
+                                                        "kind": "INTEG",
+                                                        "expression": "INTEG(shipment_rate - sales_rate, 500)"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "Flow",
+                                                    "subtype": "Normal",
+                                                    "name": "sales_rate",
+                                                    "subscripts": [],
+                                                    "ast": {
+                                                        "kind": "EQUATION",
+                                                        "expression": "MIN(demand, inventory)"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "Auxiliary",
+                                                    "subtype": "Normal",
+                                                    "name": "demand",
+                                                    "subscripts": [],
+                                                    "ast": {
+                                                        "kind": "CONSTANT",
+                                                        "expression": "100"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
                 "stocks": [
                     {
-                        "title": "Population Model",
-                        "description": "Basic population dynamics stocks",
+                        "title": "Basic Stock",
+                        "description": "A simple accumulation (integration) variable",
                         "example": {
-                            "population": {"initial_value": 1000},
-                            "births": {"initial_value": 0},
-                            "deaths": {"initial_value": 0}
+                            "type": "Stock",
+                            "subtype": "Normal",
+                            "name": "inventory_level",
+                            "subscripts": [],
+                            "ast": {
+                                "kind": "INTEG",
+                                "expression": "INTEG(inflow - outflow, 100)"
+                            }
+                        }
+                    },
+                    {
+                        "title": "Population Stock",
+                        "description": "Accumulating people with birth and death flows",
+                        "example": {
+                            "type": "Stock",
+                            "subtype": "Normal",
+                            "name": "population",
+                            "subscripts": [],
+                            "ast": {
+                                "kind": "INTEG",
+                                "expression": "INTEG(births - deaths, 1000)"
+                            }
                         }
                     }
                 ],
                 "flows": [
                     {
-                        "title": "Population Flows",
-                        "description": "Birth and death rates",
+                        "title": "Rate Flow",
+                        "description": "A flow determined by a rate calculation",
                         "example": {
-                            "birth_rate": {"equation": "population * 0.02"},
-                            "death_rate": {"equation": "population * 0.01"}
+                            "type": "Flow",
+                            "subtype": "Normal",
+                            "name": "production_rate",
+                            "subscripts": [],
+                            "ast": {
+                                "kind": "EQUATION",
+                                "expression": "capacity * utilization_rate"
+                            }
+                        }
+                    },
+                    {
+                        "title": "Proportional Flow",
+                        "description": "Flow proportional to a stock level",
+                        "example": {
+                            "type": "Flow",
+                            "subtype": "Normal",
+                            "name": "decay_rate",
+                            "subscripts": [],
+                            "ast": {
+                                "kind": "EQUATION",
+                                "expression": "stock_level * decay_fraction"
+                            }
+                        }
+                    }
+                ],
+                "auxiliaries": [
+                    {
+                        "title": "Constant Parameter",
+                        "description": "A fixed value used in calculations",
+                        "example": {
+                            "type": "Auxiliary",
+                            "subtype": "Normal",
+                            "name": "growth_rate",
+                            "subscripts": [],
+                            "ast": {
+                                "kind": "CONSTANT",
+                                "expression": "0.05"
+                            }
+                        }
+                    },
+                    {
+                        "title": "Calculated Variable",
+                        "description": "A variable computed from other variables",
+                        "example": {
+                            "type": "Auxiliary",
+                            "subtype": "Normal",
+                            "name": "net_effect",
+                            "subscripts": [],
+                            "ast": {
+                                "kind": "EQUATION",
+                                "expression": "positive_effect - negative_effect"
+                            }
+                        }
+                    }
+                ],
+                "components": [
+                    {
+                        "title": "Component Structure",
+                        "description": "Standard structure for all SD components",
+                        "example": {
+                            "type": "Stock|Flow|Auxiliary",
+                            "subtype": "Normal",
+                            "name": "component_name",
+                            "subscripts": [],
+                            "ast": {
+                                "kind": "INTEG|EQUATION|CONSTANT",
+                                "expression": "mathematical_expression"
+                            }
                         }
                     }
                 ]

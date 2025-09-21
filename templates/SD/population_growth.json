@@ -1,0 +1,158 @@
+{
+  "template_info": {
+    "template_id": "population-growth-v1",
+    "name": "Population Growth Model",
+    "description": "Basic demographic model with birth and death rates",
+    "domain": "demographics",
+    "complexity": "basic",
+    "schema_type": "SD",
+    "author": "System Dynamics Team",
+    "version": "1.0.0",
+    "created": "2025-09-21",
+    "tags": ["population", "demographics", "basic", "growth"],
+    "estimated_build_time": "10-15 minutes",
+    "difficulty": "beginner"
+  },
+  "model": {
+    "abstractModel": {
+      "originalPath": "population_growth.json",
+      "sections": [
+        {
+          "name": "__main__",
+          "type": "main",
+          "path": "/",
+          "params": [],
+          "returns": [],
+          "subscripts": [],
+          "constraints": [],
+          "testInputs": [],
+          "split": false,
+          "viewsDict": {},
+          "elements": [
+            {
+              "name": "Population Dynamics",
+              "components": [
+                {
+                  "type": "Stock",
+                  "subtype": "Normal",
+                  "name": "population",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "INTEG",
+                    "expression": "INTEG(birth_rate - death_rate, 1000)"
+                  }
+                },
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "name": "birth_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "population * birth_rate_fraction"
+                  }
+                },
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "name": "death_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "population * death_rate_fraction"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "birth_rate_fraction",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "0.02"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "death_rate_fraction",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "0.015"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "net_growth_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "birth_rate - death_rate"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "usage_notes": "Perfect introduction to System Dynamics modeling. This template demonstrates basic stock-and-flow structure with population as a stock and birth/death rates as flows. Excellent for learning fundamental SD concepts and testing simple demographic scenarios.",
+  "customization_tips": [
+    "Adjust birth_rate_fraction (default 0.02 = 2% annual birth rate)",
+    "Modify death_rate_fraction (default 0.015 = 1.5% annual death rate)",
+    "Change initial population value (default 1000)",
+    "Add immigration/emigration flows for more complexity",
+    "Include age-structured populations for advanced scenarios"
+  ],
+  "common_modifications": [
+    "Add carrying capacity constraints for logistic growth",
+    "Include economic factors affecting birth/death rates",
+    "Add migration flows between regions",
+    "Implement age-cohort structure",
+    "Include policy interventions"
+  ],
+  "examples": [
+    {
+      "name": "Developing Country",
+      "changes": {
+        "birth_rate_fraction": 0.035,
+        "death_rate_fraction": 0.012,
+        "population": 500000
+      },
+      "description": "Higher birth rate, lower death rate typical of developing regions"
+    },
+    {
+      "name": "Developed Country",
+      "changes": {
+        "birth_rate_fraction": 0.012,
+        "death_rate_fraction": 0.018,
+        "population": 10000000
+      },
+      "description": "Lower birth rate, higher death rate typical of developed regions"
+    }
+  ],
+  "related_concepts": [
+    "Exponential growth",
+    "Demographic transition",
+    "Carrying capacity",
+    "Population momentum",
+    "Age structure effects"
+  ],
+  "extensions": [
+    "Add economic variables (GDP per capita, income)",
+    "Include environmental constraints",
+    "Model multiple interacting populations",
+    "Add spatial/geographic dimensions",
+    "Include policy levers and interventions"
+  ],
+  "learning_objectives": [
+    "Understand stocks vs flows in System Dynamics",
+    "Learn basic model structure and components",
+    "Practice parameter sensitivity analysis",
+    "Explore exponential growth dynamics",
+    "Master fundamental SD modeling concepts"
+  ]
+}
