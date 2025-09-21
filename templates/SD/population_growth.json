@@ -30,80 +30,164 @@
           "viewsDict": {},
           "elements": [
             {
-              "name": "Population Dynamics",
+              "name": "population",
               "components": [
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  "name": "population",
-                  "subscripts": [],
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "INTEG",
-                    "expression": "INTEG(birth_rate - death_rate, 1000)"
-                  }
-                },
-                {
-                  "type": "Flow",
-                  "subtype": "Normal",
-                  "name": "birth_rate",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "EQUATION",
-                    "expression": "population * birth_rate_fraction"
-                  }
-                },
-                {
-                  "type": "Flow",
-                  "subtype": "Normal",
-                  "name": "death_rate",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "EQUATION",
-                    "expression": "population * death_rate_fraction"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "birth_rate_fraction",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "0.02"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "death_rate_fraction",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "0.015"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "net_growth_rate",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "EQUATION",
-                    "expression": "birth_rate - death_rate"
+                    "syntaxType": "IntegStructure",
+                    "flow": {
+                      "syntaxType": "ArithmeticStructure",
+                      "operators": ["-"],
+                      "arguments": [
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "birth_rate"
+                        },
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "death_rate"
+                        }
+                      ]
+                    },
+                    "initial": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "1000"
+                    }
                   }
                 }
-              ]
+              ],
+              "units": "people",
+              "limits": [0, null],
+              "documentation": "Total population being modeled"
+            },
+            {
+              "name": "birth_rate",
+              "components": [
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "population"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "birth_rate_fraction"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "units": "people/year",
+              "limits": [0, null],
+              "documentation": "Rate of births per year"
+            },
+            {
+              "name": "death_rate",
+              "components": [
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "population"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "death_rate_fraction"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "units": "people/year",
+              "limits": [0, null],
+              "documentation": "Rate of deaths per year"
+            },
+            {
+              "name": "birth_rate_fraction",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0.02"
+                  }
+                }
+              ],
+              "units": "1/year",
+              "limits": [0, 1],
+              "documentation": "Annual birth rate as fraction of population (default 2%)"
+            },
+            {
+              "name": "death_rate_fraction",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0.015"
+                  }
+                }
+              ],
+              "units": "1/year",
+              "limits": [0, 1],
+              "documentation": "Annual death rate as fraction of population (default 1.5%)"
+            },
+            {
+              "name": "net_growth_rate",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["-"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "birth_rate"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "death_rate"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "units": "people/year",
+              "limits": [null, null],
+              "documentation": "Net population growth rate (births minus deaths)"
             }
           ]
         }
       ]
     }
   },
-  "usage_notes": "Perfect introduction to System Dynamics modeling. This template demonstrates basic stock-and-flow structure with population as a stock and birth/death rates as flows. Excellent for learning fundamental SD concepts and testing simple demographic scenarios.",
+  "usage_notes": "Perfect introduction to System Dynamics modeling. This template demonstrates basic stock-and-flow structure with population as a stock and birth/death rates as flows. Each variable is properly defined as its own element following PySD JSON requirements. Excellent for learning fundamental SD concepts and testing simple demographic scenarios.",
   "customization_tips": [
     "Adjust birth_rate_fraction (default 0.02 = 2% annual birth rate)",
     "Modify death_rate_fraction (default 0.015 = 1.5% annual death rate)",
-    "Change initial population value (default 1000)",
+    "Change initial population value (default 1000) in the population stock",
     "Add immigration/emigration flows for more complexity",
     "Include age-structured populations for advanced scenarios"
   ],

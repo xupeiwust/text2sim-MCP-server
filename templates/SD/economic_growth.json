@@ -1,7 +1,7 @@
 {
   "template_info": {
     "template_id": "economic-growth-v1",
-    "name": "Economic Growth Model",
+    
     "description": "Solow-style economic growth with capital accumulation, investment, and depreciation",
     "domain": "economics",
     "complexity": "advanced",
@@ -18,6 +18,7 @@
       "originalPath": "economic_growth.json",
       "sections": [
         {
+          
           "name": "__main__",
           "type": "main",
           "path": "/",
@@ -30,126 +31,218 @@
           "viewsDict": {},
           "elements": [
             {
-              "name": "Economic System",
+              
+              "name": "System Components",
               "components": [
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  "name": "capital_stock",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "INTEG",
-                    "expression": "INTEG(investment_rate - depreciation_rate, 1000)"
+                    "syntaxType": "IntegStructure",
+                    "flow": {
+                      "syntaxType": "ArithmeticStructure",
+                      "operators": ["-"],
+                      "arguments": [
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "investment_rate"
+                        },
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "depreciation_rate"
+                        }
+                      ]
+                    },
+                    "initial": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "1000"
+                    }
                   }
                 },
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  "name": "investment_rate",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "gdp * savings_rate"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "gdp"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "savings_rate"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  "name": "depreciation_rate",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "capital_stock * depreciation_fraction"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "capital_stock"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "depreciation_fraction"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "gdp",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "productivity * (capital_stock ^ capital_elasticity) * (labor_force ^ labor_elasticity)"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*", "*"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "productivity"
+                      },
+                      {
+                        "syntaxType": "ArithmeticStructure",
+                        "operators": ["^"],
+                        "arguments": [
+                          {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "capital_stock"
+                          },
+                          {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "capital_elasticity"
+                          }
+                        ]
+                      },
+                      {
+                        "syntaxType": "ArithmeticStructure",
+                        "operators": ["^"],
+                        "arguments": [
+                          {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "labor_force"
+                          },
+                          {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "labor_elasticity"
+                          }
+                        ]
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "productivity",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "10"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "10"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "labor_force",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "100"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "100"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "capital_elasticity",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "0.3"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0.3"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "labor_elasticity",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "0.7"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0.7"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "savings_rate",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "0.2"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0.2"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "depreciation_fraction",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "0.05"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0.05"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "gdp_per_capita",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "gdp / labor_force"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["/"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "gdp"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "labor_force"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "capital_per_worker",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "capital_stock / labor_force"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["/"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "capital_stock"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "labor_force"
+                      }
+                    ]
                   }
                 }
               ]
@@ -177,7 +270,7 @@
   ],
   "examples": [
     {
-      "name": "Developing Economy",
+      
       "changes": {
         "capital_stock": 200,
         "savings_rate": 0.25,
@@ -187,7 +280,7 @@
       "description": "Lower initial capital, higher savings rate, lower productivity"
     },
     {
-      "name": "Mature Economy",
+      
       "changes": {
         "capital_stock": 2000,
         "savings_rate": 0.15,

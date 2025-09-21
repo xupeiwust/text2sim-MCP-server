@@ -342,116 +342,40 @@ class SchemaDocumentationProvider:
                 ]
             },
             "SD": {
-                "abstractModel": [
-                    {
-                        "title": "Population Growth Model",
-                        "description": "Basic demographic system with birth and death rates",
-                        "example": {
-                            "originalPath": "population_growth.json",
+                "description": "System Dynamics models using PySD Abstract Model JSON schema - CRITICAL: Each variable must be its own element",
+                "schema_overview": {
+                    "title": "PySD Abstract Model Schema Structure - Corrected",
+                    "description": "SD models use abstractModel → sections → elements hierarchy where EACH VARIABLE IS ITS OWN ELEMENT",
+                    "key_principle": "🔑 ONE ELEMENT PER VARIABLE - Element name becomes the variable name that can be referenced in equations",
+                    "required_structure": {
+                        "abstractModel": {
+                            "originalPath": "string (required)",
                             "sections": [
                                 {
-                                    "name": "__main__",
-                                    "type": "main",
-                                    "path": "/",
-                                    "params": [],
-                                    "returns": [],
-                                    "subscripts": [],
-                                    "constraints": [],
-                                    "testInputs": [],
-                                    "split": False,
-                                    "viewsDict": {},
+                                    "name": "__main__ (required for main section)",
+                                    "type": "main|macro|module",
+                                    "path": "/ (required)",
+                                    "params": "array (required)",
+                                    "returns": "array (required)",
+                                    "subscripts": "array (required)",
+                                    "constraints": "array (required)",
+                                    "testInputs": "array (required)",
+                                    "split": "boolean (required)",
+                                    "viewsDict": "object (required)",
                                     "elements": [
                                         {
-                                            "name": "Population Dynamics",
+                                            "name": "variable_name_1",
                                             "components": [
-                                                {
-                                                    "type": "Stock",
-                                                    "subtype": "Normal",
-                                                    "name": "population",
-                                                    "subscripts": [],
-                                                    "ast": {
-                                                        "kind": "INTEG",
-                                                        "expression": "INTEG(birth_rate - death_rate, 1000)"
-                                                    }
-                                                },
-                                                {
-                                                    "type": "Flow",
-                                                    "subtype": "Normal",
-                                                    "name": "birth_rate",
-                                                    "subscripts": [],
-                                                    "ast": {
-                                                        "kind": "EQUATION",
-                                                        "expression": "population * birth_rate_fraction"
-                                                    }
-                                                },
-                                                {
-                                                    "type": "Auxiliary",
-                                                    "subtype": "Normal",
-                                                    "name": "birth_rate_fraction",
-                                                    "subscripts": [],
-                                                    "ast": {
-                                                        "kind": "CONSTANT",
-                                                        "expression": "0.02"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "title": "Inventory Management",
-                        "description": "Supply chain with inventory control and ordering delays",
-                        "example": {
-                            "originalPath": "inventory_system.json",
-                            "sections": [
-                                {
-                                    "name": "__main__",
-                                    "type": "main",
-                                    "path": "/",
-                                    "params": [],
-                                    "returns": [],
-                                    "subscripts": [],
-                                    "constraints": [],
-                                    "testInputs": [],
-                                    "split": False,
-                                    "viewsDict": {},
-                                    "elements": [
+                                                "Single component defining computation"
+                                            ],
+                                            "units": "optional units",
+                                            "limits": "optional [min, max]",
+                                            "documentation": "optional description"
+                                        },
                                         {
-                                            "name": "Inventory System",
+                                            "name": "variable_name_2",
                                             "components": [
-                                                {
-                                                    "type": "Stock",
-                                                    "subtype": "Normal",
-                                                    "name": "inventory",
-                                                    "subscripts": [],
-                                                    "ast": {
-                                                        "kind": "INTEG",
-                                                        "expression": "INTEG(shipment_rate - sales_rate, 500)"
-                                                    }
-                                                },
-                                                {
-                                                    "type": "Flow",
-                                                    "subtype": "Normal",
-                                                    "name": "sales_rate",
-                                                    "subscripts": [],
-                                                    "ast": {
-                                                        "kind": "EQUATION",
-                                                        "expression": "MIN(demand, inventory)"
-                                                    }
-                                                },
-                                                {
-                                                    "type": "Auxiliary",
-                                                    "subtype": "Normal",
-                                                    "name": "demand",
-                                                    "subscripts": [],
-                                                    "ast": {
-                                                        "kind": "CONSTANT",
-                                                        "expression": "100"
-                                                    }
-                                                }
+                                                "Single component defining computation"
                                             ]
                                         }
                                     ]
@@ -459,112 +383,271 @@ class SchemaDocumentationProvider:
                             ]
                         }
                     }
-                ],
-                "stocks": [
+                },
+                "complete_examples": [
                     {
-                        "title": "Basic Stock",
-                        "description": "A simple accumulation (integration) variable",
+                        "title": "Population Model - CORRECTED Structure",
+                        "description": "Demonstrates ONE ELEMENT PER VARIABLE - each variable gets its own element",
+                        "example": {
+                            "abstractModel": {
+                                "originalPath": "population_growth.json",
+                                "sections": [
+                                    {
+                                        "name": "__main__",
+                                        "type": "main",
+                                        "path": "/",
+                                        "params": [],
+                                        "returns": [],
+                                        "subscripts": [],
+                                        "constraints": [],
+                                        "testInputs": [],
+                                        "split": False,
+                                        "viewsDict": {},
+                                        "elements": [
+                                            {
+                                                "name": "population",
+                                                "components": [
+                                                    {
+                                                        "type": "Stock",
+                                                        "subtype": "Normal",
+                                                        "subscripts": [[], []],
+                                                        "ast": {
+                                                            "syntaxType": "IntegStructure",
+                                                            "flow": {
+                                                                "syntaxType": "ArithmeticStructure",
+                                                                "operators": ["-"],
+                                                                "arguments": [
+                                                                    {
+                                                                        "syntaxType": "ReferenceStructure",
+                                                                        "reference": "birth_rate"
+                                                                    },
+                                                                    {
+                                                                        "syntaxType": "ReferenceStructure",
+                                                                        "reference": "death_rate"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "initial": {
+                                                                "syntaxType": "ReferenceStructure",
+                                                                "reference": "1000"
+                                                            }
+                                                        }
+                                                    }
+                                                ],
+                                                "units": "people",
+                                                "limits": [0, None],
+                                                "documentation": "Total population stock"
+                                            },
+                                            {
+                                                "name": "birth_rate",
+                                                "components": [
+                                                    {
+                                                        "type": "Flow",
+                                                        "subtype": "Normal",
+                                                        "subscripts": [[], []],
+                                                        "ast": {
+                                                            "syntaxType": "ArithmeticStructure",
+                                                            "operators": ["*"],
+                                                            "arguments": [
+                                                                {
+                                                                    "syntaxType": "ReferenceStructure",
+                                                                    "reference": "population"
+                                                                },
+                                                                {
+                                                                    "syntaxType": "ReferenceStructure",
+                                                                    "reference": "birth_rate_fraction"
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                ],
+                                                "units": "people/year",
+                                                "documentation": "Rate of births"
+                                            },
+                                            {
+                                                "name": "birth_rate_fraction",
+                                                "components": [
+                                                    {
+                                                        "type": "Auxiliary",
+                                                        "subtype": "Normal",
+                                                        "subscripts": [[], []],
+                                                        "ast": {
+                                                            "syntaxType": "ReferenceStructure",
+                                                            "reference": "0.02"
+                                                        }
+                                                    }
+                                                ],
+                                                "units": "1/year",
+                                                "documentation": "Annual birth rate fraction"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "component_patterns": {
+                    "stocks": {
+                        "description": "Accumulation variables that integrate flows over time using IntegStructure",
+                        "required_fields": ["type", "subtype", "name", "subscripts", "ast"],
+                        "ast_pattern": {
+                            "syntaxType": "IntegStructure",
+                            "flow": "expression (net flow = inflows - outflows)",
+                            "initial": "initial value expression"
+                        },
                         "example": {
                             "type": "Stock",
                             "subtype": "Normal",
-                            "name": "inventory_level",
-                            "subscripts": [],
+                            "name": "inventory",
+                            "subscripts": [[], []],
                             "ast": {
-                                "kind": "INTEG",
-                                "expression": "INTEG(inflow - outflow, 100)"
+                                "syntaxType": "IntegStructure",
+                                "flow": {
+                                    "syntaxType": "ArithmeticStructure",
+                                    "operators": ["-"],
+                                    "arguments": [
+                                        {"syntaxType": "ReferenceStructure", "reference": "inflow"},
+                                        {"syntaxType": "ReferenceStructure", "reference": "outflow"}
+                                    ]
+                                },
+                                "initial": {"syntaxType": "ReferenceStructure", "reference": "100"}
                             }
                         }
                     },
-                    {
-                        "title": "Population Stock",
-                        "description": "Accumulating people with birth and death flows",
-                        "example": {
-                            "type": "Stock",
-                            "subtype": "Normal",
-                            "name": "population",
-                            "subscripts": [],
-                            "ast": {
-                                "kind": "INTEG",
-                                "expression": "INTEG(births - deaths, 1000)"
+                    "flows": {
+                        "description": "Rate variables that change stocks over time",
+                        "required_fields": ["type", "subtype", "name", "subscripts", "ast"],
+                        "ast_patterns": ["ArithmeticStructure", "CallStructure", "ReferenceStructure"],
+                        "examples": [
+                            {
+                                "title": "Simple Rate",
+                                "component": {
+                                    "type": "Flow",
+                                    "subtype": "Normal",
+                                    "name": "sales_rate",
+                                    "subscripts": [[], []],
+                                    "ast": {
+                                        "syntaxType": "ArithmeticStructure",
+                                        "operators": ["*"],
+                                        "arguments": [
+                                            {"syntaxType": "ReferenceStructure", "reference": "demand"},
+                                            {"syntaxType": "ReferenceStructure", "reference": "fulfillment_rate"}
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "title": "Function Call",
+                                "component": {
+                                    "type": "Flow",
+                                    "subtype": "Normal",
+                                    "name": "constrained_flow",
+                                    "subscripts": [[], []],
+                                    "ast": {
+                                        "syntaxType": "CallStructure",
+                                        "function": {"syntaxType": "ReferenceStructure", "reference": "MIN"},
+                                        "arguments": [
+                                            {"syntaxType": "ReferenceStructure", "reference": "desired_flow"},
+                                            {"syntaxType": "ReferenceStructure", "reference": "capacity"}
+                                        ]
+                                    }
+                                }
                             }
-                        }
+                        ]
+                    },
+                    "auxiliaries": {
+                        "description": "Helper variables for calculations and constants",
+                        "required_fields": ["type", "subtype", "name", "subscripts", "ast"],
+                        "ast_patterns": ["ReferenceStructure", "ArithmeticStructure", "CallStructure"],
+                        "examples": [
+                            {
+                                "title": "Constant",
+                                "component": {
+                                    "type": "Auxiliary",
+                                    "subtype": "Normal",
+                                    "name": "growth_rate",
+                                    "subscripts": [[], []],
+                                    "ast": {"syntaxType": "ReferenceStructure", "reference": "0.05"}
+                                }
+                            },
+                            {
+                                "title": "Calculation",
+                                "component": {
+                                    "type": "Auxiliary",
+                                    "subtype": "Normal",
+                                    "name": "total_value",
+                                    "subscripts": [[], []],
+                                    "ast": {
+                                        "syntaxType": "ArithmeticStructure",
+                                        "operators": ["*"],
+                                        "arguments": [
+                                            {"syntaxType": "ReferenceStructure", "reference": "quantity"},
+                                            {"syntaxType": "ReferenceStructure", "reference": "price"}
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
                     }
-                ],
-                "flows": [
-                    {
-                        "title": "Rate Flow",
-                        "description": "A flow determined by a rate calculation",
+                },
+                "ast_syntax_guide": {
+                    "description": "Abstract Syntax Tree patterns for mathematical expressions",
+                    "reference": {
+                        "title": "Variable Reference",
+                        "pattern": {"syntaxType": "ReferenceStructure", "reference": "variable_name"}
+                    },
+                    "arithmetic": {
+                        "title": "Mathematical Operations",
+                        "pattern": {
+                            "syntaxType": "ArithmeticStructure",
+                            "operators": ["list of operators: +, -, *, /, ^"],
+                            "arguments": ["array of expressions"]
+                        },
                         "example": {
-                            "type": "Flow",
-                            "subtype": "Normal",
-                            "name": "production_rate",
-                            "subscripts": [],
-                            "ast": {
-                                "kind": "EQUATION",
-                                "expression": "capacity * utilization_rate"
-                            }
+                            "syntaxType": "ArithmeticStructure",
+                            "operators": ["+", "*"],
+                            "arguments": [
+                                {"syntaxType": "ReferenceStructure", "reference": "base_value"},
+                                {
+                                    "syntaxType": "ArithmeticStructure",
+                                    "operators": ["*"],
+                                    "arguments": [
+                                        {"syntaxType": "ReferenceStructure", "reference": "rate"},
+                                        {"syntaxType": "ReferenceStructure", "reference": "time"}
+                                    ]
+                                }
+                            ]
                         }
                     },
-                    {
-                        "title": "Proportional Flow",
-                        "description": "Flow proportional to a stock level",
-                        "example": {
-                            "type": "Flow",
-                            "subtype": "Normal",
-                            "name": "decay_rate",
-                            "subscripts": [],
-                            "ast": {
-                                "kind": "EQUATION",
-                                "expression": "stock_level * decay_fraction"
-                            }
-                        }
-                    }
-                ],
-                "auxiliaries": [
-                    {
-                        "title": "Constant Parameter",
-                        "description": "A fixed value used in calculations",
-                        "example": {
-                            "type": "Auxiliary",
-                            "subtype": "Normal",
-                            "name": "growth_rate",
-                            "subscripts": [],
-                            "ast": {
-                                "kind": "CONSTANT",
-                                "expression": "0.05"
-                            }
-                        }
+                    "function_calls": {
+                        "title": "Function Calls",
+                        "pattern": {
+                            "syntaxType": "CallStructure",
+                            "function": {"syntaxType": "ReferenceStructure", "reference": "function_name"},
+                            "arguments": ["array of expressions"]
+                        },
+                        "common_functions": ["MIN", "MAX", "ABS", "EXP", "LN", "SIN", "COS", "SQRT", "IF_THEN_ELSE"]
                     },
-                    {
-                        "title": "Calculated Variable",
-                        "description": "A variable computed from other variables",
-                        "example": {
-                            "type": "Auxiliary",
-                            "subtype": "Normal",
-                            "name": "net_effect",
-                            "subscripts": [],
-                            "ast": {
-                                "kind": "EQUATION",
-                                "expression": "positive_effect - negative_effect"
-                            }
+                    "integration": {
+                        "title": "Stock Integration",
+                        "pattern": {
+                            "syntaxType": "IntegStructure",
+                            "flow": "net flow expression",
+                            "initial": "initial value expression"
                         }
                     }
-                ],
-                "components": [
-                    {
-                        "title": "Component Structure",
-                        "description": "Standard structure for all SD components",
-                        "example": {
-                            "type": "Stock|Flow|Auxiliary",
-                            "subtype": "Normal",
-                            "name": "component_name",
-                            "subscripts": [],
-                            "ast": {
-                                "kind": "INTEG|EQUATION|CONSTANT",
-                                "expression": "mathematical_expression"
-                            }
-                        }
-                    }
+                },
+                "validation_checklist": [
+                    "✓ Root object must have 'abstractModel' property",
+                    "✓ abstractModel must have 'originalPath' and 'sections' properties",
+                    "✓ Main section must have name='__main__', type='main', path='/'",
+                    "✓ All required section fields must be present: params, returns, subscripts, constraints, testInputs, split, viewsDict",
+                    "✓ Elements must contain components array",
+                    "✓ Components must have: type, subtype, name, subscripts (as [[], []]), ast",
+                    "✓ AST must have syntaxType field matching the expression structure",
+                    "✓ Stock components must use IntegStructure with flow and initial",
+                    "✓ All variable references must match component names"
                 ]
             }
         }

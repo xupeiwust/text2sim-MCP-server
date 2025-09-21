@@ -1,7 +1,7 @@
 {
   "template_info": {
     "template_id": "inventory-management-v1",
-    "name": "Inventory Management System",
+    
     "description": "Supply chain model with inventory control and ordering delays",
     "domain": "supply_chain",
     "complexity": "intermediate",
@@ -18,6 +18,7 @@
       "originalPath": "inventory_management.json",
       "sections": [
         {
+          
           "name": "__main__",
           "type": "main",
           "path": "/",
@@ -30,126 +31,237 @@
           "viewsDict": {},
           "elements": [
             {
-              "name": "Inventory System",
+              
+              "name": "System Components",
               "components": [
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  "name": "inventory",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "INTEG",
-                    "expression": "INTEG(shipment_rate - sales_rate, 500)"
+                    "syntaxType": "IntegStructure",
+                    "flow": {
+                      "syntaxType": "ArithmeticStructure",
+                      "operators": ["-"],
+                      "arguments": [
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "shipment_rate"
+                        },
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "sales_rate"
+                        }
+                      ]
+                    },
+                    "initial": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "500"
+                    }
                   }
                 },
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  "name": "on_order",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "INTEG",
-                    "expression": "INTEG(order_rate - shipment_rate, 0)"
+                    "syntaxType": "IntegStructure",
+                    "flow": {
+                      "syntaxType": "ArithmeticStructure",
+                      "operators": ["-"],
+                      "arguments": [
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "order_rate"
+                        },
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "shipment_rate"
+                        }
+                      ]
+                    },
+                    "initial": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "0"
+                    }
                   }
                 },
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  "name": "order_rate",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "MAX(0, desired_order_quantity)"
+                    "syntaxType": "CallStructure",
+                    "function": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "MAX"
+                    },
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "0"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "desired_order_quantity"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  "name": "shipment_rate",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "on_order / supply_delay"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["/"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "on_order"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "supply_delay"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  "name": "sales_rate",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "MIN(demand, inventory)"
+                    "syntaxType": "CallStructure",
+                    "function": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "MIN"
+                    },
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "demand"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "inventory"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "desired_order_quantity",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "(target_inventory - inventory) / adjustment_time"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["/"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ArithmeticStructure",
+                        "operators": ["-"],
+                        "arguments": [
+                          {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "target_inventory"
+                          },
+                          {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "inventory"
+                          }
+                        ]
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "adjustment_time"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "target_inventory",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "demand * safety_stock_coverage"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "demand"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "safety_stock_coverage"
+                      }
+                    ]
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "demand",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "100"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "100"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "safety_stock_coverage",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "4"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "4"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "adjustment_time",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "1"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "1"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "supply_delay",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "3"
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "3"
                   }
                 },
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "name": "inventory_coverage",
-                  "subscripts": [],
+                  
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "EQUATION",
-                    "expression": "inventory / demand"
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["/"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "inventory"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "demand"
+                      }
+                    ]
                   }
                 }
               ]
@@ -176,7 +288,7 @@
   ],
   "examples": [
     {
-      "name": "Fast Fashion Retailer",
+      
       "changes": {
         "demand": 500,
         "supply_delay": 8,
@@ -186,7 +298,7 @@
       "description": "High demand, long supply delays, low safety stock, quick adjustments"
     },
     {
-      "name": "Industrial Components",
+      
       "changes": {
         "demand": 50,
         "supply_delay": 12,
