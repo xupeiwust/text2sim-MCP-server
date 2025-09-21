@@ -52,15 +52,15 @@ class SchemaRegistry:
             version="2.0"
         ))
         
-        # Register SD schema (future)
-        sd_schema_path = project_root / "schemas" / "SD" / "sd-schema.json"
+        # Register SD schema
+        sd_schema_path = project_root.parent / "SD" / "json_extensions" / "schemas" / "abstract_model_v2.json"
         self.register_schema(SchemaInfo(
             schema_type="SD",
             schema_path=sd_schema_path,
-            indicators=["stocks", "flows", "variables"],
-            validator_class="SDConfigValidator",
-            description="System Dynamics simulation using PySD",
-            version="1.0"
+            indicators=["abstractModel", "abstractModel.sections"],
+            validator_class="PySDJSONIntegration",
+            description="System Dynamics simulation using PySD JSON extensions",
+            version="2.0"
         ))
     
     def register_schema(self, schema_info: SchemaInfo) -> None:
