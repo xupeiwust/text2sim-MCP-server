@@ -111,8 +111,7 @@ class MultiSchemaValidator:
                     errors=[ValidationError(
                         path="root",
                         message="Could not detect schema type from model structure",
-                        quick_fix="Add 'schema_type' field or include required sections",
-                        suggestions=["Add entity_types for DES", "Add stocks/flows for SD"]
+                        quick_fix="Add 'schema_type' field or include required sections"
                     )],
                     missing_required=[],
                     suggestions=["Specify schema_type explicitly in model"],
@@ -185,7 +184,21 @@ class MultiSchemaValidator:
 
         elif schema_type == "SD":
             # Use SD validator (PySDJSONIntegration)
-            validation_result = validator.validate_json_model(model)
+            # Handle different input formats - template vs raw model
+            model_to_validate = model
+
+            if isinstance(model, dict):
+                if "template_info" in model and "model" in model:
+                    # Full template format - extract model section
+                    model_to_validate = model["model"]
+                elif "abstractModel" in model:
+                    # Direct model format
+                    model_to_validate = model
+                elif "sections" in model:
+                    # Direct abstractModel format
+                    model_to_validate = {"abstractModel": model}
+
+            validation_result = validator.validate_json_model(model_to_validate)
 
             # Convert to our ValidationResult format
             validation_errors = []

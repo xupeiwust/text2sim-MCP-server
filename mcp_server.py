@@ -287,8 +287,9 @@ def validate_model(
     SCHEMA AUTO-DETECTION:
     The tool automatically detects schema type from model structure:
     - DES: Looks for entity_types, resources, processing_rules
-    - SD: Looks for stocks, flows, variables (future)
-    - Explicit: Use "schema_type": "DES" in model for explicit declaration
+    - SD: Looks for abstractModel, template_info.schema_type=SD, model.abstractModel
+    - Template: Supports full template format with template_info and model sections
+    - Explicit: Use "schema_type" field in model for explicit declaration
     
     RESPONSE INCLUDES:
     - Detailed validation errors with quick fixes
@@ -960,6 +961,51 @@ def get_sd_model_examples(
         return {"error": f"Error generating SD examples: {str(e)}"}
 
 @mcp.tool()
+def help_validation() -> dict:
+    """
+    🆘 VALIDATION HELP - Guide to finding the right validation tools.
+
+    Shows all available validation tools and when to use each one.
+    Perfect when you can't find the right tool or are getting validation errors.
+
+    Returns:
+        Complete guide to validation tools and usage examples
+    """
+    return {
+        "primary_tool": {
+            "validate_model": {
+                "name": "🎯 validate_model - MAIN VALIDATION TOOL",
+                "purpose": "Auto-detect and validate any model type (SD, DES, etc.)",
+                "use_when": "ALWAYS use this - it handles everything automatically",
+                "accepts": "Any simulation model: templates, SD models, DES models",
+                "features": [
+                    "🔍 Auto-detects model type (SD/DES)",
+                    "📋 Handles template format and raw models",
+                    "✅ Comprehensive validation with detailed errors",
+                    "🚀 One tool for all validation needs"
+                ]
+            }
+        },
+        "specialized_tools": {
+            "validate_des_model": {
+                "name": "🏭 validate_des_model",
+                "purpose": "DES-specific validation with specialized feedback",
+                "use_when": "You need DES-specific validation features",
+                "note": "validate_model can also handle DES models"
+            }
+        },
+        "common_usage": {
+            "any_model": "validate_model(your_model_config)",
+            "sd_template": "validate_model(loaded_template)",
+            "des_model": "validate_model(des_config)",
+            "strict_mode": "validate_model(model, validation_mode='strict')"
+        },
+        "migration_note": "🔄 All validation is now consolidated into validate_model - no need for separate SD tools",
+        "tip": "📋 Just use validate_model for everything - it will detect the type and validate appropriately"
+    }
+
+
+@mcp.tool()
 def list_templates(
     schema_type: str = None,
     domain: str = None,
@@ -1627,40 +1673,6 @@ def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = Non
         return {"error": f"Unexpected error in SD simulation: {str(e)}"}
 
 
-@mcp.tool()
-def validate_sd_model(config: dict) -> dict:
-    """
-    Validate System Dynamics model configuration against JSON schema.
-
-    Provides comprehensive validation with detailed error reporting and
-    suggestions for fixing common issues in SD model definitions.
-
-    Args:
-        config: SD model configuration to validate
-
-    Returns:
-        Validation results with errors, warnings, and suggestions
-    """
-    try:
-        validation_result = sd_integration.validate_json_model(config)
-
-        if validation_result["is_valid"]:
-            model_info = sd_integration.get_model_info(config)
-            return {
-                "valid": True,
-                "message": "✅ SD model configuration is valid",
-                "model_info": model_info
-            }
-        else:
-            return {
-                "valid": False,
-                "errors": validation_result["errors"],
-                "suggestions": _generate_sd_suggestions(validation_result["errors"]),
-                "quick_fixes": _generate_sd_quick_fixes(validation_result["errors"])
-            }
-
-    except Exception as e:
-        return {"error": f"SD validation error: {str(e)}"}
 
 
 @mcp.tool()
@@ -1693,6 +1705,8 @@ def convert_vensim_to_sd_json(file_path: str) -> dict:
         return {"error": f"Vensim conversion error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected conversion error: {str(e)}"}
+
+
 
 
 @mcp.tool()
