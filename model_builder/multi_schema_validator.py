@@ -409,19 +409,63 @@ class MultiSchemaValidator:
     
     def _calculate_completeness(self, model: Dict[str, Any], schema_type: str) -> float:
         """Calculate how complete a model is (0.0 to 1.0)."""
+        if schema_type == "SD":
+            return self._calculate_sd_completeness(model)
+        elif schema_type == "DES":
+            return self._calculate_des_completeness(model)
+        else:
+            return self._calculate_generic_completeness(model, schema_type)
+
+    def _calculate_sd_completeness(self, model: Dict[str, Any]) -> float:
+        """Calculate completeness for SD models."""
+        # For SD models, check if we have a proper structure with elements
+        if "abstractModel" in model:
+            abstract_model = model["abstractModel"]
+            if "sections" in abstract_model and abstract_model["sections"]:
+                section = abstract_model["sections"][0]
+                if "elements" in section and section["elements"]:
+                    # Model has elements - that's the main requirement
+                    element_count = len(section["elements"])
+                    # High completeness if we have multiple elements with proper structure
+                    if element_count >= 3:  # At least 3 variables
+                        return 0.9  # 90% complete
+                    elif element_count >= 1:
+                        return 0.7  # 70% complete
+                    else:
+                        return 0.3  # Basic structure only
+
+        # Check if this is a template format
+        if "model" in model and "abstractModel" in model["model"]:
+            return self._calculate_sd_completeness(model["model"])
+
+        return 0.1  # Minimal SD structure
+
+    def _calculate_des_completeness(self, model: Dict[str, Any]) -> float:
+        """Calculate completeness for DES models."""
+        schema_info = self.registry.get_schema_info("DES")
+        if not schema_info:
+            return 0.0
+
+        indicators = schema_info.indicators
+        present_indicators = sum(1 for indicator in indicators if self._has_nested_key(model, indicator))
+
+        base_completeness = present_indicators / len(indicators) if indicators else 0.0
+        depth_bonus = min(0.3, len(model.keys()) * 0.05)
+
+        return min(1.0, base_completeness + depth_bonus)
+
+    def _calculate_generic_completeness(self, model: Dict[str, Any], schema_type: str) -> float:
+        """Calculate completeness for generic schema types."""
         schema_info = self.registry.get_schema_info(schema_type)
         if not schema_info:
             return 0.0
-        
-        # Simple completeness based on presence of key indicators
+
         indicators = schema_info.indicators
-        present_indicators = sum(1 for indicator in indicators if self._has_nested_key(model, indicator))
-        
+        present_indicators = sum(1 for indicator in indicators if self.registry._has_nested_key(model, indicator))
+
         base_completeness = present_indicators / len(indicators) if indicators else 0.0
-        
-        # Adjust based on depth of provided sections
-        depth_bonus = min(0.3, len(model.keys()) * 0.05)  # Up to 30% bonus for depth
-        
+        depth_bonus = min(0.3, len(model.keys()) * 0.05)
+
         return min(1.0, base_completeness + depth_bonus)
     
     def _has_nested_key(self, data: dict, key_path: str) -> bool:
@@ -439,18 +483,45 @@ class MultiSchemaValidator:
     
     def _find_missing_required(self, model: Dict[str, Any], schema_type: str) -> List[Dict[str, Any]]:
         """Find missing required fields based on schema."""
+        if schema_type == "SD":
+            return self._find_missing_sd_required(model)
+        elif schema_type == "DES":
+            return self._find_missing_des_required(model)
+        else:
+            return []
+
+    def _find_missing_sd_required(self, model: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Find missing required fields for SD models."""
         missing = []
-        schema_info = self.registry.get_schema_info(schema_type)
-        
+
+        # Check for abstractModel structure
+        has_abstract_model = "abstractModel" in model
+        if "model" in model and "abstractModel" in model["model"]:
+            has_abstract_model = True
+
+        if not has_abstract_model:
+            missing.append({
+                "path": "abstractModel",
+                "description": "Required structure for SD models - contains sections with model elements",
+                "example": {"sections": [{"name": "__main__", "elements": []}]}
+            })
+
+        return missing
+
+    def _find_missing_des_required(self, model: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Find missing required fields for DES models."""
+        missing = []
+        schema_info = self.registry.get_schema_info("DES")
+
         if schema_info:
             for indicator in schema_info.indicators:
                 if not self._has_nested_key(model, indicator):
                     missing.append({
                         "path": indicator,
-                        "description": f"Required section for {schema_type} models",
-                        "example": self._get_example_for_section(schema_type, indicator)
+                        "description": f"Required section for DES models",
+                        "example": self._get_example_for_section("DES", indicator)
                     })
-        
+
         return missing
     
     def _get_example_for_section(self, schema_type: str, section: str) -> Any:
@@ -503,78 +574,70 @@ class MultiSchemaValidator:
         errors: List[ValidationError]
     ) -> List[str]:
         """Generate helpful suggestions for improving the model."""
+        if schema_type == "SD":
+            return self._generate_sd_suggestions(model, errors)
+        elif schema_type == "DES":
+            return self._generate_des_suggestions(model, errors)
+        else:
+            return []
+
+    def _generate_sd_suggestions(self, model: Dict[str, Any], errors: List[ValidationError]) -> List[str]:
+        """Generate suggestions for SD models."""
         suggestions = []
-        
-        # Schema-specific suggestions based on missing sections
-        if schema_type == "DES":
-            if not self._has_nested_key(model, "entity_types"):
-                suggestions.append("Add entity_types to define different types of entities (customers, patients, jobs)")
-            if not self._has_nested_key(model, "resources"):
-                suggestions.append("Add resources to define system capacity and queuing behavior")
-            if not self._has_nested_key(model, "processing_rules"):
-                suggestions.append("Add processing_rules to define how entities flow through resources")
-            if not self._has_nested_key(model, "arrival_pattern") and not model.get("num_entities"):
-                suggestions.append("Add arrival_pattern for continuous arrivals or num_entities for fixed batch")
 
-            # Advanced feature suggestions based on completeness
-            has_basic_structure = all(self._has_nested_key(model, key) for key in ["entity_types", "resources"])
-            if has_basic_structure:
-                if not self._has_nested_key(model, "balking_rules"):
-                    suggestions.append("Consider adding balking_rules for realistic customer behavior")
-                if not self._has_nested_key(model, "reneging_rules"):
-                    suggestions.append("Consider adding reneging_rules for customer impatience modeling")
-                if not self._has_nested_key(model, "statistics"):
-                    suggestions.append("Add statistics configuration to control data collection")
-                if not self._has_nested_key(model, "metrics"):
-                    suggestions.append("Customize metrics names for domain-specific terminology")
+        # Check if model is valid and complete
+        if not errors:
+            # Model is valid - suggest enhancements
+            element_count = 0
+            if "abstractModel" in model:
+                abstract_model = model["abstractModel"]
+                if "sections" in abstract_model and abstract_model["sections"]:
+                    section = abstract_model["sections"][0]
+                    element_count = len(section.get("elements", []))
 
-        elif schema_type == "SD":
-            if not self._has_nested_key(model, "abstractModel"):
-                suggestions.append("Add abstractModel section as the root container for your SD model")
-            if not self._has_nested_key(model, "abstractModel.sections"):
-                suggestions.append("Add sections array to define model structure and components")
-            if not self._has_nested_key(model, "abstractModel.originalPath"):
-                suggestions.append("Add originalPath to specify the source model file name")
+            if element_count >= 6:
+                suggestions.append("✅ SD model is well-structured with proper one-element-per-variable format")
+                suggestions.append("🚀 Ready for simulation with PySD")
+                suggestions.append("💡 Consider adding time settings for simulation configuration")
+            elif element_count >= 3:
+                suggestions.append("✅ Good SD model structure - consider adding more variables for complexity")
+                suggestions.append("📊 Add auxiliary variables for intermediate calculations")
+            else:
+                suggestions.append("🔧 Add more model elements (stocks, flows, auxiliaries) for a complete model")
 
-            # Advanced SD feature suggestions
-            has_basic_structure = self._has_nested_key(model, "abstractModel.sections")
-            if has_basic_structure:
-                sections = model.get("abstractModel", {}).get("sections", [])
-                if not any(section.get("type") == "main" for section in sections):
-                    suggestions.append("Add a main section to contain your primary model elements")
-                if not any("elements" in section for section in sections):
-                    suggestions.append("Add elements to your sections to define stocks, flows, and auxiliaries")
+        else:
+            suggestions.append("🔍 Fix validation errors to ensure proper PySD JSON structure")
+            suggestions.append("📋 Ensure each variable is its own element (one-element-per-variable)")
 
-                # Check for SD component types
-                total_components = sum(
-                    len(element.get("components", []))
-                    for section in sections
-                    for element in section.get("elements", [])
-                )
-                if total_components == 0:
-                    suggestions.append("Add components (stocks, flows, auxiliaries) to define model behavior")
-                    suggestions.append("Use Stock components for accumulations, Flow for rates of change")
-                    suggestions.append("Use Auxiliary components for calculations and intermediate variables")
-        
-        # Error-based suggestions
-        for error in errors:
-            if "probability" in error.path and "sum" in error.message:
-                suggestions.append("Adjust entity type probabilities to sum exactly to 1.0")
-            elif "distribution" in error.path:
-                suggestions.append("Use valid distribution formats: 'uniform(a,b)', 'normal(mean,std)', 'exp(mean)'")
-            elif "resource" in error.path and "not found" in error.message:
-                suggestions.append("Ensure resource names in rules match those defined in resources section")
-            elif "priority" in error.path:
-                suggestions.append("Use priority values 1-10 (1=highest priority, 10=lowest)")
-        
-        # Development stage suggestions
-        if len(model.keys()) < 4:
-            suggestions.append("Start with basic structure: entity_types, resources, processing_rules")
-        elif len(model.keys()) >= 4 and not errors:
-            suggestions.append("Model looks good! Consider running a simulation to test behavior")
-        
-        return suggestions[:6]  # Limit to top 6 suggestions
-    
+        return suggestions
+
+    def _generate_des_suggestions(self, model: Dict[str, Any], errors: List[ValidationError]) -> List[str]:
+        """Generate suggestions for DES models."""
+        suggestions = []
+
+        if not self._has_nested_key(model, "entity_types"):
+            suggestions.append("Add entity_types to define different types of entities (customers, patients, jobs)")
+        if not self._has_nested_key(model, "resources"):
+            suggestions.append("Add resources to define system capacity and queuing behavior")
+        if not self._has_nested_key(model, "processing_rules"):
+            suggestions.append("Add processing_rules to define how entities flow through resources")
+        if not self._has_nested_key(model, "arrival_pattern") and not model.get("num_entities"):
+            suggestions.append("Add arrival_pattern for continuous arrivals or num_entities for fixed batch")
+
+        # Advanced feature suggestions based on completeness
+        has_basic_structure = all(self._has_nested_key(model, key) for key in ["entity_types", "resources"])
+        if has_basic_structure:
+            if not self._has_nested_key(model, "balking_rules"):
+                suggestions.append("Consider adding balking_rules for realistic customer behavior")
+            if not self._has_nested_key(model, "reneging_rules"):
+                suggestions.append("Consider adding reneging_rules for customer impatience modeling")
+            if not self._has_nested_key(model, "statistics"):
+                suggestions.append("Add statistics configuration to control data collection")
+            if not self._has_nested_key(model, "metrics"):
+                suggestions.append("Customize metrics names for domain-specific terminology")
+
+        return suggestions
+
     def _generate_next_steps(self, errors: List[ValidationError], completeness: float) -> List[str]:
         """Generate prioritized next steps for model development."""
         next_steps = []

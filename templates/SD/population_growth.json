@@ -6,7 +6,7 @@
     "domain": "demographics",
     "complexity": "basic",
     "schema_type": "SD",
-    "author": "System Dynamics Team",
+    "author": "Text2Sim.com",
     "version": "1.0.0",
     "created": "2025-09-21",
     "tags": ["population", "demographics", "basic", "growth"],
