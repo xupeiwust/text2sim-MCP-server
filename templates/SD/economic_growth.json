@@ -1,0 +1,221 @@
+{
+  "template_info": {
+    "template_id": "economic-growth-v1",
+    "name": "Economic Growth Model",
+    "description": "Solow-style economic growth with capital accumulation, investment, and depreciation",
+    "domain": "economics",
+    "complexity": "advanced",
+    "schema_type": "SD",
+    "author": "Economics Team",
+    "version": "1.0.0",
+    "created": "2025-09-21",
+    "tags": ["economics", "growth", "capital", "investment", "solow"],
+    "estimated_build_time": "35-40 minutes",
+    "difficulty": "advanced"
+  },
+  "model": {
+    "abstractModel": {
+      "originalPath": "economic_growth.json",
+      "sections": [
+        {
+          "name": "__main__",
+          "type": "main",
+          "path": "/",
+          "params": [],
+          "returns": [],
+          "subscripts": [],
+          "constraints": [],
+          "testInputs": [],
+          "split": false,
+          "viewsDict": {},
+          "elements": [
+            {
+              "name": "Economic System",
+              "components": [
+                {
+                  "type": "Stock",
+                  "subtype": "Normal",
+                  "name": "capital_stock",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "INTEG",
+                    "expression": "INTEG(investment_rate - depreciation_rate, 1000)"
+                  }
+                },
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "name": "investment_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "gdp * savings_rate"
+                  }
+                },
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "name": "depreciation_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "capital_stock * depreciation_fraction"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "gdp",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "productivity * (capital_stock ^ capital_elasticity) * (labor_force ^ labor_elasticity)"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "productivity",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "10"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "labor_force",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "100"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "capital_elasticity",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "0.3"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "labor_elasticity",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "0.7"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "savings_rate",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "0.2"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "depreciation_fraction",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "CONSTANT",
+                    "expression": "0.05"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "gdp_per_capita",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "gdp / labor_force"
+                  }
+                },
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "name": "capital_per_worker",
+                  "subscripts": [],
+                  "ast": {
+                    "kind": "EQUATION",
+                    "expression": "capital_stock / labor_force"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "usage_notes": "Comprehensive economic growth model based on Solow growth theory. Models capital accumulation through investment and depreciation, with GDP determined by Cobb-Douglas production function. Essential for understanding long-term economic dynamics, convergence patterns, and policy impacts on growth.",
+  "customization_tips": [
+    "Adjust savings_rate (default 0.2 = 20%) for different economic behaviors",
+    "Modify depreciation_fraction (default 0.05 = 5% annual) for capital durability",
+    "Change productivity (default 10) for technological advancement scenarios",
+    "Update capital_elasticity and labor_elasticity for different production technologies",
+    "Vary initial capital_stock for different development levels"
+  ],
+  "common_modifications": [
+    "Add population growth dynamics for per-capita analysis",
+    "Include technological progress as endogenous factor",
+    "Add human capital accumulation through education",
+    "Include government sector with taxation and spending",
+    "Add international trade and capital flows",
+    "Include environmental constraints on growth"
+  ],
+  "examples": [
+    {
+      "name": "Developing Economy",
+      "changes": {
+        "capital_stock": 200,
+        "savings_rate": 0.25,
+        "productivity": 5,
+        "labor_force": 50
+      },
+      "description": "Lower initial capital, higher savings rate, lower productivity"
+    },
+    {
+      "name": "Mature Economy",
+      "changes": {
+        "capital_stock": 2000,
+        "savings_rate": 0.15,
+        "productivity": 20,
+        "depreciation_fraction": 0.04
+      },
+      "description": "High capital stock, lower savings, high productivity, low depreciation"
+    }
+  ],
+  "related_concepts": [
+    "Solow growth model",
+    "Steady-state equilibrium",
+    "Capital deepening",
+    "Total factor productivity",
+    "Golden rule of accumulation"
+  ],
+  "extensions": [
+    "Endogenous growth models",
+    "Human capital dynamics",
+    "Innovation and R&D",
+    "Environmental economics",
+    "International trade models"
+  ],
+  "learning_objectives": [
+    "Understand capital accumulation dynamics",
+    "Learn production function modeling",
+    "Practice equilibrium analysis in SD",
+    "Explore growth theory fundamentals",
+    "Master complex economic feedback loops"
+  ]
+}
