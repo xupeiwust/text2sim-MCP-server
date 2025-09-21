@@ -694,16 +694,20 @@ def get_schema_help(
 ) -> dict:
     """
     Get comprehensive schema documentation and examples for any simulation type.
-    
+
     This tool provides dynamic, context-aware help for building simulation models with
     extensive examples, validation rules, and LLM-optimized guidance for any schema section.
-    
+    Supports both System Dynamics (SD) and Discrete Event Simulation (DES) schemas.
+
+    SUPPORTED SCHEMA TYPES:
+    - "SD": System Dynamics models with PySD JSON format
+    - "DES": Discrete Event Simulation models with SimPy integration
+
     FLEXIBLE PATH RESOLUTION:
-    - Full schema: get_schema_help("DES")
-    - Main sections: get_schema_help("DES", "entity_types")  
-    - Nested paths: get_schema_help("DES", "processing_rules.steps")
-    - Templates: get_schema_help("DES", "templates")
-    
+    - Full schema: get_schema_help("SD") or get_schema_help("DES")
+    - Main sections: get_schema_help("SD", "abstractModel") or get_schema_help("DES", "entity_types")
+    - Nested paths: get_schema_help("SD", "abstractModel.sections") or get_schema_help("DES", "processing_rules.steps")
+
     COMPREHENSIVE DOCUMENTATION:
     Each response includes:
     - Clear descriptions and requirements
@@ -712,38 +716,49 @@ def get_schema_help(
     - Multiple practical examples
     - Related sections and common patterns
     - LLM-optimized guidance
-    
+
     DOMAIN-SPECIFIC EXAMPLES:
-    Examples cover major domains:
+
+    SD Examples cover:
+    - Demographics: Population growth, birth/death rates
+    - Economics: Capital accumulation, economic growth
+    - Epidemiology: SIR models, disease spread
+    - Supply Chain: Inventory management, delays
+
+    DES Examples cover:
     - Healthcare: Hospital triage, patient flow, emergency departments
     - Manufacturing: Production lines, quality control, equipment failures
     - Service: Customer segments, queue management, service levels
     - Transportation: Logistics, scheduling, resource allocation
-    
+
     DETAIL LEVELS:
     - "brief": Essential information only
     - "standard": Comprehensive documentation (default)
     - "detailed": Full technical specifications
-    
+
     💡 COMMON USAGE PATTERNS:
-    
-    # Get full schema overview
-    get_schema_help("DES")
-    
-    # Learn about entity types
-    get_schema_help("DES", "entity_types")
-    
-    # Understand processing rules
-    get_schema_help("DES", "processing_rules", detail_level="detailed")
-    
-    # Get examples without technical details
-    get_schema_help("DES", "balking_rules", detail_level="brief")
-    
-    # Discover available templates
-    get_schema_help("DES", "templates")
-    
+
+    # System Dynamics (SD) Examples:
+    get_schema_help("SD")                           # Full SD schema overview
+    get_schema_help("SD", "abstractModel")          # Learn about PySD JSON structure
+    get_schema_help("SD", "abstractModel.sections") # Understanding sections and elements
+
+    # Discrete Event Simulation (DES) Examples:
+    get_schema_help("DES")                          # Full DES schema overview
+    get_schema_help("DES", "entity_types")          # Learn about entity types
+    get_schema_help("DES", "processing_rules")      # Understand processing rules
+    get_schema_help("DES", "balking_rules", detail_level="brief") # Get examples without technical details
+
     SECTION COVERAGE:
-    
+
+    SD Sections:
+    - abstractModel: Top-level PySD JSON container with sections
+    - sections: Model sections containing elements (variables)
+    - elements: Individual variables (stocks, flows, auxiliaries)
+    - components: Variable computation definitions
+    - ast: Abstract syntax trees for equations
+    - time_settings: Simulation time configuration
+
     DES Sections:
     - entity_types: Different entity classes with priorities and attributes
     - resources: System capacity with FIFO, priority, preemptive queues
@@ -754,14 +769,28 @@ def get_schema_help(
     - basic_failures: Resource breakdowns and repair cycles
     - statistics: Data collection configuration
     - metrics: Custom metric names for domain-specific terminology
-    
+
     DEVELOPMENT WORKFLOWS:
-    Includes common development patterns:
+
+    SD Workflows:
+    - Basic Model: abstractModel → sections → elements (stocks/flows/auxiliaries)
+    - Population Model: Define stocks (population), flows (birth/death rates), auxiliaries (fractions)
+    - Complex Model: Add feedback loops, delays, and nonlinear relationships
+
+    DES Workflows:
     - Basic Service System: entity_types → resources → processing_rules
     - Advanced Queue Management: Add balking/reneging rules
     - Multi-Stage Process: Complex routing and failure handling
-    
+
     LEARNING PROGRESSION:
+
+    For SD Models:
+    - Start with schema overview to understand PySD JSON structure
+    - Learn abstractModel and sections concepts
+    - Focus on elements and one-element-per-variable principle
+    - Add components with proper AST syntax
+
+    For DES Models:
     - Start with schema overview to understand structure
     - Focus on entity_types and resources for basic setup
     - Add processing_rules to define flow
