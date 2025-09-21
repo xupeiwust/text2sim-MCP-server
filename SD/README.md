@@ -1,87 +1,92 @@
 # System Dynamics Module for Text2Sim MCP server
 
-This module provides System Dynamics simulation capabilities to the Text2Sim MCP server using PySD.
+This module provides System Dynamics simulation capabilities to the Text2Sim MCP server using PySD with JSON-based model building.
 
-## Structure
+## Modern JSON-Based Approach
 
-- `models/`: Contains SD model files (PySD-compatible Python files)
-- `models/metadata.json`: Defines metadata for all available SD models including parameters, outputs, and time settings
-- `sd_utils.py`: Utility functions for loading and running SD models
-- `model_converter.py`: Command-line tool for converting Vensim .mdl files to PySD .py files
+The SD integration now uses a modern, conversational approach where models are built through JSON configuration instead of pre-converted files:
 
-## Adding New Models
+- **JSON Model Building**: Create SD models through conversational JSON definition
+- **Real-time Validation**: JSON Schema validation with detailed error reporting
+- **Integrated Simulation**: Direct JSON-to-PySD conversion and simulation
+- **Model Builder Integration**: Works seamlessly with the unified model builder tools
 
-To add a new SD model:
+## Available MCP Tools
 
-1. Convert your model to PySD format (from Vensim, XMILE, etc.)
-2. Place the `.py` model file in the `models/` directory
-3. Add an entry to `models/metadata.json` with:
-   - `path`: Path to the model file relative to the SD directory
-   - `description`: Brief description of the model
-   - `parameters`: Dictionary of parameters that can be modified
-   - `outputs`: List of key output variables
-   - `time`: Default simulation time settings
+The following tools enable conversational SD modeling:
 
-Your model will automatically be available through the MCP server tools:
-- `list_sd_models`: Shows all available models
-- `simulate_sd_model`: Runs a simulation with your model
+- `simulate_sd`: Create and simulate SD models from JSON configuration
+- `validate_sd_model`: Validate SD model JSON against schema
+- `convert_vensim_to_sd_json`: Convert Vensim .mdl files to JSON format
+- `get_sd_model_info`: Analyze JSON model structure and complexity
 
-## Converting Vensim Models
+## Creating SD Models
 
-The module includes a standalone conversion tool to simplify adding Vensim models:
+Instead of pre-converting models, you now create them conversationally:
 
-```bash
-# Show help message
-python model_converter.py
+## Example Usage
 
-# Basic conversion
-python model_converter.py my_model.mdl
-
-# Convert and automatically add to registry
-python model_converter.py my_model.mdl --register
-
-# Specify custom name and description
-python model_converter.py my_model.mdl --register --name "climate_model" --description "Climate feedback model"
-
-# Add metadata like author and version
-python model_converter.py my_model.mdl --register --author "Jane Smith" --version "1.0.2"
-
-# Add documentation links
-python model_converter.py my_model.mdl --register --documentation "https://example.com/model-docs"
-
-# Add reference modes (predefined scenarios)
-python model_converter.py my_model.mdl --register --reference-modes "baseline,policy_a,policy_b"
-
-# Specify output directory
-python model_converter.py my_model.mdl --output-dir ./models
+### 1. Simple Population Model
+```json
+{
+  "abstractModel": {
+    "originalPath": "population_growth.json",
+    "sections": [
+      {
+        "name": "__main__",
+        "type": "main",
+        "elements": [
+          {
+            "name": "Population Dynamics",
+            "components": [
+              {
+                "type": "Stock",
+                "subtype": "Normal",
+                "name": "population",
+                "initial_value": 1000
+              },
+              {
+                "type": "Flow",
+                "subtype": "Normal",
+                "name": "birth_rate",
+                "equation": "population * 0.02"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
-The converter will:
-1. Convert the Vensim .mdl file to a PySD-compatible .py file
-2. Automatically detect model parameters and outputs
-3. Optionally add the model to the metadata registry with detailed information
-4. Include any custom metadata fields you specify
+### 2. Converting Vensim Models
+Use the `convert_vensim_to_sd_json` tool to convert existing .mdl files:
+- Automatically converts Vensim syntax to JSON format
+- Preserves model structure and relationships
+- Ready for simulation with `simulate_sd`
 
-### Running the Converter
+### 3. Model Validation
+Before simulation, validate your JSON structure:
+- Real-time schema checking
+- Detailed error messages with suggestions
+- Component relationship validation
 
-The model converter is a standalone command-line tool that works independently from the MCP server. It handles:
+## Benefits of JSON Approach
 
-- Parsing Vensim .mdl files into PySD compatible Python
-- Extracting parameters and their default values
-- Identifying model outputs
-- Setting up metadata for use with the MCP server
-- Error recovery and detailed reporting
+- **Conversational**: Build models through natural language interaction
+- **Iterative**: Modify and test models incrementally
+- **Validated**: Immediate feedback on model structure
+- **Portable**: JSON models work across platforms
+- **Version Control**: Easy to track and share model changes
+- **Integration**: Works seamlessly with model builder tools
 
-After conversion, the tool provides a detailed summary of the model and instructions for using it with the MCP server.
+## Migration from File-Based Models
 
-## Extending Metadata
+If you have existing PySD models or Vensim files:
+1. Use `convert_vensim_to_sd_json` for .mdl files
+2. Manually convert PySD models to JSON format using the schema
+3. Test converted models with `validate_sd_model`
+4. Simulate with the new `simulate_sd` tool
 
-The metadata structure is flexible and can be extended with additional fields for your specific models.
-You can add custom fields for additional metadata through the command line:
-
-- `--author` or `-a`: Model creator information (e.g., "Jane Smith, University of Example")
-- `--version` or `-v`: Model version number (e.g., "2.1.0")
-- `--documentation` or `-D`: Links to model documentation 
-- `--reference-modes`: Named scenario configurations (comma-separated list, e.g., "baseline,policy_a,policy_b")
-
-These custom fields will be included in the model metadata and can be accessed through the MCP server's `get_sd_model_info` tool. 
+The JSON approach provides much more flexibility and better integration with conversational AI tools. 
