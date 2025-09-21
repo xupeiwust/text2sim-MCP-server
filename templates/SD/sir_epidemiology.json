@@ -30,109 +30,275 @@
           "viewsDict": {},
           "elements": [
             {
-              "name": "Epidemic Dynamics",
+              "name": "susceptible",
               "components": [
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  "name": "susceptible",
-                  "subscripts": [],
+                  "subscripts": [[], []],
                   "ast": {
-                    "kind": "INTEG",
-                    "expression": "INTEG(-infection_rate, 10000)"
-                  }
-                },
-                {
-                  "type": "Stock",
-                  "subtype": "Normal",
-                  "name": "infected",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "INTEG",
-                    "expression": "INTEG(infection_rate - recovery_rate, 100)"
-                  }
-                },
-                {
-                  "type": "Stock",
-                  "subtype": "Normal",
-                  "name": "recovered",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "INTEG",
-                    "expression": "INTEG(recovery_rate, 0)"
-                  }
-                },
-                {
-                  "type": "Flow",
-                  "subtype": "Normal",
-                  "name": "infection_rate",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "EQUATION",
-                    "expression": "susceptible * infected * contact_rate * infectivity / total_population"
-                  }
-                },
-                {
-                  "type": "Flow",
-                  "subtype": "Normal",
-                  "name": "recovery_rate",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "EQUATION",
-                    "expression": "infected / recovery_time"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "total_population",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "EQUATION",
-                    "expression": "susceptible + infected + recovered"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "contact_rate",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "5"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "infectivity",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "0.3"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "recovery_time",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "CONSTANT",
-                    "expression": "14"
-                  }
-                },
-                {
-                  "type": "Auxiliary",
-                  "subtype": "Normal",
-                  "name": "reproduction_number",
-                  "subscripts": [],
-                  "ast": {
-                    "kind": "EQUATION",
-                    "expression": "contact_rate * infectivity * recovery_time"
+                    "syntaxType": "IntegStructure",
+                    "flow": {
+                      "syntaxType": "ArithmeticStructure",
+                      "operators": ["-"],
+                      "arguments": [
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "0"
+                        },
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "infection_rate"
+                        }
+                      ]
+                    },
+                    "initial": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "10000"
+                    }
                   }
                 }
-              ]
+              ],
+              "units": "people",
+              "limits": [0, null],
+              "documentation": "Susceptible population"
+            },
+            {
+              "name": "infected",
+              "components": [
+                {
+                  "type": "Stock",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "IntegStructure",
+                    "flow": {
+                      "syntaxType": "ArithmeticStructure",
+                      "operators": ["-"],
+                      "arguments": [
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "infection_rate"
+                        },
+                        {
+                          "syntaxType": "ReferenceStructure",
+                          "reference": "recovery_rate"
+                        }
+                      ]
+                    },
+                    "initial": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "100"
+                    }
+                  }
+                }
+              ],
+              "units": "people",
+              "limits": [0, null],
+              "documentation": "Infected population"
+            },
+            {
+              "name": "recovered",
+              "components": [
+                {
+                  "type": "Stock",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "IntegStructure",
+                    "flow": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "recovery_rate"
+                    },
+                    "initial": {
+                      "syntaxType": "ReferenceStructure",
+                      "reference": "0"
+                    }
+                  }
+                }
+              ],
+              "units": "people",
+              "limits": [0, null],
+              "documentation": "Recovered population"
+            },
+            {
+              "name": "infection_rate",
+              "components": [
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*", "*", "*", "/"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "susceptible"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "infected"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "contact_rate"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "infectivity"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "total_population"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "units": "people/day",
+              "limits": [0, null],
+              "documentation": "Rate of new infections"
+            },
+            {
+              "name": "recovery_rate",
+              "components": [
+                {
+                  "type": "Flow",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["/"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "infected"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "recovery_time"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "units": "people/day",
+              "limits": [0, null],
+              "documentation": "Rate of recoveries"
+            },
+            {
+              "name": "total_population",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["+", "+"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "susceptible"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "infected"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "recovered"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "units": "people",
+              "limits": [0, null],
+              "documentation": "Total population (S+I+R)"
+            },
+            {
+              "name": "contact_rate",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "5"
+                  }
+                }
+              ],
+              "units": "contacts/day",
+              "limits": [0, null],
+              "documentation": "Average daily contacts per person"
+            },
+            {
+              "name": "infectivity",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0.3"
+                  }
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [0, 1],
+              "documentation": "Probability of transmission per contact"
+            },
+            {
+              "name": "recovery_time",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "14"
+                  }
+                }
+              ],
+              "units": "days",
+              "limits": [1, null],
+              "documentation": "Average recovery time"
+            },
+            {
+              "name": "reproduction_number",
+              "components": [
+                {
+                  "type": "Auxiliary",
+                  "subtype": "Normal",
+                  "subscripts": [[], []],
+                  "ast": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["*", "*"],
+                    "arguments": [
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "contact_rate"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "infectivity"
+                      },
+                      {
+                        "syntaxType": "ReferenceStructure",
+                        "reference": "recovery_time"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [0, null],
+              "documentation": "Basic reproduction number (R0)"
             }
           ]
         }
@@ -157,7 +323,7 @@
   ],
   "examples": [
     {
-      "name": "Mild Flu Outbreak",
+      "name": "Mild Influenza",
       "changes": {
         "contact_rate": 3,
         "infectivity": 0.15,
@@ -167,7 +333,7 @@
       "description": "Seasonal flu with moderate transmission and quick recovery"
     },
     {
-      "name": "Severe Pandemic",
+      "name": "Severe Outbreak",
       "changes": {
         "contact_rate": 8,
         "infectivity": 0.4,
