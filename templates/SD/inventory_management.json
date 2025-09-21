@@ -6,7 +6,7 @@
     "domain": "supply_chain",
     "complexity": "intermediate",
     "schema_type": "SD",
-    "author": "Supply Chain Team",
+    "author": "Text2Sim.com",
     "version": "1.0.0",
     "created": "2025-09-21",
     "tags": ["inventory", "supply_chain", "delays", "feedback"],
