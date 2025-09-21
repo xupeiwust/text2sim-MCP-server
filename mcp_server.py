@@ -14,13 +14,15 @@ if str(current_dir) not in sys.path:
 # Import SD utilities
 try:
     from SD.sd_utils import load_model_metadata, run_model_simulation, get_model_list, get_model_details
+    from SD.sd_integration import PySDJSONIntegration, SDIntegrationError, SDValidationError, SDModelBuildError, SDSimulationError
 except ImportError:
     # Create SD directory if it doesn't exist
     sd_dir = current_dir / "SD"
     sd_dir.mkdir(exist_ok=True)
-    
+
     # Reattempt import after ensuring directory exists
     from SD.sd_utils import load_model_metadata, run_model_simulation, get_model_list, get_model_details
+    from SD.sd_integration import PySDJSONIntegration, SDIntegrationError, SDValidationError, SDModelBuildError, SDSimulationError
 
 # Initialise the MCP server
 mcp = FastMCP("text2sim-mcp-server")
@@ -1409,6 +1411,313 @@ def run_multiple_simulations(
             "error": f"Multiple replications failed: {str(e)}",
             "suggestion": "Check configuration and try with fewer replications"
         }
+
+# ============================================================================
+# SYSTEM DYNAMICS MCP TOOLS
+# ============================================================================
+
+# Initialize SD integration
+sd_integration = PySDJSONIntegration()
+
+@mcp.tool()
+def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = None) -> dict:
+    """
+    Advanced System Dynamics simulation with JSON-based model building.
+
+    Create and simulate SD models using natural language descriptions converted
+    to JSON configurations. Supports stocks, flows, auxiliaries, constants, and
+    complex model structures.
+
+    QUICK START - Basic SD Model:
+    {
+      "model_name": "Population Growth",
+      "time_settings": {
+        "initial_time": 0,
+        "final_time": 100,
+        "time_step": 0.25
+      },
+      "stocks": [
+        {
+          "name": "Population",
+          "initial_value": 1000,
+          "inflows": ["Birth Rate"],
+          "units": "people"
+        }
+      ],
+      "flows": [
+        {
+          "name": "Birth Rate",
+          "expression": "Population * Birth Fraction",
+          "units": "people/year"
+        }
+      ],
+      "constants": [
+        {
+          "name": "Birth Fraction",
+          "value": 0.05,
+          "units": "1/year"
+        }
+      ]
+    }
+
+    COMMON PATTERNS:
+
+    Stock and Flow:
+    "stocks": [
+      {
+        "name": "Inventory",
+        "initial_value": 100,
+        "inflows": ["Production Rate"],
+        "outflows": ["Sales Rate"],
+        "units": "items"
+      }
+    ]
+
+    Auxiliaries (Calculated Variables):
+    "auxiliaries": [
+      {
+        "name": "Desired Inventory",
+        "expression": "Sales Rate * Inventory Coverage",
+        "units": "items"
+      }
+    ]
+
+    Time Functions:
+    "auxiliaries": [
+      {
+        "name": "Step Input",
+        "expression": "STEP(10, 5)",
+        "documentation": "Step from 0 to 10 at time 5"
+      }
+    ]
+
+    Args:
+        config: SD model configuration in JSON format
+        parameters: Parameter value overrides
+        time_settings: Simulation time configuration overrides
+
+    Returns:
+        Dictionary with simulation results and model metadata
+    """
+    try:
+        # Merge time settings if provided
+        if time_settings:
+            config.setdefault("time_settings", {}).update(time_settings)
+
+        # Run simulation with parameters
+        results = sd_integration.simulate_json_model(
+            config, parameters, time_settings
+        )
+
+        return {
+            "success": True,
+            "results": results,
+            "model_info": {
+                "model_name": config.get("model_name", "Unnamed Model"),
+                "time_range": f"{len(results.get('Time', [0]))} time steps" if 'Time' in results else "Unknown",
+                "variables": list(results.keys())
+            }
+        }
+
+    except (SDValidationError, SDModelBuildError, SDSimulationError) as e:
+        return {"error": f"SD simulation error: {str(e)}"}
+    except Exception as e:
+        return {"error": f"Unexpected error in SD simulation: {str(e)}"}
+
+
+@mcp.tool()
+def validate_sd_model(config: dict) -> dict:
+    """
+    Validate System Dynamics model configuration against JSON schema.
+
+    Provides comprehensive validation with detailed error reporting and
+    suggestions for fixing common issues in SD model definitions.
+
+    Args:
+        config: SD model configuration to validate
+
+    Returns:
+        Validation results with errors, warnings, and suggestions
+    """
+    try:
+        validation_result = sd_integration.validate_json_model(config)
+
+        if validation_result["is_valid"]:
+            model_info = sd_integration.get_model_info(config)
+            return {
+                "valid": True,
+                "message": "✅ SD model configuration is valid",
+                "model_info": model_info
+            }
+        else:
+            return {
+                "valid": False,
+                "errors": validation_result["errors"],
+                "suggestions": _generate_sd_suggestions(validation_result["errors"]),
+                "quick_fixes": _generate_sd_quick_fixes(validation_result["errors"])
+            }
+
+    except Exception as e:
+        return {"error": f"SD validation error: {str(e)}"}
+
+
+@mcp.tool()
+def convert_vensim_to_sd_json(file_path: str) -> dict:
+    """
+    Convert Vensim .mdl file to SD JSON format for use with simulate_sd.
+
+    Enables importing existing Vensim models into the conversational SD workflow.
+
+    Args:
+        file_path: Path to Vensim .mdl file
+
+    Returns:
+        SD model in JSON format ready for simulate_sd tool
+    """
+    try:
+        json_model = sd_integration.convert_vensim_to_json(file_path)
+
+        return {
+            "success": True,
+            "model_json": json_model,
+            "info": {
+                "original_file": file_path,
+                "conversion_type": "Vensim → SD JSON",
+                "ready_for_simulation": True
+            }
+        }
+
+    except (SDModelBuildError, FileNotFoundError) as e:
+        return {"error": f"Vensim conversion error: {str(e)}"}
+    except Exception as e:
+        return {"error": f"Unexpected conversion error: {str(e)}"}
+
+
+@mcp.tool()
+def get_sd_model_info(config: dict) -> dict:
+    """
+    Analyze SD model configuration and provide detailed information.
+
+    Shows model structure, complexity metrics, and validation status
+    without running simulation.
+
+    Args:
+        config: SD model configuration
+
+    Returns:
+        Detailed model analysis and information
+    """
+    try:
+        # Get basic model info
+        model_info = sd_integration.get_model_info(config)
+
+        # Add structure analysis if available
+        if isinstance(config, dict) and "abstractModel" in config:
+            abstract_model = config["abstractModel"]
+            sections = abstract_model.get("sections", [])
+
+            model_info.update({
+                "validation_status": "pending",
+                "complexity": _calculate_sd_complexity(config),
+                "time_settings": config.get("time_settings", {}),
+                "section_details": [
+                    {
+                        "name": section.get("name", ""),
+                        "elements": len(section.get("elements", []))
+                    }
+                    for section in sections
+                ]
+            })
+
+        return model_info
+
+    except Exception as e:
+        return {"error": f"SD model analysis error: {str(e)}"}
+
+
+def _generate_sd_suggestions(errors: list) -> list:
+    """Generate helpful suggestions for SD validation errors."""
+    suggestions = []
+
+    for error in errors:
+        error_str = str(error).lower()
+        if "abstractmodel" in error_str:
+            suggestions.append("Ensure JSON follows PySD abstract model schema structure")
+        elif "sections" in error_str:
+            suggestions.append("Check that 'sections' array contains at least one main section")
+        elif "originalpath" in error_str:
+            suggestions.append("Provide 'originalPath' field in abstractModel")
+        elif "elements" in error_str:
+            suggestions.append("Verify model elements have required fields (name, components)")
+        elif "components" in error_str:
+            suggestions.append("Check component structure with type, subtype, and ast fields")
+
+    if not suggestions:
+        suggestions.extend([
+            "Check JSON structure matches PySD abstract model schema",
+            "Ensure all required fields are present",
+            "Verify nested object structures are correct"
+        ])
+
+    return suggestions[:3]  # Limit to top 3 suggestions
+
+
+def _generate_sd_quick_fixes(errors: list) -> list:
+    """Generate quick fix suggestions for common SD errors."""
+    fixes = []
+
+    for error in errors:
+        error_str = str(error).lower()
+        if "required" in error_str and "abstractmodel" in error_str:
+            fixes.append("Wrap model definition in 'abstractModel' object")
+        elif "required" in error_str and "sections" in error_str:
+            fixes.append("Add 'sections' array with at least one section")
+        elif "required" in error_str and "originalpath" in error_str:
+            fixes.append("Add 'originalPath' field with model file path")
+
+    if not fixes:
+        fixes.extend([
+            "Check for missing required fields",
+            "Verify JSON structure is valid",
+            "Ensure proper nesting of objects"
+        ])
+
+    return fixes[:3]  # Limit to top 3 fixes
+
+
+def _calculate_sd_complexity(config: dict) -> dict:
+    """Calculate model complexity metrics for SD models."""
+    try:
+        if "abstractModel" in config:
+            abstract_model = config["abstractModel"]
+            sections = abstract_model.get("sections", [])
+
+            total_elements = sum(len(section.get("elements", [])) for section in sections)
+            total_components = sum(
+                len(element.get("components", []))
+                for section in sections
+                for element in section.get("elements", [])
+            )
+
+            return {
+                "sections": len(sections),
+                "total_elements": total_elements,
+                "total_components": total_components,
+                "complexity_score": min(10, (total_elements + total_components) // 10),
+                "estimated_build_time": f"{max(1, total_elements // 5)} seconds"
+            }
+        else:
+            return {
+                "complexity_score": 1,
+                "message": "Model structure not recognized"
+            }
+
+    except Exception:
+        return {
+            "complexity_score": 0,
+            "message": "Unable to calculate complexity"
+        }
+
 
 if __name__ == "__main__":
     mcp.run(transport='stdio')

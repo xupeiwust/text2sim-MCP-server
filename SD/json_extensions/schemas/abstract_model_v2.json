@@ -1,0 +1,965 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pysd.org/schemas/abstract-model/v2.0.0",
+  "title": "PySD Abstract Model Schema (Draft 2020-12)",
+  "description": "JSON Schema for PySD's abstract model representation, equivalent to the Python dataclass structure using Draft 2020-12",
+  "type": "object",
+  "properties": {
+    "abstractModel": {
+      "$ref": "#/$defs/AbstractModel"
+    }
+  },
+  "required": ["abstractModel"],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "AbstractModel": {
+      "type": "object",
+      "description": "Top-level model container",
+      "properties": {
+        "originalPath": {
+          "type": "string",
+          "description": "Path to the original model file"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AbstractSection"
+          },
+          "description": "Array of sections in the model"
+        }
+      },
+      "required": ["originalPath", "sections"],
+      "unevaluatedProperties": false
+    },
+    "AbstractSection": {
+      "type": "object",
+      "description": "Model section (main section or macro)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Section name (__main__ for main section or macro name)"
+        },
+        "path": {
+          "type": "string",
+          "description": "Section path"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["main", "macro", "module"],
+          "description": "Section type"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Parameters for the section"
+        },
+        "returns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Variables returned by the section"
+        },
+        "subscripts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AbstractSubscriptRange"
+          },
+          "description": "Subscript ranges defined in the section"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AbstractElement"
+          },
+          "description": "Elements defined in the section"
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AbstractConstraint"
+          },
+          "description": "Constraints defined in the section"
+        },
+        "testInputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AbstractTestInput"
+          },
+          "description": "Test inputs defined in the section"
+        },
+        "split": {
+          "type": "boolean",
+          "description": "Whether section splits variables by views"
+        },
+        "viewsDict": {
+          "type": ["object", "null"],
+          "description": "Dictionary of views for splitting variables"
+        }
+      },
+      "required": ["name", "path", "type", "params", "returns", "subscripts", "elements", "constraints", "testInputs", "split", "viewsDict"],
+      "unevaluatedProperties": false
+    },
+    "AbstractElement": {
+      "$anchor": "element-base",
+      "type": "object",
+      "description": "Base class for model elements",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Element name"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$dynamicRef": "#component"
+          },
+          "description": "Components that define this element"
+        },
+        "units": {
+          "type": "string",
+          "default": "",
+          "description": "Units of the element"
+        },
+        "limits": {
+          "type": "array",
+          "prefixItems": [
+            {"type": ["number", "null"]},
+            {"type": ["number", "null"]}
+          ],
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Limits of the element [min, max]"
+        },
+        "documentation": {
+          "type": "string",
+          "default": "",
+          "description": "Documentation for the element"
+        }
+      },
+      "required": ["name", "components"],
+      "unevaluatedProperties": false
+    },
+    "AbstractControlElement": {
+      "$dynamicAnchor": "element-base",
+      "type": "object",
+      "description": "Control element (extends AbstractElement)",
+      "properties": {
+        "elementType": {
+          "const": "control"
+        }
+      },
+      "allOf": [
+        {
+          "$dynamicRef": "#element-base"
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "AbstractComponent": {
+      "$anchor": "component-base",
+      "$dynamicAnchor": "component",
+      "type": "object",
+      "description": "Base component class",
+      "properties": {
+        "subscripts": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Subscript definitions"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "description": "Exception subscripts (EXCEPT clause)"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Subscripts tuple [definitions, exceptions]"
+        },
+        "ast": {
+          "$dynamicRef": "#syntax"
+        },
+        "type": {
+          "type": "string",
+          "default": "Auxiliary",
+          "description": "Component type"
+        },
+        "subtype": {
+          "type": "string",
+          "default": "Normal",
+          "description": "Component subtype"
+        }
+      },
+      "required": ["subscripts", "ast"],
+      "unevaluatedProperties": false
+    },
+    "AbstractUnchangeableConstant": {
+      "$dynamicAnchor": "component",
+      "type": "object",
+      "description": "Unchangeable constant component",
+      "allOf": [
+        {
+          "$dynamicRef": "#component-base"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "Constant"
+        },
+        "subtype": {
+          "const": "Unchangeable"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "AbstractLookup": {
+      "$dynamicAnchor": "component",
+      "type": "object",
+      "description": "Lookup component",
+      "allOf": [
+        {
+          "$dynamicRef": "#component-base"
+        }
+      ],
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "default": "x",
+          "description": "Name of the argument to use"
+        },
+        "type": {
+          "const": "Lookup"
+        },
+        "subtype": {
+          "const": "Hardcoded"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "AbstractData": {
+      "$dynamicAnchor": "component",
+      "type": "object",
+      "description": "Data component",
+      "allOf": [
+        {
+          "$dynamicRef": "#component-base"
+        }
+      ],
+      "properties": {
+        "keyword": {
+          "type": ["string", "null"],
+          "enum": ["interpolate", "hold_backward", "look_forward", "raw", null],
+          "description": "Data object keyword"
+        },
+        "type": {
+          "const": "Data"
+        },
+        "subtype": {
+          "const": "Normal"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "AbstractSubscriptRange": {
+      "type": "object",
+      "description": "Subscript range definition",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the subscript range"
+        },
+        "subscripts": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Regular subscript definition"
+            },
+            {
+              "type": "string",
+              "description": "Copy definition"
+            },
+            {
+              "type": "object",
+              "description": "GET XLS/DIRECT definition"
+            }
+          ]
+        },
+        "mapping": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of subscript ranges that can be mapped to"
+        }
+      },
+      "required": ["name", "subscripts", "mapping"],
+      "unevaluatedProperties": false
+    },
+    "AbstractConstraint": {
+      "type": "object",
+      "description": "Constraint definition",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the constraint variable"
+        },
+        "subscripts": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
+          "description": "Subscripts definition"
+        },
+        "expression": {
+          "type": "string",
+          "description": "Unparsed constraint expression"
+        }
+      },
+      "required": ["name", "subscripts", "expression"],
+      "unevaluatedProperties": false
+    },
+    "AbstractTestInput": {
+      "type": "object",
+      "description": "Test input definition",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the test input variable"
+        },
+        "subscripts": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
+          "description": "Subscripts definition"
+        },
+        "expression": {
+          "type": "string",
+          "description": "Unparsed test input expression"
+        }
+      },
+      "required": ["name", "subscripts", "expression"],
+      "unevaluatedProperties": false
+    },
+    "AbstractSyntax": {
+      "$anchor": "syntax-base",
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Base class for all abstract syntax structures",
+      "properties": {
+        "syntaxType": {
+          "type": "string",
+          "description": "Discriminator for syntax type"
+        }
+      },
+      "required": ["syntaxType"],
+      "discriminator": {
+        "propertyName": "syntaxType"
+      },
+      "oneOf": [
+        {"$ref": "#/$defs/ArithmeticStructure"},
+        {"$ref": "#/$defs/LogicStructure"},
+        {"$ref": "#/$defs/SubscriptsReferenceStructure"},
+        {"$ref": "#/$defs/ReferenceStructure"},
+        {"$ref": "#/$defs/CallStructure"},
+        {"$ref": "#/$defs/GameStructure"},
+        {"$ref": "#/$defs/AllocateAvailableStructure"},
+        {"$ref": "#/$defs/AllocateByPriorityStructure"},
+        {"$ref": "#/$defs/InitialStructure"},
+        {"$ref": "#/$defs/IntegStructure"},
+        {"$ref": "#/$defs/DelayStructure"},
+        {"$ref": "#/$defs/DelayNStructure"},
+        {"$ref": "#/$defs/DelayFixedStructure"},
+        {"$ref": "#/$defs/SmoothStructure"},
+        {"$ref": "#/$defs/SmoothNStructure"},
+        {"$ref": "#/$defs/TrendStructure"},
+        {"$ref": "#/$defs/ForecastStructure"},
+        {"$ref": "#/$defs/SampleIfTrueStructure"},
+        {"$ref": "#/$defs/LookupsStructure"},
+        {"$ref": "#/$defs/InlineLookupsStructure"},
+        {"$ref": "#/$defs/DataStructure"},
+        {"$ref": "#/$defs/GetLookupsStructure"},
+        {"$ref": "#/$defs/GetDataStructure"},
+        {"$ref": "#/$defs/GetConstantsStructure"}
+      ],
+      "unevaluatedProperties": false
+    },
+    "ArithmeticStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Arithmetic operation structure",
+      "properties": {
+        "syntaxType": {
+          "const": "ArithmeticStructure"
+        },
+        "operators": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of operators between arguments"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$dynamicRef": "#syntax"
+          },
+          "description": "Arguments of arithmetic operations"
+        }
+      },
+      "required": ["syntaxType", "operators", "arguments"],
+      "unevaluatedProperties": false
+    },
+    "LogicStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Logic operation structure",
+      "properties": {
+        "syntaxType": {
+          "const": "LogicStructure"
+        },
+        "operators": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of logic operators"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$dynamicRef": "#syntax"
+          },
+          "description": "Arguments of logic operations"
+        }
+      },
+      "required": ["syntaxType", "operators", "arguments"],
+      "unevaluatedProperties": false
+    },
+    "SubscriptsReferenceStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Reference with subscripts",
+      "properties": {
+        "syntaxType": {
+          "const": "SubscriptsReferenceStructure"
+        },
+        "subscripts": {
+          "type": "array",
+          "items": {
+            "$dynamicRef": "#syntax"
+          },
+          "description": "List of subscripts"
+        }
+      },
+      "required": ["syntaxType", "subscripts"],
+      "unevaluatedProperties": false
+    },
+    "ReferenceStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Variable reference",
+      "properties": {
+        "syntaxType": {
+          "const": "ReferenceStructure"
+        },
+        "reference": {
+          "type": "string",
+          "description": "Name of the referenced variable"
+        },
+        "subscripts": {
+          "oneOf": [
+            {"$ref": "#/$defs/SubscriptsReferenceStructure"},
+            {"type": "null"}
+          ],
+          "description": "Optional subscripts for the reference"
+        }
+      },
+      "required": ["syntaxType", "reference"],
+      "unevaluatedProperties": false
+    },
+    "CallStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Function call",
+      "properties": {
+        "syntaxType": {
+          "const": "CallStructure"
+        },
+        "function": {
+          "$dynamicRef": "#syntax"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$dynamicRef": "#syntax"
+          },
+          "description": "Function arguments"
+        }
+      },
+      "required": ["syntaxType", "function", "arguments"],
+      "unevaluatedProperties": false
+    },
+    "GameStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Game structure for optimization",
+      "properties": {
+        "syntaxType": {
+          "const": "GameStructure"
+        },
+        "expression": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "expression"],
+      "unevaluatedProperties": false
+    },
+    "AllocateAvailableStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Allocate available structure",
+      "properties": {
+        "syntaxType": {
+          "const": "AllocateAvailableStructure"
+        },
+        "request": {
+          "$dynamicRef": "#syntax"
+        },
+        "priority": {
+          "$dynamicRef": "#syntax"
+        },
+        "width": {
+          "$dynamicRef": "#syntax"
+        },
+        "supply": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "request", "priority", "width", "supply"],
+      "unevaluatedProperties": false
+    },
+    "AllocateByPriorityStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Allocate by priority structure",
+      "properties": {
+        "syntaxType": {
+          "const": "AllocateByPriorityStructure"
+        },
+        "request": {
+          "$dynamicRef": "#syntax"
+        },
+        "priority": {
+          "$dynamicRef": "#syntax"
+        },
+        "supply": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "request", "priority", "supply"],
+      "unevaluatedProperties": false
+    },
+    "InitialStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Initial value structure",
+      "properties": {
+        "syntaxType": {
+          "const": "InitialStructure"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "initial"],
+      "unevaluatedProperties": false
+    },
+    "IntegStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Integration structure",
+      "properties": {
+        "syntaxType": {
+          "const": "IntegStructure"
+        },
+        "flow": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "flow", "initial"],
+      "unevaluatedProperties": false
+    },
+    "DelayStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Delay structure",
+      "properties": {
+        "syntaxType": {
+          "const": "DelayStructure"
+        },
+        "input": {
+          "$dynamicRef": "#syntax"
+        },
+        "delayTime": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "input", "delayTime", "initial"],
+      "unevaluatedProperties": false
+    },
+    "DelayNStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "N-order delay structure",
+      "properties": {
+        "syntaxType": {
+          "const": "DelayNStructure"
+        },
+        "input": {
+          "$dynamicRef": "#syntax"
+        },
+        "delayTime": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        },
+        "order": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "input", "delayTime", "initial", "order"],
+      "unevaluatedProperties": false
+    },
+    "DelayFixedStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Fixed delay structure",
+      "properties": {
+        "syntaxType": {
+          "const": "DelayFixedStructure"
+        },
+        "input": {
+          "$dynamicRef": "#syntax"
+        },
+        "delayTime": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "input", "delayTime", "initial"],
+      "unevaluatedProperties": false
+    },
+    "SmoothStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Smooth structure",
+      "properties": {
+        "syntaxType": {
+          "const": "SmoothStructure"
+        },
+        "input": {
+          "$dynamicRef": "#syntax"
+        },
+        "smoothTime": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        },
+        "order": {
+          "type": "number",
+          "description": "The order of the smooth"
+        }
+      },
+      "required": ["syntaxType", "input", "smoothTime", "initial", "order"],
+      "unevaluatedProperties": false
+    },
+    "SmoothNStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "N-order smooth structure",
+      "properties": {
+        "syntaxType": {
+          "const": "SmoothNStructure"
+        },
+        "input": {
+          "$dynamicRef": "#syntax"
+        },
+        "smoothTime": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        },
+        "order": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "input", "smoothTime", "initial", "order"],
+      "unevaluatedProperties": false
+    },
+    "TrendStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Trend structure",
+      "properties": {
+        "syntaxType": {
+          "const": "TrendStructure"
+        },
+        "input": {
+          "$dynamicRef": "#syntax"
+        },
+        "averageTime": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "input", "averageTime", "initial"],
+      "unevaluatedProperties": false
+    },
+    "ForecastStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Forecast structure",
+      "properties": {
+        "syntaxType": {
+          "const": "ForecastStructure"
+        },
+        "input": {
+          "$dynamicRef": "#syntax"
+        },
+        "averageTime": {
+          "$dynamicRef": "#syntax"
+        },
+        "horizon": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "input", "averageTime", "horizon", "initial"],
+      "unevaluatedProperties": false
+    },
+    "SampleIfTrueStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Sample if true structure",
+      "properties": {
+        "syntaxType": {
+          "const": "SampleIfTrueStructure"
+        },
+        "current": {
+          "$dynamicRef": "#syntax"
+        },
+        "condition": {
+          "$dynamicRef": "#syntax"
+        },
+        "initial": {
+          "$dynamicRef": "#syntax"
+        }
+      },
+      "required": ["syntaxType", "current", "condition", "initial"],
+      "unevaluatedProperties": false
+    },
+    "LookupsStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Lookup table structure",
+      "properties": {
+        "syntaxType": {
+          "const": "LookupsStructure"
+        },
+        "argument": {
+          "$dynamicRef": "#syntax"
+        },
+        "lookups": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {"type": "number"},
+              {"type": "number"}
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Lookup pair [x, y]"
+          },
+          "description": "Array of [x, y] lookup pairs"
+        }
+      },
+      "required": ["syntaxType", "argument", "lookups"],
+      "unevaluatedProperties": false
+    },
+    "InlineLookupsStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Inline lookup structure",
+      "properties": {
+        "syntaxType": {
+          "const": "InlineLookupsStructure"
+        },
+        "argument": {
+          "$dynamicRef": "#syntax"
+        },
+        "lookups": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {"type": "number"},
+              {"type": "number"}
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Lookup pair [x, y]"
+          },
+          "description": "Array of [x, y] lookup pairs"
+        }
+      },
+      "required": ["syntaxType", "argument", "lookups"],
+      "unevaluatedProperties": false
+    },
+    "DataStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Data structure",
+      "properties": {
+        "syntaxType": {
+          "const": "DataStructure"
+        },
+        "data": {
+          "type": "array",
+          "items": {"type": "number"},
+          "description": "Array of data values"
+        }
+      },
+      "required": ["syntaxType", "data"],
+      "unevaluatedProperties": false
+    },
+    "GetLookupsStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Get lookups from external source",
+      "properties": {
+        "syntaxType": {
+          "const": "GetLookupsStructure"
+        },
+        "argument": {
+          "$dynamicRef": "#syntax"
+        },
+        "file": {
+          "type": "string",
+          "description": "File path"
+        },
+        "tab": {
+          "type": "string",
+          "description": "Tab name"
+        },
+        "xRowOrCol": {
+          "type": "string",
+          "description": "X values row or column"
+        },
+        "cell": {
+          "type": "string",
+          "description": "Starting cell"
+        }
+      },
+      "required": ["syntaxType", "argument", "file", "tab", "xRowOrCol", "cell"],
+      "unevaluatedProperties": false
+    },
+    "GetDataStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Get data from external source",
+      "properties": {
+        "syntaxType": {
+          "const": "GetDataStructure"
+        },
+        "file": {
+          "type": "string",
+          "description": "File path"
+        },
+        "tab": {
+          "type": "string",
+          "description": "Tab name"
+        },
+        "timeRowOrCol": {
+          "type": "string",
+          "description": "Time row or column"
+        },
+        "cell": {
+          "type": "string",
+          "description": "Starting cell"
+        },
+        "keyword": {
+          "type": ["string", "null"],
+          "enum": ["interpolate", "hold_backward", "look_forward", "raw", null],
+          "description": "Data interpolation keyword"
+        }
+      },
+      "required": ["syntaxType", "file", "tab", "timeRowOrCol", "cell"],
+      "unevaluatedProperties": false
+    },
+    "GetConstantsStructure": {
+      "$dynamicAnchor": "syntax",
+      "type": "object",
+      "description": "Get constants from external source",
+      "properties": {
+        "syntaxType": {
+          "const": "GetConstantsStructure"
+        },
+        "file": {
+          "type": "string",
+          "description": "File path"
+        },
+        "tab": {
+          "type": "string",
+          "description": "Tab name"
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Variable name prefix"
+        },
+        "cell": {
+          "type": "string",
+          "description": "Starting cell"
+        }
+      },
+      "required": ["syntaxType", "file", "tab", "prefix", "cell"],
+      "unevaluatedProperties": false
+    }
+  }
+}
