@@ -57,7 +57,7 @@ class SchemaRegistry:
         self.register_schema(SchemaInfo(
             schema_type="SD",
             schema_path=sd_schema_path,
-            indicators=["abstractModel", "abstractModel.sections"],
+            indicators=["abstractModel", "model.abstractModel", "template_info.schema_type=SD"],
             validator_class="PySDJSONIntegration",
             description="System Dynamics simulation using PySD JSON extensions",
             version="2.0"
@@ -171,23 +171,39 @@ class SchemaRegistry:
     def _has_nested_key(self, data: dict, key_path: str) -> bool:
         """
         Check if a nested key exists in the data.
-        
+
         Args:
             data: Dictionary to search
-            key_path: Dot-separated path (e.g., "processing_rules.steps")
-            
+            key_path: Dot-separated path (e.g., "processing_rules.steps") or
+                     value check (e.g., "template_info.schema_type=SD")
+
         Returns:
-            True if the key path exists
+            True if the key path exists or value matches
         """
+        # Handle value check patterns (e.g., "template_info.schema_type=SD")
+        if '=' in key_path:
+            path, expected_value = key_path.split('=', 1)
+            keys = path.split('.')
+            current = data
+
+            for key in keys:
+                if isinstance(current, dict) and key in current:
+                    current = current[key]
+                else:
+                    return False
+
+            return str(current) == expected_value
+
+        # Handle normal nested key checking
         keys = key_path.split('.')
         current = data
-        
+
         for key in keys:
             if isinstance(current, dict) and key in current:
                 current = current[key]
             else:
                 return False
-        
+
         return True
     
     def get_available_schemas(self) -> List[str]:
