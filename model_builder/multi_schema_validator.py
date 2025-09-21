@@ -14,6 +14,17 @@ from pathlib import Path
 from .schema_registry import schema_registry
 from DES.schema_validator import DESConfigValidator
 
+# Import SD integration
+try:
+    import sys
+    from pathlib import Path
+    current_dir = Path(__file__).parent
+    sys.path.append(str(current_dir.parent.parent))
+    from SD.sd_integration import PySDJSONIntegration
+    SD_INTEGRATION_AVAILABLE = True
+except ImportError:
+    SD_INTEGRATION_AVAILABLE = False
+
 
 @dataclass
 class ValidationError:
@@ -61,9 +72,15 @@ class MultiSchemaValidator:
             self._validators["DES"] = DESConfigValidator()
         except Exception as e:
             print(f"Warning: Could not initialize DES validator: {e}")
-        
-        # Future: Initialize SD validator when available
-        # self._validators["SD"] = SDConfigValidator()
+
+        # Initialize SD validator
+        if SD_INTEGRATION_AVAILABLE:
+            try:
+                self._validators["SD"] = PySDJSONIntegration()
+            except Exception as e:
+                print(f"Warning: Could not initialize SD validator: {e}")
+        else:
+            print("Warning: SD integration not available")
     
     def validate_model(
         self,
@@ -142,21 +159,54 @@ class MultiSchemaValidator:
         if schema_type == "DES":
             # Use existing DES validator
             normalized_config, errors = validator.validate_and_normalize(model)
-            
+
             # Convert to our ValidationResult format
             validation_errors = []
             for error_msg in errors:
                 validation_errors.append(self._parse_des_error(error_msg))
-            
+
             # Calculate completeness
             completeness = self._calculate_completeness(model, schema_type)
-            
+
             # Generate suggestions and next steps
             suggestions = self._generate_suggestions(model, schema_type, validation_errors)
             next_steps = self._generate_next_steps(validation_errors, completeness)
-            
+
             return ValidationResult(
                 valid=len(errors) == 0,
+                schema_type=schema_type,
+                validation_mode=validation_mode,
+                completeness=completeness,
+                errors=validation_errors,
+                missing_required=self._find_missing_required(model, schema_type),
+                suggestions=suggestions,
+                next_steps=next_steps
+            )
+
+        elif schema_type == "SD":
+            # Use SD validator (PySDJSONIntegration)
+            validation_result = validator.validate_json_model(model)
+
+            # Convert to our ValidationResult format
+            validation_errors = []
+            if not validation_result["is_valid"]:
+                for error_msg in validation_result["errors"]:
+                    validation_errors.append(ValidationError(
+                        path="unknown",  # SD validator doesn't provide path info yet
+                        message=error_msg,
+                        quick_fix="Check SD model structure and component definitions",
+                        example={}
+                    ))
+
+            # Calculate completeness
+            completeness = self._calculate_completeness(model, schema_type)
+
+            # Generate suggestions and next steps
+            suggestions = self._generate_suggestions(model, schema_type, validation_errors)
+            next_steps = self._generate_next_steps(validation_errors, completeness)
+
+            return ValidationResult(
+                valid=validation_result["is_valid"],
                 schema_type=schema_type,
                 validation_mode=validation_mode,
                 completeness=completeness,
@@ -398,9 +448,39 @@ class MultiSchemaValidator:
                 "entity_types": {"customer": {"probability": 1.0}},
                 "resources": {"server": {"capacity": 1}},
                 "processing_rules": {"steps": ["server"]}
+            },
+            "SD": {
+                "abstractModel": {
+                    "originalPath": "my_model.json",
+                    "sections": [
+                        {
+                            "name": "__main__",
+                            "type": "main",
+                            "elements": [
+                                {
+                                    "name": "Population Growth Model",
+                                    "components": [
+                                        {
+                                            "type": "Stock",
+                                            "subtype": "Normal",
+                                            "name": "population",
+                                            "initial_value": 100
+                                        },
+                                        {
+                                            "type": "Flow",
+                                            "subtype": "Normal",
+                                            "name": "birth_rate",
+                                            "equation": "population * 0.02"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
         }
-        
+
         return examples.get(schema_type, {}).get(section, {})
     
     def _generate_suggestions(
@@ -422,7 +502,7 @@ class MultiSchemaValidator:
                 suggestions.append("Add processing_rules to define how entities flow through resources")
             if not self._has_nested_key(model, "arrival_pattern") and not model.get("num_entities"):
                 suggestions.append("Add arrival_pattern for continuous arrivals or num_entities for fixed batch")
-            
+
             # Advanced feature suggestions based on completeness
             has_basic_structure = all(self._has_nested_key(model, key) for key in ["entity_types", "resources"])
             if has_basic_structure:
@@ -434,6 +514,34 @@ class MultiSchemaValidator:
                     suggestions.append("Add statistics configuration to control data collection")
                 if not self._has_nested_key(model, "metrics"):
                     suggestions.append("Customize metrics names for domain-specific terminology")
+
+        elif schema_type == "SD":
+            if not self._has_nested_key(model, "abstractModel"):
+                suggestions.append("Add abstractModel section as the root container for your SD model")
+            if not self._has_nested_key(model, "abstractModel.sections"):
+                suggestions.append("Add sections array to define model structure and components")
+            if not self._has_nested_key(model, "abstractModel.originalPath"):
+                suggestions.append("Add originalPath to specify the source model file name")
+
+            # Advanced SD feature suggestions
+            has_basic_structure = self._has_nested_key(model, "abstractModel.sections")
+            if has_basic_structure:
+                sections = model.get("abstractModel", {}).get("sections", [])
+                if not any(section.get("type") == "main" for section in sections):
+                    suggestions.append("Add a main section to contain your primary model elements")
+                if not any("elements" in section for section in sections):
+                    suggestions.append("Add elements to your sections to define stocks, flows, and auxiliaries")
+
+                # Check for SD component types
+                total_components = sum(
+                    len(element.get("components", []))
+                    for section in sections
+                    for element in section.get("elements", [])
+                )
+                if total_components == 0:
+                    suggestions.append("Add components (stocks, flows, auxiliaries) to define model behavior")
+                    suggestions.append("Use Stock components for accumulations, Flow for rates of change")
+                    suggestions.append("Use Auxiliary components for calculations and intermediate variables")
         
         # Error-based suggestions
         for error in errors:
