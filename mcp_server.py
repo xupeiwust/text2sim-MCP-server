@@ -810,34 +810,64 @@ def help_validation() -> dict:
     return {
         "primary_tool": {
             "validate_model": {
-                "name": "🎯 validate_model - MAIN VALIDATION TOOL",
-                "purpose": "Auto-detect and validate any model type (SD, DES, etc.)",
+                "name": "🎯 validate_model - UNIFIED VALIDATION TOOL",
+                "purpose": "Auto-detect and validate any simulation model (SD, DES, etc.)",
                 "use_when": "ALWAYS use this - it handles everything automatically",
-                "accepts": "Any simulation model: templates, SD models, DES models",
+                "accepts": "Any simulation model: SD templates, DES configs, raw models",
                 "features": [
                     "🔍 Auto-detects model type (SD/DES)",
                     "📋 Handles template format and raw models",
-                    "✅ Comprehensive validation with detailed errors",
-                    "🚀 One tool for all validation needs"
+                    "✅ Schema-specific validation with detailed errors",
+                    "🚀 One tool for all validation needs",
+                    "📊 Proper completeness scoring per model type"
                 ]
             }
         },
-        "specialized_tools": {
-            "validate_des_model": {
-                "name": "🏭 validate_des_model",
-                "purpose": "DES-specific validation with specialized feedback",
-                "use_when": "You need DES-specific validation features",
-                "note": "validate_model can also handle DES models"
+        "auto_detection": {
+            "sd_indicators": [
+                "abstractModel structure",
+                "template_info.schema_type=SD",
+                "model.abstractModel section",
+                "PySD JSON format"
+            ],
+            "des_indicators": [
+                "entity_types section",
+                "resources section",
+                "processing_rules section",
+                "SimPy configuration format"
+            ],
+            "how_it_works": "validate_model examines your model structure and automatically applies the correct validation rules"
+        },
+        "usage_examples": {
+            "sd_template": {
+                "example": "validate_model(loaded_sd_template)",
+                "description": "Validates SD template with PySD JSON structure"
+            },
+            "sd_model": {
+                "example": "validate_model({'abstractModel': {...}})",
+                "description": "Validates raw SD model in PySD format"
+            },
+            "des_model": {
+                "example": "validate_model({'entity_types': {...}, 'resources': {...}})",
+                "description": "Validates DES model with SimPy configuration"
+            },
+            "strict_validation": {
+                "example": "validate_model(model, validation_mode='strict')",
+                "description": "Full validation before simulation"
             }
         },
-        "common_usage": {
-            "any_model": "validate_model(your_model_config)",
-            "sd_template": "validate_model(loaded_template)",
-            "des_model": "validate_model(des_config)",
-            "strict_mode": "validate_model(model, validation_mode='strict')"
+        "validation_modes": {
+            "partial": "Validate only provided sections (default for development)",
+            "strict": "Full schema compliance required (use before simulation)",
+            "structure": "Quick structural check without business rules"
         },
-        "migration_note": "🔄 All validation is now consolidated into validate_model - no need for separate SD tools",
-        "tip": "📋 Just use validate_model for everything - it will detect the type and validate appropriately"
+        "troubleshooting": {
+            "low_completeness": "Add more required sections for your model type",
+            "auto_detection_failed": "Add explicit schema_type field or check model structure",
+            "validation_errors": "Follow suggested quick fixes in error messages"
+        },
+        "migration_note": "🔄 All validation consolidated into validate_model - no separate tools needed",
+        "tip": "📋 Just use validate_model for everything - it detects SD vs DES automatically!"
     }
 
 
