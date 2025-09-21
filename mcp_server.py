@@ -8,21 +8,29 @@ from typing import List
 
 # Ensure the SD module is in the path
 current_dir = Path(__file__).parent
-if str(current_dir) not in sys.path:
-    sys.path.append(str(current_dir))
+root_dir = current_dir.parent  # Go up one level to the root where SD directory is
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
 
-# Import SD utilities
+# Import SD JSON integration (modern approach)
 try:
-    from SD.sd_utils import load_model_metadata, run_model_simulation, get_model_list, get_model_details
     from SD.sd_integration import PySDJSONIntegration, SDIntegrationError, SDValidationError, SDModelBuildError, SDSimulationError
-except ImportError:
-    # Create SD directory if it doesn't exist
-    sd_dir = current_dir / "SD"
-    sd_dir.mkdir(exist_ok=True)
-
-    # Reattempt import after ensuring directory exists
-    from SD.sd_utils import load_model_metadata, run_model_simulation, get_model_list, get_model_details
-    from SD.sd_integration import PySDJSONIntegration, SDIntegrationError, SDValidationError, SDModelBuildError, SDSimulationError
+    print("✅ SD JSON integration imported successfully", file=sys.stderr)
+except ImportError as e:
+    print(f"❌ Failed to import SD integration: {e}", file=sys.stderr)
+    print(f"   Root directory: {root_dir}", file=sys.stderr)
+    print(f"   Python path: {sys.path}", file=sys.stderr)
+    # Provide fallback functionality for SD integration
+    class DummySDIntegration:
+        def validate_json_model(self, model): return {"is_valid": False, "errors": ["SD integration not available"]}
+        def simulate_json_model(self, model, **kwargs): raise Exception("SD integration not available")
+        def get_model_info(self, model): return {"error": "SD integration not available"}
+        def convert_vensim_to_json(self, path): raise Exception("SD integration not available")
+    PySDJSONIntegration = DummySDIntegration
+    SDIntegrationError = Exception
+    SDValidationError = Exception
+    SDModelBuildError = Exception
+    SDSimulationError = Exception
 
 # Initialise the MCP server
 mcp = FastMCP("text2sim-mcp-server")
@@ -247,78 +255,7 @@ def simulate_des(config: dict) -> dict:
     except Exception as e:
         return {"error": f"Simulation error: {str(e)}"}
 
-@mcp.tool()
-def simulate_sd_model(model: str, parameters: dict = None, 
-                     start: int = None, stop: int = None, step: int = None) -> dict:
-    """
-    Run a System Dynamics model simulation using PySD.
-    
-    This tool runs a registered System Dynamics model with the provided parameters
-    and returns the simulation results. Models must be registered in the SD/models/metadata.json file.
-    
-    Args:
-        model: Name of the model to simulate (must match an entry in metadata.json)
-        parameters: Dictionary of parameter name-value pairs to override default values
-        start: Start time for simulation (defaults to model's metadata setting)
-        stop: End time for simulation (defaults to model's metadata setting)
-        step: Time step for simulation (defaults to model's metadata setting)
-    
-    Returns:
-        A dictionary containing simulation results with time series data for each model variable
-        
-        If an error occurs, returns: {"error": "Error message"}
-    """
-    try:
-        # Run simulation with provided parameters
-        result = run_model_simulation({
-            "model": model,
-            "parameters": parameters or {},
-            "start": start,
-            "stop": stop,
-            "step": step
-        })
-        
-        # Convert to a dictionary that's serializable
-        return json.loads(result.to_json())
-    except Exception as e:
-        return {"error": f"SD simulation error: {str(e)}"}
-
-@mcp.tool()
-def list_sd_models() -> dict:
-    """
-    List all available System Dynamics models with their descriptions.
-    
-    Returns:
-        A dictionary mapping model names to their descriptions, or
-        {"error": "Error message"} if an error occurs
-    """
-    try:
-        return get_model_list()
-    except Exception as e:
-        return {"error": f"Error listing SD models: {str(e)}"}
-
-@mcp.tool()
-def get_sd_model_info(model_name: str) -> dict:
-    """
-    Get detailed information about a specific System Dynamics model.
-    
-    This tool returns metadata about a registered model, including its
-    available parameters, outputs, and time settings.
-    
-    Args:
-        model_name: Name of the model to retrieve information for
-    
-    Returns:
-        A dictionary containing model metadata, or
-        {"error": "Error message"} if the model is not found or an error occurs
-    """
-    try:
-        model_info = get_model_details(model_name)
-        if not model_info:
-            return {"error": f"Model not found: {model_name}"}
-        return model_info
-    except Exception as e:
-        return {"error": f"Error retrieving model info: {str(e)}"}
+# Old file-based SD tools removed - now using JSON-based approach exclusively
 
 # Import new model builder infrastructure
 from model_builder.multi_schema_validator import MultiSchemaValidator
