@@ -1,6 +1,6 @@
 [project]
 name = "text2sim-MCP-server"
-version = "2.3.0"
+version = "2.4.2"
 description = "A multi-paradigm simulation engine that supports Discrete-Event Simulation (DES) with SimPy and System Dynamics (SD) with PySD. Features advanced Model Builder tools for iterative, conversational model development. Integrates with LLMs through the Model Context Protocol (MCP) to enable sophisticated simulation capabilities in natural language environments."
 readme = "README.md"
 requires-python = ">=3.12"

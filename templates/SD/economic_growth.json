@@ -1,7 +1,6 @@
 {
   "template_info": {
     "template_id": "economic-growth-v1",
-    
     "description": "Solow-style economic growth with capital accumulation, investment, and depreciation",
     "domain": "economics",
     "complexity": "advanced",
@@ -9,7 +8,13 @@
     "author": "Text2Sim.com",
     "version": "1.0.0",
     "created": "2025-09-21",
-    "tags": ["economics", "growth", "capital", "investment", "solow"],
+    "tags": [
+      "economics",
+      "growth",
+      "capital",
+      "investment",
+      "solow"
+    ],
     "estimated_build_time": "35-40 minutes",
     "difficulty": "advanced"
   },
@@ -18,7 +23,6 @@
       "originalPath": "economic_growth.json",
       "sections": [
         {
-          
           "name": "__main__",
           "type": "main",
           "path": "/",
@@ -31,19 +35,22 @@
           "viewsDict": {},
           "elements": [
             {
-              
               "name": "System Components",
               "components": [
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "IntegStructure",
                     "flow": {
                       "syntaxType": "ArithmeticStructure",
-                      "operators": ["-"],
+                      "operators": [
+                        "-"
+                      ],
                       "arguments": [
                         {
                           "syntaxType": "ReferenceStructure",
@@ -59,16 +66,32 @@
                       "syntaxType": "ReferenceStructure",
                       "reference": "1000"
                     }
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["*"],
+                    "operators": [
+                      "*"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -79,16 +102,32 @@
                         "reference": "savings_rate"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["*"],
+                    "operators": [
+                      "*"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -99,16 +138,33 @@
                         "reference": "depreciation_fraction"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["*", "*"],
+                    "operators": [
+                      "*",
+                      "*"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -116,7 +172,9 @@
                       },
                       {
                         "syntaxType": "ArithmeticStructure",
-                        "operators": ["^"],
+                        "operators": [
+                          "^"
+                        ],
                         "arguments": [
                           {
                             "syntaxType": "ReferenceStructure",
@@ -130,7 +188,9 @@
                       },
                       {
                         "syntaxType": "ArithmeticStructure",
-                        "operators": ["^"],
+                        "operators": [
+                          "^"
+                        ],
                         "arguments": [
                           {
                             "syntaxType": "ReferenceStructure",
@@ -143,76 +203,176 @@
                         ]
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "10"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "100"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "0.3"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "0.7"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "0.2"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "0.05"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["/"],
+                    "operators": [
+                      "/"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -223,16 +383,32 @@
                         "reference": "labor_force"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["/"],
+                    "operators": [
+                      "/"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -243,9 +419,16 @@
                         "reference": "labor_force"
                       }
                     ]
-                  }
+                  },
+                  "name": "System Components"
                 }
-              ]
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
             }
           ]
         }
@@ -270,7 +453,6 @@
   ],
   "examples": [
     {
-      
       "changes": {
         "capital_stock": 200,
         "savings_rate": 0.25,
@@ -280,7 +462,6 @@
       "description": "Lower initial capital, higher savings rate, lower productivity"
     },
     {
-      
       "changes": {
         "capital_stock": 2000,
         "savings_rate": 0.15,

@@ -202,11 +202,11 @@ class MultiSchemaValidator:
 
             # Convert to our ValidationResult format
             validation_errors = []
-            if not validation_result["is_valid"]:
-                for error_msg in validation_result["errors"]:
+            if not validation_result.is_valid:
+                for error_msg in validation_result.errors:
                     validation_errors.append(ValidationError(
                         path="unknown",  # SD validator doesn't provide path info yet
-                        message=error_msg,
+                        message=str(error_msg),
                         quick_fix="Check SD model structure and component definitions",
                         example={}
                     ))
@@ -219,7 +219,7 @@ class MultiSchemaValidator:
             next_steps = self._generate_next_steps(validation_errors, completeness)
 
             return ValidationResult(
-                valid=validation_result["is_valid"],
+                valid=validation_result.is_valid,
                 schema_type=schema_type,
                 validation_mode=validation_mode,
                 completeness=completeness,
