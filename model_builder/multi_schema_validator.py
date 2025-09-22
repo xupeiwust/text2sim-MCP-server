@@ -198,12 +198,12 @@ class MultiSchemaValidator:
                     # Direct abstractModel format
                     model_to_validate = {"abstractModel": model}
 
-            validation_result = validator.validate_json_model(model_to_validate)
+            sd_validation_result = validator.validate_json_model(model_to_validate)
 
             # Convert to our ValidationResult format
             validation_errors = []
-            if not validation_result.is_valid:
-                for error_msg in validation_result.errors:
+            if not sd_validation_result.is_valid:
+                for error_msg in sd_validation_result.errors:
                     validation_errors.append(ValidationError(
                         path="unknown",  # SD validator doesn't provide path info yet
                         message=str(error_msg),
@@ -219,7 +219,7 @@ class MultiSchemaValidator:
             next_steps = self._generate_next_steps(validation_errors, completeness)
 
             return ValidationResult(
-                valid=validation_result.is_valid,
+                valid=sd_validation_result.is_valid,
                 schema_type=schema_type,
                 validation_mode=validation_mode,
                 completeness=completeness,

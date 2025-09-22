@@ -1543,13 +1543,30 @@ def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = Non
         Dictionary with simulation results and model metadata
     """
     try:
-        # Merge time settings if provided
-        if time_settings:
-            config.setdefault("time_settings", {}).update(time_settings)
+        # Extract time settings without modifying the model config
+        initial_time = 0
+        final_time = 100
+        time_step = 1
 
-        # Run simulation with parameters
+        if time_settings:
+            initial_time = time_settings.get("initial_time", initial_time)
+            final_time = time_settings.get("final_time", final_time)
+            time_step = time_settings.get("time_step", time_step)
+
+        # Also check config for time_settings (backward compatibility)
+        if "time_settings" in config:
+            ts = config["time_settings"]
+            initial_time = ts.get("initial_time", initial_time)
+            final_time = ts.get("final_time", final_time)
+            time_step = ts.get("time_step", time_step)
+
+        # Run simulation with individual parameters (not time_settings dict)
         results = sd_integration.simulate_json_model(
-            config, parameters, time_settings
+            model=config,
+            initial_time=initial_time,
+            final_time=final_time,
+            time_step=time_step,
+            params=parameters
         )
 
         return {
