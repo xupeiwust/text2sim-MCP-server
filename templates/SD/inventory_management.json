@@ -1,7 +1,6 @@
 {
   "template_info": {
     "template_id": "inventory-management-v1",
-    
     "description": "Supply chain model with inventory control and ordering delays",
     "domain": "supply_chain",
     "complexity": "intermediate",
@@ -9,7 +8,12 @@
     "author": "Text2Sim.com",
     "version": "1.0.0",
     "created": "2025-09-21",
-    "tags": ["inventory", "supply_chain", "delays", "feedback"],
+    "tags": [
+      "inventory",
+      "supply_chain",
+      "delays",
+      "feedback"
+    ],
     "estimated_build_time": "25-30 minutes",
     "difficulty": "intermediate"
   },
@@ -18,7 +22,6 @@
       "originalPath": "inventory_management.json",
       "sections": [
         {
-          
           "name": "__main__",
           "type": "main",
           "path": "/",
@@ -31,19 +34,22 @@
           "viewsDict": {},
           "elements": [
             {
-              
               "name": "System Components",
               "components": [
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "IntegStructure",
                     "flow": {
                       "syntaxType": "ArithmeticStructure",
-                      "operators": ["-"],
+                      "operators": [
+                        "-"
+                      ],
                       "arguments": [
                         {
                           "syntaxType": "ReferenceStructure",
@@ -59,18 +65,34 @@
                       "syntaxType": "ReferenceStructure",
                       "reference": "500"
                     }
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "IntegStructure",
                     "flow": {
                       "syntaxType": "ArithmeticStructure",
-                      "operators": ["-"],
+                      "operators": [
+                        "-"
+                      ],
                       "arguments": [
                         {
                           "syntaxType": "ReferenceStructure",
@@ -86,13 +108,27 @@
                       "syntaxType": "ReferenceStructure",
                       "reference": "0"
                     }
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "CallStructure",
                     "function": {
@@ -109,16 +145,32 @@
                         "reference": "desired_order_quantity"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["/"],
+                    "operators": [
+                      "/"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -129,13 +181,27 @@
                         "reference": "supply_delay"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "CallStructure",
                     "function": {
@@ -152,20 +218,38 @@
                         "reference": "inventory"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["/"],
+                    "operators": [
+                      "/"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ArithmeticStructure",
-                        "operators": ["-"],
+                        "operators": [
+                          "-"
+                        ],
                         "arguments": [
                           {
                             "syntaxType": "ReferenceStructure",
@@ -182,16 +266,32 @@
                         "reference": "adjustment_time"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["*"],
+                    "operators": [
+                      "*"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -202,56 +302,128 @@
                         "reference": "safety_stock_coverage"
                       }
                     ]
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "100"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "4"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "1"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "3"
-                  }
-                },
+                  },
+                  "name": "System Components"
+                }
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
+            },
+            {
+              "name": "System Components",
+              "components": [
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["/"],
+                    "operators": [
+                      "/"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -262,9 +434,16 @@
                         "reference": "demand"
                       }
                     ]
-                  }
+                  },
+                  "name": "System Components"
                 }
-              ]
+              ],
+              "units": "dimensionless",
+              "limits": [
+                null,
+                null
+              ],
+              "documentation": "Component: System Components"
             }
           ]
         }
@@ -288,7 +467,6 @@
   ],
   "examples": [
     {
-      
       "changes": {
         "demand": 500,
         "supply_delay": 8,
@@ -298,7 +476,6 @@
       "description": "High demand, long supply delays, low safety stock, quick adjustments"
     },
     {
-      
       "changes": {
         "demand": 50,
         "supply_delay": 12,

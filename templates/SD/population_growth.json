@@ -9,7 +9,12 @@
     "author": "Text2Sim.com",
     "version": "1.0.0",
     "created": "2025-09-21",
-    "tags": ["population", "demographics", "basic", "growth"],
+    "tags": [
+      "population",
+      "demographics",
+      "basic",
+      "growth"
+    ],
     "estimated_build_time": "10-15 minutes",
     "difficulty": "beginner"
   },
@@ -35,12 +40,17 @@
                 {
                   "type": "Stock",
                   "subtype": "Normal",
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "IntegStructure",
                     "flow": {
                       "syntaxType": "ArithmeticStructure",
-                      "operators": ["-"],
+                      "operators": [
+                        "-"
+                      ],
                       "arguments": [
                         {
                           "syntaxType": "ReferenceStructure",
@@ -60,7 +70,10 @@
                 }
               ],
               "units": "people",
-              "limits": [0, null],
+              "limits": [
+                0,
+                null
+              ],
               "documentation": "Total population being modeled"
             },
             {
@@ -69,10 +82,15 @@
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["*"],
+                    "operators": [
+                      "*"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -87,7 +105,10 @@
                 }
               ],
               "units": "people/year",
-              "limits": [0, null],
+              "limits": [
+                0,
+                null
+              ],
               "documentation": "Rate of births per year"
             },
             {
@@ -96,10 +117,15 @@
                 {
                   "type": "Flow",
                   "subtype": "Normal",
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["*"],
+                    "operators": [
+                      "*"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -114,7 +140,10 @@
                 }
               ],
               "units": "people/year",
-              "limits": [0, null],
+              "limits": [
+                0,
+                null
+              ],
               "documentation": "Rate of deaths per year"
             },
             {
@@ -123,7 +152,10 @@
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "0.02"
@@ -131,7 +163,10 @@
                 }
               ],
               "units": "1/year",
-              "limits": [0, 1],
+              "limits": [
+                0,
+                1
+              ],
               "documentation": "Annual birth rate as fraction of population (default 2%)"
             },
             {
@@ -140,7 +175,10 @@
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ReferenceStructure",
                     "reference": "0.015"
@@ -148,7 +186,10 @@
                 }
               ],
               "units": "1/year",
-              "limits": [0, 1],
+              "limits": [
+                0,
+                1
+              ],
               "documentation": "Annual death rate as fraction of population (default 1.5%)"
             },
             {
@@ -157,10 +198,15 @@
                 {
                   "type": "Auxiliary",
                   "subtype": "Normal",
-                  "subscripts": [[], []],
+                  "subscripts": [
+                    [],
+                    []
+                  ],
                   "ast": {
                     "syntaxType": "ArithmeticStructure",
-                    "operators": ["-"],
+                    "operators": [
+                      "-"
+                    ],
                     "arguments": [
                       {
                         "syntaxType": "ReferenceStructure",
@@ -175,7 +221,10 @@
                 }
               ],
               "units": "people/year",
-              "limits": [null, null],
+              "limits": [
+                null,
+                null
+              ],
               "documentation": "Net population growth rate (births minus deaths)"
             }
           ]
