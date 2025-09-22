@@ -3,7 +3,7 @@
 # **Text2Sim MCP Server**  
 ### *Multi-paradigm Simulation Engine for LLM Integration*
 
-**Text2Sim MCP Server** is a conversational simulation engine that transforms natural language into working simulation models. Supporting Discrete-Event Simulation (DES) and System Dynamics (SD), it integrates with LLMs via the **Model Context Protocol (MCP)** to transform plain English descriptions into validated simulation models within environments like Claude Desktop.
+**Text2Sim MCP Server** is a conversational simulation engine that transforms natural language into working simulation models. Supporting Discrete-Event Simulation (DES) and System Dynamics (SD) with PySD-compatible JSON models, it integrates with LLMs via the **Model Context Protocol (MCP)** to transform plain English descriptions into validated simulation models within environments like Claude Desktop.
 
 [![Text2Sim MCP Server (demo)](assets/youtube_screen.png)](https://www.youtube.com/watch?v=qkdV-HtTtLs "Text2Sim MCP Server (demo)")
 
@@ -105,7 +105,7 @@ git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
 - **Intelligent Validation**: Multi-mode validation with actionable feedback
 - **Smart Model Management**: Auto-naming with domain detection and metadata tracking
 - **Export & Sharing**: JSON export for conversation continuity and collaboration
-- **Multi-Schema Support**: Architecture supporting DES, SD (To-Do)
+- **Multi-Schema Support**: Full architecture supporting both DES and SD with auto-detection
 
 ### **Schema Help System**
 - **Dynamic Documentation**: Context-aware help for any schema section with examples
@@ -141,8 +141,8 @@ The Model Builder provides advanced tools for iterative, conversational developm
 Comprehensive validation with LLM-optimised feedback
 - **Multi-mode validation**: `partial`, `strict`, `structure`
 - **Auto-schema detection**: Automatically detects DES/SD from model structure
-- **Actionable errors**: Quick fixes and examples for immediate problem resolution
-- **Progress tracking**: Completeness percentage and next steps guidance
+- **Schema-specific feedback**: Tailored suggestions for System Dynamics vs Discrete Event models
+- **Progress tracking**: Accurate completeness scoring and next steps guidance
 
 #### **`save_model`**
 Intelligent model storage with metadata
@@ -167,7 +167,7 @@ JSON export for conversation continuity
 
 #### **`get_schema_help`**
 Comprehensive schema documentation and learning system
-- **Dynamic help**: Context-aware documentation for any schema section
+- **Balanced Coverage**: Equal support for both DES and SD modeling paradigms
 - **Flexible paths**: Support for nested sections (e.g., "processing_rules.steps")
 - **Rich examples**: 50+ domain-specific examples across all major sections
 - **Detail levels**: Brief, standard, and detailed documentation modes
@@ -220,10 +220,10 @@ Text2Sim is structured into modular components:
   - **Metrics Collector** – Gathers statistics like wait times and throughput.
   - **Secure Distribution Parser** – Parses probability distributions safely.
 - **System Dynamics (SD) Module**
-  - **Model Registry** – Manages available SD models.
-  - **PySD Integration** – Runs stock-and-flow models using PySD.
-  - **Simulation Controls** – Time steps, durations, and parameter adjustments.
-  - **Results Formatter** – Structures time series data for output.
+  - **Model Registry** – Manages available SD models with auto-detection.
+  - **PySD Integration** – Runs stock-and-flow models using PySD-compatible JSON format.
+  - **Template System** – One-element-per-variable structure with comprehensive examples.
+  - **Validation System** – Schema-specific feedback for proper PySD JSON structure.
 
 For detailed documentation of each module, see:
 - [DES Module Documentation](DES/README.md)
@@ -276,11 +276,11 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 If you use Text2Sim MCP Server in academic work, please cite:
 
-**Nikolaos Maniatis.** *Text2Sim MCP Server (v2.2)*.
+**Nikolaos Maniatis.** *Text2Sim MCP Server (v2.4.2)*.
 [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
 Available at: [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
 Copyright The Cato Bot Company Limited and contributors. Licensed under MIT.
 
 **APA:**
-Maniatis, N. (2025). *Text2Sim MCP Server (v2.2)*. [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
+Maniatis, N. (2025). *Text2Sim MCP Server (v2.4.2)*. [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
 ---

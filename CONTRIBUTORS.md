@@ -2,7 +2,7 @@
 
 This document lists current maintainers and significant contributors in the **Text2Sim MCP Server** project.
 
-*Last updated:* September 19, 2025
+*Last updated:* September 22, 2025
 
 ## Core Team
 

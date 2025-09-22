@@ -6,6 +6,96 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ---
 
+## \[2.4.2] – Enhanced Validation & Code Quality
+
+### Fixed
+
+**Validation System**
+
+* Schema-specific validation feedback with accurate completeness scoring for both DES and SD models.
+* Auto-detection system for seamless multi-schema workflow without manual schema specification.
+* Enhanced error messages with actionable next-steps guidance tailored to SD vs DES paradigms.
+
+**Code Quality & Standards**
+
+* Removed all emojis from model_builder codebase for professional consistency.
+* Updated terminology to "PySD-compatible" for technical accuracy throughout documentation.
+* Comprehensive model_builder architecture alignment review ensuring all components serve MCP server scope.
+
+### Changed
+
+**Developer Experience**
+
+* Improved validation suggestions specifically tailored to System Dynamics vs Discrete Event Simulation paradigms.
+* Enhanced template examples with comprehensive customization guidance and modification tips.
+* Consolidated validation workflow with `validate_model` auto-detection replacing manual schema selection.
+
+**Documentation Standards**
+
+* Balanced DES/SD coverage in `help_validation` and `get_schema_help` tools.
+* Professional terminology consistency across all model_builder components.
+* Cleaner code presentation without decorative elements.
+
+---
+
+## \[2.4.1] – Tool Discoverability Improvements
+
+### Changed
+
+**Tool Consolidation**
+
+* Removed redundant SD-specific tools: `get_sd_templates` and `get_sd_model_examples`.
+* Consolidated template access through universal `list_templates` tool supporting both DES and SD.
+* Reduced total tool count from 16 to 14 for cleaner MCP interface.
+
+**Documentation Balance**
+
+* Enhanced `help_validation` with comprehensive support for both DES and SD model validation.
+* Updated `get_schema_help` documentation to provide balanced coverage of both simulation paradigms.
+* Improved tool discoverability through consolidated, purpose-specific interfaces.
+
+---
+
+## \[2.4.0] – Migration to JSON-only SD Implementation
+
+### Added
+
+**PySD JSON Structure Breakthrough**
+
+* Discovered and implemented correct PySD Abstract Model JSON structure using one-element-per-variable format.
+* Each System Dynamics variable now correctly represents its own element with element name as variable reference.
+* Complete restructuring of SD templates to comply with actual PySD library requirements.
+
+**Template System Enhancement**
+
+* Restructured `population_growth.json` from grouped format to proper one-element-per-variable structure.
+* Updated `sir_epidemiology.json` with 10 separate elements representing individual variables (susceptible, infected, recovered, etc.).
+* Added comprehensive examples, customization tips, and modification guidance to all SD templates.
+
+### Fixed
+
+**Critical PySD Integration**
+
+* Corrected fundamental misunderstanding of PySD JSON schema architecture.
+* Fixed Python syntax error using `None` instead of `null` in schema documentation.
+* Resolved validation failures by aligning with actual PySD Abstract Model specifications.
+
+**Schema Documentation**
+
+* Updated schema documentation to emphasize "ONE ELEMENT PER VARIABLE" principle.
+* Fixed validation completeness calculations specifically for SD model structures.
+* Enhanced SD-specific suggestions and missing required field detection.
+
+### Changed
+
+**SD Model Architecture**
+
+* Migrated from component-grouped format to element-per-variable format across all SD templates.
+* Updated PySD JSON structure to match library's actual test file patterns and requirements.
+* Enhanced validation system to properly handle SD template formats and provide accurate feedback.
+
+---
+
 ## \[2.3.0] – Engine Quality & Statistical Analysis
 
 ### Added
