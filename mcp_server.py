@@ -1562,7 +1562,7 @@ def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = Non
 
         # Run simulation with individual parameters (not time_settings dict)
         results = sd_integration.simulate_json_model(
-            model=config,
+            config,
             initial_time=initial_time,
             final_time=final_time,
             time_step=time_step,
