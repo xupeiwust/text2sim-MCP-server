@@ -342,11 +342,11 @@ class SchemaDocumentationProvider:
                 ]
             },
             "SD": {
-                "description": "System Dynamics models using PySD Abstract Model JSON schema - CRITICAL: Each variable must be its own element",
+                "description": "System Dynamics models using PySD-compatible Abstract Model JSON schema - CRITICAL: Each variable must be its own element",
                 "schema_overview": {
                     "title": "PySD Abstract Model Schema Structure - Corrected",
                     "description": "SD models use abstractModel → sections → elements hierarchy where EACH VARIABLE IS ITS OWN ELEMENT",
-                    "key_principle": "🔑 ONE ELEMENT PER VARIABLE - Element name becomes the variable name that can be referenced in equations",
+                    "key_principle": "ONE ELEMENT PER VARIABLE - Element name becomes the variable name that can be referenced in equations",
                     "required_structure": {
                         "abstractModel": {
                             "originalPath": "string (required)",
@@ -639,15 +639,15 @@ class SchemaDocumentationProvider:
                     }
                 },
                 "validation_checklist": [
-                    "✓ Root object must have 'abstractModel' property",
-                    "✓ abstractModel must have 'originalPath' and 'sections' properties",
-                    "✓ Main section must have name='__main__', type='main', path='/'",
-                    "✓ All required section fields must be present: params, returns, subscripts, constraints, testInputs, split, viewsDict",
-                    "✓ Elements must contain components array",
-                    "✓ Components must have: type, subtype, name, subscripts (as [[], []]), ast",
-                    "✓ AST must have syntaxType field matching the expression structure",
-                    "✓ Stock components must use IntegStructure with flow and initial",
-                    "✓ All variable references must match component names"
+                    "Root object must have 'abstractModel' property",
+                    "abstractModel must have 'originalPath' and 'sections' properties",
+                    "Main section must have name='__main__', type='main', path='/'",
+                    "All required section fields must be present: params, returns, subscripts, constraints, testInputs, split, viewsDict",
+                    "Elements must contain components array",
+                    "Components must have: type, subtype, name, subscripts (as [[], []]), ast",
+                    "AST must have syntaxType field matching the expression structure",
+                    "Stock components must use IntegStructure with flow and initial",
+                    "All variable references must match component names"
                 ]
             }
         }

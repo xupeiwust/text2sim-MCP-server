@@ -596,18 +596,18 @@ class MultiSchemaValidator:
                     element_count = len(section.get("elements", []))
 
             if element_count >= 6:
-                suggestions.append("✅ SD model is well-structured with proper one-element-per-variable format")
-                suggestions.append("🚀 Ready for simulation with PySD")
-                suggestions.append("💡 Consider adding time settings for simulation configuration")
+                suggestions.append("SD model is well-structured with proper one-element-per-variable format")
+                suggestions.append("Ready for simulation with PySD")
+                suggestions.append("Consider adding time settings for simulation configuration")
             elif element_count >= 3:
-                suggestions.append("✅ Good SD model structure - consider adding more variables for complexity")
-                suggestions.append("📊 Add auxiliary variables for intermediate calculations")
+                suggestions.append("Good SD model structure - consider adding more variables for complexity")
+                suggestions.append("Add auxiliary variables for intermediate calculations")
             else:
-                suggestions.append("🔧 Add more model elements (stocks, flows, auxiliaries) for a complete model")
+                suggestions.append("Add more model elements (stocks, flows, auxiliaries) for a complete model")
 
         else:
-            suggestions.append("🔍 Fix validation errors to ensure proper PySD JSON structure")
-            suggestions.append("📋 Ensure each variable is its own element (one-element-per-variable)")
+            suggestions.append("Fix validation errors to ensure proper PySD-compatible JSON structure")
+            suggestions.append("Ensure each variable is its own element (one-element-per-variable)")
 
         return suggestions
 
