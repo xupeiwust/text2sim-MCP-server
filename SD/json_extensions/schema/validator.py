@@ -51,14 +51,11 @@ class SchemaValidator:
 
     def _get_default_schema_path(self) -> str:
         """Get the default schema path."""
+        # Navigate to the new schema location
         current_dir = Path(__file__).parent
-        schema_file = current_dir / "abstract_model_v2.json"
-        if schema_file.exists():
-            return str(schema_file)
-
-        # Fallback to the schemas directory
-        schemas_dir = current_dir.parent / "schemas"
-        schema_file = schemas_dir / "abstract_model_v2.json"
+        # Go up to text2sim-MCP-server root, then to schemas/SD/
+        mcp_root = current_dir.parent.parent.parent
+        schema_file = mcp_root / "schemas" / "SD" / "abstract_model_v2.json"
         return str(schema_file)
 
     def _load_schema(self) -> Dict[str, Any]:

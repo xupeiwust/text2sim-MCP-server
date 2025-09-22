@@ -6,6 +6,106 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ---
 
+## \[2.5.0] – PySD-compatible JSON Schema Architecture Implementation
+
+### Added
+
+**Architectural Foundation**
+
+* Complete implementation of Single-Schema Architecture as documented in `SINGLE_SCHEMA_ARCHITECTURE.md`.
+* Text2Sim MCP Server now serves as conversational frontend to PySD's native workflow.
+* PySD-compatible `abstract_model_v2.json` schema as the single source of truth for System Dynamics models.
+
+**Schema Enforcement**
+
+* SD models now require PySD-compatible `abstractModel` JSON format.
+* Removed dual-schema support and format conversion middleware completely.
+* Direct integration with PySD simulation engine without conversion overhead.
+
+### Fixed
+
+**Schema Detection Logic**
+
+* Updated schema registry to detect SD models only by `abstractModel` structure presence.
+* Removed template-based indicators (`template_info.schema_type=SD`, `model.abstractModel`).
+* Simplified SD detection to single indicator for PySD-compatible format.
+
+**Validation System Alignment**
+
+* Multi-schema validator now enforces `abstractModel` format requirement for SD models.
+* Removed template format handling and conversion logic from validation pipeline.
+* Added clear error messages guiding users to correct PySD-compatible format.
+
+**Documentation Consistency**
+
+* Updated all MCP tool descriptions to reflect single-schema architecture.
+* Removed references to template formats and dual-schema concepts.
+* Enhanced `simulate_sd` documentation with comprehensive abstractModel structure guide.
+
+### Changed
+
+**SD Model Processing**
+
+* `simulate_sd()` now processes abstractModel format directly without conversion.
+* `get_sd_model_info()` analyzes native abstractModel structure.
+* Eliminated `_convert_sd_format_if_needed()` function and all conversion middleware.
+
+**Tool Documentation**
+
+* Updated `help_validation` tool to reflect abstractModel-only SD detection.
+* Modified save/load template descriptions to emphasize PySD compatibility.
+* Streamlined schema help documentation for single-schema approach.
+
+**Schema Organization**
+
+* Migrated `abstract_model_v2.json` from `SD/json_extensions/schemas/` to `schemas/SD/` for improved separation of concerns.
+* Updated schema registry and validator to reference new centralized schema location.
+* Simplified path resolution logic with direct schema file access.
+
+**Architectural Positioning**
+
+* Positioned Text2Sim MCP as conversational frontend to PySD's established ecosystem.
+* Direct PySD workflow integration maintains full compatibility with existing PySD tools.
+* Single schema approach reduces complexity and ensures future PySD compatibility.
+
+### Removed
+
+**Conversion Infrastructure**
+
+* Eliminated user-friendly format support (`stocks`, `flows`, `auxiliaries` arrays).
+* Removed dual-schema validation and format conversion logic.
+* Deleted template-based SD model handling from multi-schema validator.
+
+**Legacy Documentation**
+
+* Removed references to template formats in tool descriptions.
+* Eliminated dual-schema detection patterns from schema registry.
+* Cleaned up documentation artifacts from conversion-based architecture.
+
+**Legacy Schema Infrastructure**
+
+* Removed old schema location at `SD/json_extensions/schemas/abstract_model_v2.json`.
+* Eliminated unused schema utility functions (`get_schema_path`, `load_schema`).
+* Cleaned up deprecated schema directory structure.
+
+### Architecture
+
+**Core Philosophy**
+
+* **Single Source of Truth**: PySD-compatible abstractModel format only.
+* **Direct Integration**: No conversion layer between Text2Sim MCP and PySD engine.
+* **Native Workflow**: Seamless compatibility with PySD's established ecosystem.
+* **Future-Proof**: Automatic compatibility with PySD updates and enhancements.
+
+**Benefits Achieved**
+
+* Simplified architecture with reduced maintenance complexity.
+* Direct PySD ecosystem integration for professional workflows.
+* Educational value through PySD format exposure to users.
+* Clear positioning as conversational extension to PySD library.
+
+---
+
 ## \[2.4.2] – Enhanced Validation & Code Quality
 
 ### Fixed

@@ -53,7 +53,7 @@ class SchemaRegistry:
         ))
         
         # Register SD schema
-        sd_schema_path = project_root.parent / "SD" / "json_extensions" / "schemas" / "abstract_model_v2.json"
+        sd_schema_path = project_root / "schemas" / "SD" / "abstract_model_v2.json"
         self.register_schema(SchemaInfo(
             schema_type="SD",
             schema_path=sd_schema_path,
