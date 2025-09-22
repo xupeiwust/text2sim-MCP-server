@@ -9,7 +9,7 @@ from typing import List
 # Ensure the SD module is in the path
 current_dir = Path(__file__).parent
 
-# Import SD JSON integration (modern approach)
+# Import SD-compatible JSON integration (modern approach)
 try:
     # First add current directory to path for local imports (priority over root)
     if str(current_dir) not in sys.path:
@@ -260,8 +260,6 @@ def simulate_des(config: dict) -> dict:
     except Exception as e:
         return {"error": f"Simulation error: {str(e)}"}
 
-# Old file-based SD tools removed - now using JSON-based approach exclusively
-
 # Import new model builder infrastructure
 from model_builder.multi_schema_validator import MultiSchemaValidator
 from model_builder.model_state_manager import model_state_manager
@@ -292,8 +290,7 @@ def validate_model(
     SCHEMA AUTO-DETECTION:
     The tool automatically detects schema type from model structure:
     - DES: Looks for entity_types, resources, processing_rules
-    - SD: Looks for abstractModel, template_info.schema_type=SD, model.abstractModel
-    - Template: Supports full template format with template_info and model sections
+    - SD: Looks for abstractModel structure (PySD-compatible JSON format)
     - Explicit: Use "schema_type" field in model for explicit declaration
     
     RESPONSE INCLUDES:
@@ -833,7 +830,7 @@ def get_schema_help(
 @mcp.tool()
 def help_validation() -> dict:
     """
-    🆘 VALIDATION HELP - Guide to finding the right validation tools.
+    VALIDATION HELP - Guide to finding the right validation tools.
 
     Shows all available validation tools and when to use each one.
     Perfect when you can't find the right tool or are getting validation errors.
@@ -844,16 +841,16 @@ def help_validation() -> dict:
     return {
         "primary_tool": {
             "validate_model": {
-                "name": "🎯 validate_model - UNIFIED VALIDATION TOOL",
+                "name": "validate_model",
                 "purpose": "Auto-detect and validate any simulation model (SD, DES, etc.)",
                 "use_when": "ALWAYS use this - it handles everything automatically",
-                "accepts": "Any simulation model: SD templates, DES configs, raw models",
+                "accepts": "Any simulation model: SD abstractModel format, DES configs",
                 "features": [
-                    "🔍 Auto-detects model type (SD/DES)",
-                    "📋 Handles template format and raw models",
-                    "✅ Schema-specific validation with detailed errors",
-                    "🚀 One tool for all validation needs",
-                    "📊 Proper completeness scoring per model type"
+                    "Auto-detects model type (SD/DES)",
+                    "Handles PySD abstractModel and DES configurations",
+                    "Schema-specific validation with detailed errors",
+                    "One tool for all validation needs",
+                    "Proper completeness scoring per model type"
                 ]
             }
         },
@@ -898,8 +895,8 @@ def help_validation() -> dict:
             "auto_detection_failed": "Add explicit schema_type field or check model structure",
             "validation_errors": "Follow suggested quick fixes in error messages"
         },
-        "migration_note": "🔄 All validation consolidated into validate_model - no separate tools needed",
-        "tip": "📋 Just use validate_model for everything - it detects SD vs DES automatically!"
+        "migration_note": "All validation consolidated into validate_model - no separate tools needed",
+        "tip": "Just use validate_model for everything - it detects SD vs DES automatically!"
     }
 
 
@@ -1191,9 +1188,9 @@ def save_template(
     Schema Type Detection:
     Automatically determines simulation paradigm:
     - DES: Discrete-event structures (entity_types, resources)
-    - SD: System dynamics structures (stocks, flows) [future]
+    - SD: System dynamics abstractModel structure
     
-    💡 USAGE EXAMPLES:
+    USAGE EXAMPLES:
     
     # Save basic template
     save_template(
@@ -1468,9 +1465,9 @@ sd_integration = PySDJSONIntegration()
 @mcp.tool()
 def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = None) -> dict:
     """
-    Advanced System Dynamics simulation using PySD's native abstractModel JSON format.
+    Advanced System Dynamics simulation using PySD-compatible JSON format.
 
-    Simulate System Dynamics models using the official PySD JSON schema that mirrors
+    Simulate System Dynamics models using a PySD-compatible JSON schema that mirrors
     the library's internal Python dataclass structure. This format provides full
     compatibility with PySD's native workflow and ensures accurate model execution.
 

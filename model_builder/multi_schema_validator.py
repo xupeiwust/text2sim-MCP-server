@@ -184,21 +184,25 @@ class MultiSchemaValidator:
 
         elif schema_type == "SD":
             # Use SD validator (PySDJSONIntegration)
-            # Handle different input formats - template vs raw model
-            model_to_validate = model
+            # Expects abstractModel format only
+            if not isinstance(model, dict) or "abstractModel" not in model:
+                return ValidationResult(
+                    valid=False,
+                    schema_type=schema_type,
+                    validation_mode=validation_mode,
+                    completeness=0.0,
+                    errors=[ValidationError(
+                        path="root",
+                        message="SD model must contain 'abstractModel' structure",
+                        quick_fix="Wrap model in abstractModel format",
+                        example={"abstractModel": {"sections": [{"elements": []}]}}
+                    )],
+                    missing_required=[{"field": "abstractModel", "description": "PySD-compatible JSON structure"}],
+                    suggestions=["Use PySD-compatible abstractModel format"],
+                    next_steps=["Add abstractModel container with sections"]
+                )
 
-            if isinstance(model, dict):
-                if "template_info" in model and "model" in model:
-                    # Full template format - extract model section
-                    model_to_validate = model["model"]
-                elif "abstractModel" in model:
-                    # Direct model format
-                    model_to_validate = model
-                elif "sections" in model:
-                    # Direct abstractModel format
-                    model_to_validate = {"abstractModel": model}
-
-            sd_validation_result = validator.validate_json_model(model_to_validate)
+            sd_validation_result = validator.validate_json_model(model)
 
             # Convert to our ValidationResult format
             validation_errors = []

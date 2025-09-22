@@ -1,10 +1,10 @@
-# 📊 DES Schema Documentation
+# DES Schema Documentation
 
-## 🎯 Overview
+## Overview
 
 The **SimPy-Compatible Discrete-Event Simulation Schema** (`des-simpy-compatible-schema.json`) is a JSON Schema 2020-12 specification that enables non-coders to create sophisticated discrete-event simulations through declarative configuration. This schema is specifically designed to leverage SimPy's native capabilities while providing a user-friendly interface for complex simulation modeling.
 
-## 🏗️ Schema Philosophy
+## Schema Philosophy
 
 ### **Declarative Configuration**
 Users describe **what** they want (business logic) rather than **how** to implement it (SimPy code). The schema translates business requirements into executable simulation logic.
@@ -17,7 +17,7 @@ The schema supports both simple scenarios (single resource, basic flow) and comp
 
 ---
 
-## 📋 Schema Structure
+## Schema Structure
 
 ### **Required Fields**
 - `run_time`: Simulation duration
@@ -32,7 +32,7 @@ The schema supports both simple scenarios (single resource, basic flow) and comp
 
 ---
 
-## 🎭 Entity Types
+## Entity Types
 
 Defines different classes of entities flowing through the system.
 
@@ -67,7 +67,7 @@ Defines different classes of entities flowing through the system.
 
 ---
 
-## 🏭 Resources
+## Resources
 
 Defines system capacity and queuing behavior using SimPy's native resource types.
 
@@ -92,7 +92,7 @@ Defines system capacity and queuing behavior using SimPy's native resource types
 
 ---
 
-## 🔄 Processing Rules
+## Processing Rules
 
 Defines the flow of entities through resources and service time distributions.
 
@@ -126,7 +126,7 @@ Defines the flow of entities through resources and service time distributions.
 
 ---
 
-## 🚪 Balking Rules
+## Balking Rules
 
 Defines conditions under which entities leave without joining queues.
 
@@ -157,7 +157,7 @@ Higher priority entities (lower numbers) are less likely to balk. Multipliers ad
 
 ---
 
-## ⏰ Reneging Rules
+## Reneging Rules
 
 Defines abandonment behavior for entities already in queues.
 
@@ -178,7 +178,7 @@ Defines abandonment behavior for entities already in queues.
 
 ---
 
-## 🗺️ Simple Routing
+## Simple Routing
 
 Conditional routing based on entity attributes.
 
@@ -202,7 +202,7 @@ Conditional routing based on entity attributes.
 
 ---
 
-## 🔧 Basic Failures
+## Basic Failures
 
 Simple resource failure and repair cycles.
 
@@ -223,7 +223,7 @@ Simple resource failure and repair cycles.
 
 ---
 
-## 🎯 Arrival Patterns
+## Arrival Patterns
 
 Defines how entities enter the system.
 
@@ -247,7 +247,7 @@ Defines how entities enter the system.
 
 ---
 
-## 📊 Metrics Configuration
+## Metrics Configuration
 
 Customize metric names for domain-specific terminology.
 
@@ -272,7 +272,7 @@ Customize metric names for domain-specific terminology.
 
 ---
 
-## 📈 Statistics Collection
+## Statistics Collection
 
 Control what additional statistics to collect.
 
@@ -295,7 +295,7 @@ Control what additional statistics to collect.
 
 ---
 
-## 🎯 Complete Examples
+## Complete Examples
 
 ### **Basic Coffee Shop**
 ```json
@@ -405,7 +405,7 @@ Control what additional statistics to collect.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 1. **Start Simple**: Begin with basic entity types and single resources
 2. **Add Complexity Gradually**: Introduce priorities, balking, routing as needed
@@ -420,7 +420,7 @@ Control what additional statistics to collect.
 
 ---
 
-## 🔗 Related Files
+## Related Files
 
 - **`des-simpy-compatible-schema.json`**: The complete JSON Schema specification
 - **`json-to-simulation-flow.md`**: Detailed explanation of JSON → SimPy transformation
@@ -429,7 +429,7 @@ Control what additional statistics to collect.
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [SimPy Documentation](https://simpy.readthedocs.io/)
 - [JSON Schema 2020-12 Specification](https://json-schema.org/draft/2020-12/schema)
