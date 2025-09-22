@@ -20,6 +20,26 @@ import numpy as np
 # Note: AbstractModelAdapter requires json_data parameter, will be used as needed
 
 
+class SDIntegrationError(Exception):
+    """Base exception for SD integration errors."""
+    pass
+
+
+class SDValidationError(SDIntegrationError):
+    """JSON schema validation errors."""
+    pass
+
+
+class SDModelBuildError(SDIntegrationError):
+    """Model building/compilation errors."""
+    pass
+
+
+class SDSimulationError(SDIntegrationError):
+    """Model simulation runtime errors."""
+    pass
+
+
 @dataclass
 class ValidationResult:
     """Result of model validation."""

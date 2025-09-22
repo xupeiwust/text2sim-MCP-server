@@ -8,17 +8,20 @@ from typing import List
 
 # Ensure the SD module is in the path
 current_dir = Path(__file__).parent
-root_dir = current_dir.parent  # Go up one level to the root where SD directory is
-if str(root_dir) not in sys.path:
-    sys.path.insert(0, str(root_dir))
 
 # Import SD JSON integration (modern approach)
 try:
+    # First add current directory to path for local imports (priority over root)
+    if str(current_dir) not in sys.path:
+        sys.path.insert(0, str(current_dir))
+
+    # Only add root directory if local import fails
     from SD.sd_integration import PySDJSONIntegration, SDIntegrationError, SDValidationError, SDModelBuildError, SDSimulationError
+
     print("✅ SD JSON integration imported successfully", file=sys.stderr)
 except ImportError as e:
     print(f"❌ Failed to import SD integration: {e}", file=sys.stderr)
-    print(f"   Root directory: {root_dir}", file=sys.stderr)
+    print(f"   Current directory: {current_dir}", file=sys.stderr)
     print(f"   Python path: {sys.path}", file=sys.stderr)
     # Provide fallback functionality for SD integration
     class DummySDIntegration:
@@ -1571,12 +1574,14 @@ def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = Non
 
         return {
             "success": True,
-            "results": results,
+            "results": results.time_series if results.success else None,
             "model_info": {
                 "model_name": config.get("model_name", "Unnamed Model"),
-                "time_range": f"{len(results.get('Time', [0]))} time steps" if 'Time' in results else "Unknown",
-                "variables": list(results.keys())
-            }
+                "time_range": f"{len(results.time_series.get('TIME', [0]))} time steps" if results.success and results.time_series and 'TIME' in results.time_series else "Unknown",
+                "variables": list(results.time_series.keys()) if results.success and results.time_series else []
+            },
+            "metadata": results.metadata,
+            "error_message": results.error_message
         }
 
     except (SDValidationError, SDModelBuildError, SDSimulationError) as e:
