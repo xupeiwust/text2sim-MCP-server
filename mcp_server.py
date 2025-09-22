@@ -38,6 +38,8 @@ except ImportError as e:
 # Initialise the MCP server
 mcp = FastMCP("text2sim-mcp-server")
 
+
+
 def _generate_quick_fixes(errors):
     """Generate quick fix suggestions based on common error patterns."""
     fixes = []
@@ -858,9 +860,7 @@ def help_validation() -> dict:
         "auto_detection": {
             "sd_indicators": [
                 "abstractModel structure",
-                "template_info.schema_type=SD",
-                "model.abstractModel section",
-                "PySD JSON format"
+                "PySD JSON format with abstractModel container"
             ],
             "des_indicators": [
                 "entity_types section",
@@ -1468,78 +1468,132 @@ sd_integration = PySDJSONIntegration()
 @mcp.tool()
 def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = None) -> dict:
     """
-    Advanced System Dynamics simulation with JSON-based model building.
+    Advanced System Dynamics simulation using PySD's native abstractModel JSON format.
 
-    Create and simulate SD models using natural language descriptions converted
-    to JSON configurations. Supports stocks, flows, auxiliaries, constants, and
-    complex model structures.
+    Simulate System Dynamics models using the official PySD JSON schema that mirrors
+    the library's internal Python dataclass structure. This format provides full
+    compatibility with PySD's native workflow and ensures accurate model execution.
 
-    QUICK START - Basic SD Model:
+    QUICK START - Basic abstractModel Format:
     {
-      "model_name": "Population Growth",
+      "abstractModel": {
+        "originalPath": "population_growth.json",
+        "sections": [{
+          "name": "__main__",
+          "type": "main",
+          "path": "/",
+          "params": [],
+          "returns": [],
+          "subscripts": [],
+          "constraints": [],
+          "testInputs": [],
+          "split": false,
+          "viewsDict": {},
+          "elements": [
+            {
+              "name": "Population",
+              "components": [{
+                "type": "Stock",
+                "subtype": "Normal",
+                "subscripts": [[], []],
+                "ast": {
+                  "syntaxType": "IntegStructure",
+                  "flow": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "Birth Rate"
+                  },
+                  "initial": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "1000"
+                  }
+                }
+              }],
+              "units": "people",
+              "limits": [null, null],
+              "documentation": "Population stock"
+            },
+            {
+              "name": "Birth Rate",
+              "components": [{
+                "type": "Flow",
+                "subtype": "Normal",
+                "subscripts": [[], []],
+                "ast": {
+                  "syntaxType": "ReferenceStructure",
+                  "reference": "Population * Birth Fraction"
+                }
+              }],
+              "units": "people/year",
+              "limits": [null, null],
+              "documentation": "Birth rate flow"
+            },
+            {
+              "name": "Birth Fraction",
+              "components": [{
+                "type": "Auxiliary",
+                "subtype": "Normal",
+                "subscripts": [[], []],
+                "ast": {
+                  "syntaxType": "ReferenceStructure",
+                  "reference": "0.05"
+                }
+              }],
+              "units": "1/year",
+              "limits": [null, null],
+              "documentation": "Birth fraction constant"
+            }
+          ]
+        }]
+      }
+    }
+
+    ABSTRACTMODEL STRUCTURE:
+
+    Required Top-Level Fields:
+    - abstractModel: Container for the entire model definition
+    - abstractModel.originalPath: Original file path (can be descriptive)
+    - abstractModel.sections: Array of model sections (usually one "__main__" section)
+
+    Section Structure:
+    - name: Section identifier (typically "__main__")
+    - type: Section type ("main" for primary section)
+    - elements: Array of model variables (stocks, flows, auxiliaries)
+
+    Element Structure:
+    - name: Variable name (must be unique within section)
+    - components: Array of computation definitions (usually one component)
+    - units: Physical units for the variable
+    - limits: Minimum and maximum bounds [min, max] (use null for unbounded)
+    - documentation: Description of the variable
+
+    Component Types:
+    - Stock: Accumulation variable (integrates flows over time)
+    - Flow: Rate variable (changes stocks)
+    - Auxiliary: Algebraic variable (calculated from other variables)
+
+    AST (Abstract Syntax Tree) Patterns:
+    - IntegStructure: For stocks with flow and initial value
+    - ReferenceStructure: For references to other variables or constants
+    - reference: Mathematical expression using variable names
+
+    TIME CONFIGURATION:
+    Time settings can be provided via time_settings parameter or embedded in config:
+    {
       "time_settings": {
         "initial_time": 0,
         "final_time": 100,
         "time_step": 0.25
-      },
-      "stocks": [
-        {
-          "name": "Population",
-          "initial_value": 1000,
-          "inflows": ["Birth Rate"],
-          "units": "people"
-        }
-      ],
-      "flows": [
-        {
-          "name": "Birth Rate",
-          "expression": "Population * Birth Fraction",
-          "units": "people/year"
-        }
-      ],
-      "constants": [
-        {
-          "name": "Birth Fraction",
-          "value": 0.05,
-          "units": "1/year"
-        }
-      ]
+      }
     }
 
-    COMMON PATTERNS:
-
-    Stock and Flow:
-    "stocks": [
-      {
-        "name": "Inventory",
-        "initial_value": 100,
-        "inflows": ["Production Rate"],
-        "outflows": ["Sales Rate"],
-        "units": "items"
-      }
-    ]
-
-    Auxiliaries (Calculated Variables):
-    "auxiliaries": [
-      {
-        "name": "Desired Inventory",
-        "expression": "Sales Rate * Inventory Coverage",
-        "units": "items"
-      }
-    ]
-
-    Time Functions:
-    "auxiliaries": [
-      {
-        "name": "Step Input",
-        "expression": "STEP(10, 5)",
-        "documentation": "Step from 0 to 10 at time 5"
-      }
-    ]
+    PYSD COMPATIBILITY:
+    This format exactly mirrors PySD's internal Python dataclass structure,
+    ensuring seamless integration with the PySD simulation engine and
+    maintaining full compatibility with existing PySD workflows.
 
     Args:
-        config: SD model configuration in JSON format
-        parameters: Parameter value overrides
+        config: SD model in PySD abstractModel JSON format
+        parameters: Parameter value overrides for simulation
         time_settings: Simulation time configuration overrides
 
     Returns:
