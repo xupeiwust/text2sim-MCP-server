@@ -57,9 +57,9 @@ class SchemaRegistry:
         self.register_schema(SchemaInfo(
             schema_type="SD",
             schema_path=sd_schema_path,
-            indicators=["abstractModel", "model.abstractModel", "template_info.schema_type=SD"],
+            indicators=["abstractModel"],
             validator_class="PySDJSONIntegration",
-            description="System Dynamics simulation using PySD-compatible JSON extensions",
+            description="System Dynamics simulation using PySD-compatible JSON format",
             version="2.0"
         ))
     
