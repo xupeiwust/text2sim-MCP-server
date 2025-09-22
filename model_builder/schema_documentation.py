@@ -342,7 +342,273 @@ class SchemaDocumentationProvider:
                 ]
             },
             "SD": {
-                "description": "System Dynamics models using PySD-compatible Abstract Model JSON schema - CRITICAL: Each variable must be its own element",
+                "abstractModel": [
+                    {
+                        "title": "Basic Population Model Container",
+                        "description": "Root abstractModel structure with proper PySD format",
+                        "example": {
+                            "abstractModel": {
+                                "originalPath": "population_growth.json",
+                                "sections": [{
+                                    "name": "__main__",
+                                    "type": "main",
+                                    "path": "/",
+                                    "params": [],
+                                    "returns": [],
+                                    "subscripts": [],
+                                    "constraints": [],
+                                    "testInputs": [],
+                                    "split": False,
+                                    "viewsDict": {},
+                                    "elements": []
+                                }]
+                            }
+                        }
+                    }
+                ],
+                "sections": [
+                    {
+                        "title": "Main Section Structure",
+                        "description": "Standard main section for System Dynamics models",
+                        "example": {
+                            "name": "__main__",
+                            "type": "main",
+                            "path": "/",
+                            "params": [],
+                            "returns": [],
+                            "subscripts": [],
+                            "constraints": [],
+                            "testInputs": [],
+                            "split": False,
+                            "viewsDict": {},
+                            "elements": []
+                        }
+                    }
+                ],
+                "elements": [
+                    {
+                        "title": "Population Stock Element",
+                        "description": "Stock variable element with proper PySD structure",
+                        "example": {
+                            "name": "Population",
+                            "components": [{
+                                "type": "Stock",
+                                "subtype": "Normal",
+                                "subscripts": [[], []],
+                                "ast": {
+                                    "syntaxType": "IntegStructure",
+                                    "flow": {
+                                        "syntaxType": "ReferenceStructure",
+                                        "reference": "Birth_Rate - Death_Rate"
+                                    },
+                                    "initial": {
+                                        "syntaxType": "ReferenceStructure",
+                                        "reference": "1000"
+                                    }
+                                }
+                            }],
+                            "units": "people",
+                            "limits": [None, None],
+                            "documentation": "Population stock"
+                        }
+                    },
+                    {
+                        "title": "Birth Rate Flow Element",
+                        "description": "Flow variable element affecting population stock",
+                        "example": {
+                            "name": "Birth_Rate",
+                            "components": [{
+                                "type": "Flow",
+                                "subtype": "Normal",
+                                "subscripts": [[], []],
+                                "ast": {
+                                    "syntaxType": "ReferenceStructure",
+                                    "reference": "Population * Birth_Fraction"
+                                }
+                            }],
+                            "units": "people/year",
+                            "limits": [None, None],
+                            "documentation": "Birth rate flow"
+                        }
+                    },
+                    {
+                        "title": "Birth Fraction Auxiliary Element",
+                        "description": "Auxiliary variable element for birth rate calculation",
+                        "example": {
+                            "name": "Birth_Fraction",
+                            "components": [{
+                                "type": "Auxiliary",
+                                "subtype": "Normal",
+                                "subscripts": [[], []],
+                                "ast": {
+                                    "syntaxType": "ReferenceStructure",
+                                    "reference": "0.05"
+                                }
+                            }],
+                            "units": "1/year",
+                            "limits": [None, None],
+                            "documentation": "Birth fraction constant"
+                        }
+                    }
+                ],
+                "components": [
+                    {
+                        "title": "Stock Component",
+                        "description": "Component definition for accumulation variables",
+                        "example": {
+                            "type": "Stock",
+                            "subtype": "Normal",
+                            "subscripts": [[], []],
+                            "ast": {
+                                "syntaxType": "IntegStructure",
+                                "flow": {
+                                    "syntaxType": "ReferenceStructure",
+                                    "reference": "Inflow - Outflow"
+                                },
+                                "initial": {
+                                    "syntaxType": "ReferenceStructure",
+                                    "reference": "Initial_Value"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "title": "Flow Component",
+                        "description": "Component definition for rate variables",
+                        "example": {
+                            "type": "Flow",
+                            "subtype": "Normal",
+                            "subscripts": [[], []],
+                            "ast": {
+                                "syntaxType": "ReferenceStructure",
+                                "reference": "Mathematical_Expression"
+                            }
+                        }
+                    },
+                    {
+                        "title": "Auxiliary Component",
+                        "description": "Component definition for calculated variables",
+                        "example": {
+                            "type": "Auxiliary",
+                            "subtype": "Normal",
+                            "subscripts": [[], []],
+                            "ast": {
+                                "syntaxType": "ReferenceStructure",
+                                "reference": "Calculation_or_Constant"
+                            }
+                        }
+                    }
+                ],
+                "ast": [
+                    {
+                        "title": "Stock AST Structure",
+                        "description": "IntegStructure for accumulation variables",
+                        "example": {
+                            "syntaxType": "IntegStructure",
+                            "flow": {
+                                "syntaxType": "ReferenceStructure",
+                                "reference": "Inflow_Variable - Outflow_Variable"
+                            },
+                            "initial": {
+                                "syntaxType": "ReferenceStructure",
+                                "reference": "1000"
+                            }
+                        }
+                    },
+                    {
+                        "title": "Flow/Auxiliary AST Structure",
+                        "description": "ReferenceStructure for rate and calculated variables",
+                        "example": {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "Variable_A * Variable_B + Constant"
+                        }
+                    },
+                    {
+                        "title": "Complex Expression AST",
+                        "description": "Mathematical expressions with multiple variables",
+                        "example": {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "MAX(0, (Target_Level - Current_Level) / Adjustment_Time)"
+                        }
+                    }
+                ],
+                "complete_examples": [
+                    {
+                        "title": "Simple Population Growth Model",
+                        "description": "Complete model showing proper PySD JSON structure",
+                        "example": {
+                            "abstractModel": {
+                                "originalPath": "population_growth.json",
+                                "sections": [{
+                                    "name": "__main__",
+                                    "type": "main",
+                                    "path": "/",
+                                    "params": [],
+                                    "returns": [],
+                                    "subscripts": [],
+                                    "constraints": [],
+                                    "testInputs": [],
+                                    "split": False,
+                                    "viewsDict": {},
+                                    "elements": [
+                                        {
+                                            "name": "Population",
+                                            "components": [{
+                                                "type": "Stock",
+                                                "subtype": "Normal",
+                                                "subscripts": [[], []],
+                                                "ast": {
+                                                    "syntaxType": "IntegStructure",
+                                                    "flow": {
+                                                        "syntaxType": "ReferenceStructure",
+                                                        "reference": "Birth_Rate"
+                                                    },
+                                                    "initial": {
+                                                        "syntaxType": "ReferenceStructure",
+                                                        "reference": "1000"
+                                                    }
+                                                }
+                                            }],
+                                            "units": "people",
+                                            "limits": [None, None],
+                                            "documentation": "Population stock"
+                                        },
+                                        {
+                                            "name": "Birth_Rate",
+                                            "components": [{
+                                                "type": "Flow",
+                                                "subtype": "Normal",
+                                                "subscripts": [[], []],
+                                                "ast": {
+                                                    "syntaxType": "ReferenceStructure",
+                                                    "reference": "Population * Birth_Fraction"
+                                                }
+                                            }],
+                                            "units": "people/year",
+                                            "limits": [None, None],
+                                            "documentation": "Birth rate flow"
+                                        },
+                                        {
+                                            "name": "Birth_Fraction",
+                                            "components": [{
+                                                "type": "Auxiliary",
+                                                "subtype": "Normal",
+                                                "subscripts": [[], []],
+                                                "ast": {
+                                                    "syntaxType": "ReferenceStructure",
+                                                    "reference": "0.05"
+                                                }
+                                            }],
+                                            "units": "1/year",
+                                            "limits": [None, None],
+                                            "documentation": "Birth fraction constant"
+                                        }
+                                    ]
+                                }]
+                            }
+                        }
+                    }
+                ],
                 "schema_overview": {
                     "title": "PySD Abstract Model Schema Structure - Corrected",
                     "description": "SD models use abstractModel → sections → elements hierarchy where EACH VARIABLE IS ITS OWN ELEMENT",
@@ -688,11 +954,17 @@ class SchemaDocumentationProvider:
         
         # Handle different section requests
         if section_path is None:
-            return self._get_full_schema_overview(schema_type, schema, include_examples, detail_level)
+            if schema_type == "SD":
+                return self._create_sd_documentation(None, include_examples, detail_level)
+            else:
+                return self._get_full_schema_overview(schema_type, schema, include_examples, detail_level)
         elif section_path == "templates":
             return self._get_template_overview(schema_type)
         else:
-            return self._get_section_documentation(schema_type, section_path, schema, include_examples, detail_level)
+            if schema_type == "SD":
+                return self._create_sd_documentation(section_path, include_examples, detail_level)
+            else:
+                return self._get_section_documentation(schema_type, section_path, schema, include_examples, detail_level)
     
     def _get_full_schema_overview(
         self,
@@ -991,6 +1263,271 @@ class SchemaDocumentationProvider:
         }
         
         return workflows.get(schema_type, [])
+
+    def _create_sd_documentation(
+        self,
+        section_path: Optional[str],
+        include_examples: bool,
+        detail_level: str
+    ) -> Dict[str, Any]:
+        """Create comprehensive SD documentation with examples and guidance."""
+        base_sections = {
+            "abstractModel": {
+                "description": "Root container for PySD-compatible System Dynamics models",
+                "required": True,
+                "structure": {
+                    "originalPath": "string - descriptive path for model identification",
+                    "sections": "array - contains model sections (usually one '__main__' section)"
+                },
+                "validation_rules": [
+                    "Must be present at root level",
+                    "originalPath field is required",
+                    "sections array must contain at least one section"
+                ],
+                "examples": self._examples_cache["SD"].get("abstractModel", []),
+                "related_sections": ["sections", "elements"],
+                "common_patterns": [
+                    "Single '__main__' section for most models",
+                    "Descriptive originalPath for model identification",
+                    "Empty arrays for unused fields (params, returns, etc.)"
+                ]
+            },
+            "sections": {
+                "description": "Model sections containing System Dynamics variables",
+                "required": True,
+                "structure": {
+                    "name": "string - section identifier (typically '__main__')",
+                    "type": "string - section type ('main' for primary section)",
+                    "path": "string - hierarchical path ('/' for main section)",
+                    "elements": "array - System Dynamics variables in this section"
+                },
+                "validation_rules": [
+                    "At least one section required",
+                    "Each section must have name, type, and elements",
+                    "Main section should use name='__main__' and type='main'"
+                ],
+                "examples": self._examples_cache["SD"].get("sections", []),
+                "related_sections": ["abstractModel", "elements"],
+                "common_patterns": [
+                    "Single main section for most models",
+                    "Empty params, returns, subscripts arrays",
+                    "Elements array contains all model variables"
+                ]
+            },
+            "elements": {
+                "description": "Individual System Dynamics variables (stocks, flows, auxiliaries)",
+                "required": True,
+                "structure": {
+                    "name": "string - variable name (must be unique within section)",
+                    "components": "array - computation definitions (usually one component)",
+                    "units": "string - physical units",
+                    "limits": "array - [min, max] bounds (use null for unbounded)",
+                    "documentation": "string - variable description"
+                },
+                "validation_rules": [
+                    "Each variable must be its own element",
+                    "Element name becomes variable reference in equations",
+                    "Components array must contain exactly one component",
+                    "Component type must be Stock, Flow, or Auxiliary"
+                ],
+                "examples": self._examples_cache["SD"].get("elements", []),
+                "related_sections": ["components", "ast"],
+                "common_patterns": [
+                    "One element per variable (not grouped by type)",
+                    "Element name matches variable name in equations",
+                    "Single component defining computation"
+                ]
+            },
+            "components": {
+                "description": "Computation definitions for System Dynamics variables",
+                "required": True,
+                "structure": {
+                    "type": "string - Stock, Flow, or Auxiliary",
+                    "subtype": "string - typically 'Normal'",
+                    "subscripts": "array - dimensionality [[],[]] for scalar",
+                    "ast": "object - Abstract Syntax Tree defining computation"
+                },
+                "validation_rules": [
+                    "Type must be Stock, Flow, or Auxiliary",
+                    "Stock components require IntegStructure AST",
+                    "Flow and Auxiliary use ReferenceStructure AST",
+                    "Subscripts [[],[]] for scalar variables"
+                ],
+                "examples": self._examples_cache["SD"].get("components", []),
+                "related_sections": ["elements", "ast"],
+                "common_patterns": [
+                    "Stock: IntegStructure with flow and initial",
+                    "Flow/Auxiliary: ReferenceStructure with expression",
+                    "Normal subtype for standard variables"
+                ]
+            },
+            "ast": {
+                "description": "Abstract Syntax Tree defining variable computations",
+                "required": True,
+                "structure": {
+                    "syntaxType": "string - IntegStructure or ReferenceStructure",
+                    "reference": "string - mathematical expression (for Reference)",
+                    "flow": "object - flow expression (for IntegStructure)",
+                    "initial": "object - initial value (for IntegStructure)"
+                },
+                "validation_rules": [
+                    "Stock variables use IntegStructure syntax",
+                    "Flow/Auxiliary variables use ReferenceStructure syntax",
+                    "Mathematical expressions reference other variable names",
+                    "Variable names must match element names exactly"
+                ],
+                "examples": self._examples_cache["SD"].get("ast", []),
+                "related_sections": ["components", "elements"],
+                "common_patterns": [
+                    "Stock AST: flow + initial value references",
+                    "Flow/Auxiliary AST: single mathematical expression",
+                    "Variable references use exact element names"
+                ]
+            }
+        }
+
+        # Handle section-specific requests
+        if section_path:
+            path_parts = section_path.split('.')
+            main_section = path_parts[0]
+
+            if main_section in base_sections:
+                section = base_sections[main_section]
+
+                # Apply detail level filtering
+                if detail_level == "brief":
+                    section = {
+                        "description": section["description"],
+                        "examples": section["examples"][:2] if include_examples else []
+                    }
+                elif detail_level == "standard":
+                    if not include_examples:
+                        section["examples"] = []
+
+                return {
+                    "schema_type": "SD",
+                    "section": main_section,
+                    "path": section_path,
+                    **section
+                }
+
+        # Full schema documentation
+        workflows = {
+            "basic_model": {
+                "name": "Basic SD Model Development",
+                "steps": [
+                    "1. Create abstractModel container with originalPath",
+                    "2. Define main section with name='__main__'",
+                    "3. Add elements for each variable (stocks, flows, auxiliaries)",
+                    "4. Define components with appropriate AST structures",
+                    "5. Validate model structure and equations"
+                ],
+                "example": "Population growth with birth/death rates"
+            },
+            "stock_flow_model": {
+                "name": "Stock and Flow Modeling",
+                "steps": [
+                    "1. Define stock elements with IntegStructure AST",
+                    "2. Define flow elements with ReferenceStructure AST",
+                    "3. Connect flows to stocks via AST references",
+                    "4. Add auxiliary variables for rates and fractions",
+                    "5. Test with different time settings"
+                ],
+                "example": "Inventory management with production and sales"
+            },
+            "feedback_model": {
+                "name": "Feedback Loop Development",
+                "steps": [
+                    "1. Identify key stocks in the system",
+                    "2. Define flows affecting each stock",
+                    "3. Create auxiliaries for feedback calculations",
+                    "4. Link auxiliaries back to flow rates",
+                    "5. Validate circular reference handling"
+                ],
+                "example": "Population dynamics with carrying capacity"
+            }
+        }
+
+        domain_examples = {
+            "population": [
+                {
+                    "name": "Population Growth",
+                    "description": "Basic population model with birth and death rates",
+                    "variables": ["population", "birth_rate", "death_rate", "birth_fraction", "death_fraction"],
+                    "pattern": "Stock with inflows and outflows"
+                },
+                {
+                    "name": "Predator-Prey Model",
+                    "description": "Two-species interaction model",
+                    "variables": ["rabbits", "foxes", "rabbit_birth_rate", "predation_rate", "fox_death_rate"],
+                    "pattern": "Multiple stocks with cross-dependencies"
+                }
+            ],
+            "economics": [
+                {
+                    "name": "Economic Growth Model",
+                    "description": "Capital accumulation and production",
+                    "variables": ["capital", "investment_rate", "depreciation_rate", "output", "savings_rate"],
+                    "pattern": "Capital stock with investment and depreciation"
+                },
+                {
+                    "name": "Market Dynamics",
+                    "description": "Supply and demand interaction",
+                    "variables": ["demand", "supply", "price", "demand_adjustment", "supply_response"],
+                    "pattern": "Coupled adjustment processes"
+                }
+            ],
+            "epidemiology": [
+                {
+                    "name": "SIR Disease Model",
+                    "description": "Susceptible-Infected-Recovered compartment model",
+                    "variables": ["susceptible", "infected", "recovered", "infection_rate", "recovery_rate"],
+                    "pattern": "Sequential stock flow with compartments"
+                },
+                {
+                    "name": "Vaccination Model",
+                    "description": "Disease spread with vaccination intervention",
+                    "variables": ["susceptible", "vaccinated", "infected", "vaccination_rate", "infection_rate", "waning_immunity"],
+                    "pattern": "Multi-path stock flows with interventions"
+                }
+            ],
+            "supply_chain": [
+                {
+                    "name": "Inventory Management",
+                    "description": "Production and consumption with inventory buffer",
+                    "variables": ["inventory", "production_rate", "consumption_rate", "target_inventory", "adjustment_time"],
+                    "pattern": "Stock with goal-seeking flow control"
+                },
+                {
+                    "name": "Supply Chain Network",
+                    "description": "Multi-stage production and distribution",
+                    "variables": ["raw_materials", "work_in_progress", "finished_goods", "manufacturing_rate", "shipping_rate"],
+                    "pattern": "Sequential processing pipeline"
+                }
+            ]
+        }
+
+        result = {
+            "schema_type": "SD",
+            "description": "System Dynamics modeling using PySD-compatible JSON format",
+            "sections": base_sections,
+            "workflows": workflows,
+            "domain_examples": domain_examples if include_examples else {}
+        }
+
+        # Apply detail level filtering
+        if detail_level == "brief":
+            # Reduce examples in each section
+            for section_name, section_data in result["sections"].items():
+                if "examples" in section_data:
+                    section_data["examples"] = section_data["examples"][:1]
+            result["workflows"] = {k: v for k, v in list(workflows.items())[:2]}
+        elif not include_examples:
+            # Remove examples but keep structure
+            for section_data in result["sections"].values():
+                section_data["examples"] = []
+
+        return result
 
 
 # Global documentation provider instance

@@ -3,7 +3,16 @@
 # **Text2Sim MCP Server**  
 ### *Multi-paradigm Simulation Engine for LLM Integration*
 
-**Text2Sim MCP Server** is a conversational simulation engine that transforms natural language into working simulation models. Supporting Discrete-Event Simulation (DES) and System Dynamics (SD) with PySD-compatible JSON models, it integrates with LLMs via the **Model Context Protocol (MCP)** to transform plain English descriptions into validated simulation models within environments like Claude Desktop.
+A Model Context Protocol server providing multi-paradigm simulation capabilities through conversational interfaces. The server supports Discrete-Event Simulation via SimPy and System Dynamics modeling via PySD and a PySD-compatible JSON schema.
+
+## Overview
+
+Text2Sim MCP Server enables Large Language Models to create, validate, and execute simulation models through natural language interfaces. The server processes JSON-structured simulation configurations and returns execution results with comprehensive analytics.
+
+### Supported Simulation Paradigms
+
+- **Discrete-Event Simulation (DES)**: Process-oriented modeling using SimPy engine
+- **System Dynamics (SD)**: Stock-and-flow modeling using PySD and PySD-compatible JSON schema
 
 [![Text2Sim MCP Server (demo)](assets/youtube_screen.png)](https://www.youtube.com/watch?v=qkdV-HtTtLs "Text2Sim MCP Server (demo)")
 
@@ -11,7 +20,13 @@
 
 ## About
 
-The Text2Sim MCP Server is an open source project run by [The Cato Bot Company Limited](https://catobot.com) and open to contributions from the community. We believe in transparent, commercially-backed open source development that benefits both users and contributors while supporting sustainable project growth.
+This project is developed by The Cato Bot Company Limited and is available as open source software. Community contributions are accepted through standard pull request procedures.
+
+---
+
+## About
+
+The Text2Sim MCP Server is an open source project developed by [The Cato Bot Company Limited](https://catobot.com). We believe in transparent, commercially-backed open source development that benefits both users and contributors while supporting sustainable project growth. Community contributions are accepted through standard pull request procedures.
 
 ---
 
@@ -74,137 +89,234 @@ git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
 
 ## Features
 
-### **Advanced LLM Integration**
-- **Natural Language to Simulation**: Create sophisticated DES models using plain English descriptions
-- **Iterative Model Building**: Multi-round conversations for complex model development
-- **Schema-Driven Architecture**: JSON Schema 2020-12 ensures reliable, validated configurations
-- **Smart Error Handling**: Contextual examples and actionable suggestions for quick problem resolution
-- **Conversation Continuity**: Save, load, and export models across conversation sessions
+### **LLM Integration**
+- Natural language to simulation model conversion
+- Multi-round conversation support for iterative model development
+- JSON Schema 2020-12 validation for configuration reliability
+- Contextual error messages with corrective guidance
+- Model persistence across conversation sessions
 
-### **Comprehensive Discrete-Event Simulation**
-- **Multi-Entity Systems**: Support for different entity types with priorities, values, and attributes
-- **Advanced Resource Management**: FIFO, Priority, and Preemptive resource types
-- **Behavioral Modeling**: Balking, reneging, and conditional routing capabilities
-- **Failure Simulation**: Resource breakdowns and repair cycles
-- **Custom Metrics**: Domain-specific terminology (customers, patients, orders, products)
+### **Discrete-Event Simulation Capabilities**
+- Multiple entity types with configurable priorities and attributes
+- Resource management with FIFO, priority, and preemptive scheduling
+- Entity behavior modeling including balking and reneging
+- Resource failure and repair cycle simulation
+- Configurable metrics collection and reporting
 
-### **Multi-Domain Support**
-- **Healthcare**: Hospital triage, patient flow, emergency departments
-- **Manufacturing**: Production lines, quality control, bottleneck analysis
-- **Service Industries**: Restaurants, call centers, retail operations
-- **Transportation**: Airport operations, logistics, supply chain management
+### **System Dynamics Capabilities**
+- PySD-compatible JSON schema
+- Stock, flow, and auxiliary variable modeling
+- Mathematical expression support via Abstract Syntax Tree structures
+- Time-series simulation with configurable parameters
+- Integration with PySD Python library ecosystem
 
-### **Performance & Analytics**
-- **Real-Time Metrics**: Wait times, utilization rates, throughput analysis
-- **Statistical Controls**: Warmup periods, confidence intervals, queue length monitoring
-- **Efficiency Calculations**: Processing efficiency, revenue analysis, resource optimisation
-- **Scalable Simulation**: Support for large entity populations and complex workflows
+### **Analytics and Validation**
+- Simulation metrics including wait times, utilization rates, and throughput
+- Statistical analysis with warmup periods and confidence intervals
+- Multi-mode validation with partial, strict, and structural checking
+- Schema-specific error reporting and correction guidance
 
-### **Model Builder Tools**
-- **Iterative Development**: Build complex models through multiple conversation rounds
-- **Intelligent Validation**: Multi-mode validation with actionable feedback
-- **Smart Model Management**: Auto-naming with domain detection and metadata tracking
-- **Export & Sharing**: JSON export for conversation continuity and collaboration
-- **Multi-Schema Support**: Full architecture supporting both DES and SD with auto-detection
+### **Model Management**
+- Model storage and retrieval with metadata tracking
+- JSON export functionality for model sharing and backup
+- Automatic schema detection for DES and SD model types
+- Version management with conflict resolution
 
-### **Schema Help System**
-- **Dynamic Documentation**: Context-aware help for any schema section with examples
-- **Learning Progression**: Guided workflows from basic to advanced features
-- **Domain-Specific Examples**: Healthcare, manufacturing, service, transportation patterns
-- **Enhanced Error Recovery**: Transform validation errors into learning opportunities
-- **Flexible Detail Levels**: Brief, standard, and detailed documentation modes
+### **Documentation System**
+- Context-aware schema documentation with examples
+- Multiple detail levels (brief, standard, detailed)
+- Domain-specific modeling patterns and workflows
+- Integrated help system accessible through MCP tools
 
 ### **Security**
-- **No Code Execution**: Regex-based parsing prevents arbitrary code execution
-- **Comprehensive Validation**: All inputs validated against formal schema
-- **Robust Error Handling**: Clean error reporting without internal state leakage
+- Regex-based distribution parsing without code execution
+- Input validation against formal JSON schemas
+- Secure error handling without internal state exposure
 
 ---
 
 ## API Reference
 
-### Overview
+### MCP Tools Overview
 
-The MCP server provides tools for both Discrete-Event Simulation and System Dynamics modeling:
+The server exposes the following tools through the Model Context Protocol:
 
-- **Discrete-Event Simulation**: Process-oriented modeling with SimPy
-- **System Dynamics**: Stock-and-flow modeling with PySD
-- **Model Builder**: Advanced iterative model development tools
+#### **Core Simulation Tools**
 
-When using a Large Language Model (e.g. Claude) client, natural language prompts are translated into appropriate configurations via the **Model Context Protocol (MCP)**.
+**`simulate_des`** - Execute Discrete-Event Simulation models
+- Accepts JSON configuration with entity types, resources, and processing rules
+- Returns simulation results with metrics and statistical analysis
 
-### **Model Builder Tools**
+**`simulate_sd`** - Execute System Dynamics models
+- Accepts PySD-compatible abstractModel JSON format
+- Returns time-series data and model execution metadata
 
-The Model Builder provides advanced tools for iterative, conversational development of simulation models:
+**`run_multiple_simulations`** - Execute multiple simulation replications
+- Runs multiple independent simulation runs with statistical analysis
+- Returns confidence intervals, variability measures, and reliability scoring
+- Supports seed-based random number control for reproducible results
 
-#### **`validate_model`**
-Comprehensive validation with LLM-optimised feedback
-- **Multi-mode validation**: `partial`, `strict`, `structure`
-- **Auto-schema detection**: Automatically detects DES/SD from model structure
-- **Schema-specific feedback**: Tailored suggestions for System Dynamics vs Discrete Event models
-- **Progress tracking**: Accurate completeness scoring and next steps guidance
+#### **Validation and Help Tools**
 
-#### **`save_model`**
-Intelligent model storage with metadata
-- **Hybrid naming**: User-provided or auto-generated names with domain detection
-- **Metadata tracking**: Notes, tags, creation time, validation status
-- **Version management**: Automatic conflict resolution with versioning
-- **Domain classification**: Healthcare, manufacturing, service, transportation, finance
+**`validate_model`** - Validate simulation model configurations
+- Supports both DES and SD model validation with auto-detection
+- Provides detailed error reports with correction suggestions
+- Multiple validation modes: partial, strict, and structural
 
-#### **`load_model`**
-Model discovery and loading with advanced filtering
-- **List mode**: Browse all saved models with metadata preview
-- **Load mode**: Retrieve specific models with validation status
-- **Smart filtering**: Filter by schema type, tags, domain, or validation status
-- **Last-loaded tracking**: Seamless workflow with automatic state management
+**`help_validation`** - Get validation guidance
+- Shows all available validation tools and when to use each one
+- Provides troubleshooting guidance for validation errors
+- Includes schema type detection and validation mode explanations
 
-#### **`export_model`**
-JSON export for conversation continuity
-- **Multiple formats**: Pretty, compact, conversation-ready
-- **Conversation templates**: Ready-to-use text for sharing between sessions
-- **Metadata inclusion**: Optional metadata export for complete backups
-- **Token estimation**: Character and token counts for LLM context management
+**`get_schema_help`** - Access comprehensive schema documentation
+- Returns structured documentation for schema sections with examples
+- Supports nested section paths (e.g., "processing_rules.steps")
+- Multiple detail levels: brief, standard, and detailed
+- Domain-specific examples and workflow guidance
 
-#### **`get_schema_help`**
-Comprehensive schema documentation and learning system
-- **Balanced Coverage**: Equal support for both DES and SD modeling paradigms
-- **Flexible paths**: Support for nested sections (e.g., "processing_rules.steps")
-- **Rich examples**: 50+ domain-specific examples across all major sections
-- **Detail levels**: Brief, standard, and detailed documentation modes
-- **Learning guidance**: Workflow patterns and development progressions
+#### **Model Management Tools**
 
-### **Optimised LLM Experience**
+**`save_model`** - Store models with metadata
+- Automatic naming with domain detection
+- Metadata tracking including validation status and tags
+- Version management with conflict resolution
 
-Text2Sim is specifically optimised for seamless interaction with Large Language Models:
+**`load_model`** - Retrieve stored models
+- List all saved models with filtering options
+- Load specific models by name or identifier
+- Integration with last-loaded state tracking
 
-- **Intelligent Error Messages**: Every validation error includes contextual examples and actionable suggestions
-- **Quick-Start Patterns**: Comprehensive configuration templates built into the tool description
-- **Domain-Specific Examples**: Ready-to-use patterns for manufacturing, healthcare, and service industries
-- **Progressive Assistance**: Smart error classification provides escalating levels of help
+**`export_model`** - Export models to JSON
+- Multiple output formats for different use cases
+- Conversation-ready templates for session sharing
+- Token count estimation for LLM context management
 
-**Example Interaction Flow:**
-1. **User**: "Create a hospital triage simulation with emergency and routine patients"
-2. **Claude**: Uses built-in patterns to generate validated JSON configuration
-3. **System**: Returns detailed simulation results with utilization metrics and wait times
-4. **User**: "What if we add another doctor?" 
-5. **Claude**: Modifies configuration and reruns simulation seamlessly
+#### **Template and Discovery Tools**
 
-**Example Model Builder Workflow:**
-1. **User**: "Help me build a complex manufacturing simulation"
-2. **Claude**: `get_schema_help("DES")` → understands available features → creates basic structure → `save_model("manufacturing_v1")`
-3. **User**: "Add quality control with 15% defect rate"
-4. **Claude**: `get_schema_help("DES", "simple_routing")` → learns routing options → updates model → `validate_model()` → `save_model("manufacturing_v2")`
-5. **User**: "Export this so I can continue tomorrow"
-6. **Claude**: `export_model()` → provides formatted JSON with conversation template
-7. **Next day**: User pastes exported model → Claude continues development seamlessly
+**`list_templates`** - Browse available model templates
+- Lists pre-built templates for both DES and SD models
+- Filter by schema type, domain, or complexity level
+- Includes template descriptions and use cases
 
-**Example Schema Help Workflow:**
-1. **User**: "I'm new to simulation modeling, where do I start?"
-2. **Claude**: `get_schema_help("DES")` → provides complete overview with learning progression
-3. **User**: "How do I model different customer types?"
-4. **Claude**: `get_schema_help("DES", "entity_types")` → shows healthcare, manufacturing, and service examples
-5. **User**: "My validation failed, what's wrong?"
-6. **Claude**: Enhanced error messages → contextual examples → `get_schema_help("DES", "processing_rules")` for detailed guidance
+**`load_template`** - Retrieve specific templates
+- Load template configurations by name or template ID
+- Returns ready-to-use model configurations
+- Supports both DES and SD template formats
+
+**`save_template`** - Save models as reusable templates
+- Store validated models as templates for future use
+- Automatic template naming with metadata
+- Template sharing and organization capabilities
+
+#### **System Dynamics Specific Tools**
+
+**`get_sd_model_info`** - Analyze System Dynamics models
+- Provides detailed analysis of SD model structure without simulation
+- Returns complexity metrics and variable information
+- Validates abstractModel format and reports structure analysis
+
+**`convert_vensim_to_sd_json`** - Convert Vensim models to PySD JSON (TO-DO)
+(Note: Current implementation returns a basic structure. Full Vensim conversion requires additional implementation)
+- Converts Vensim .mdl files to PySD-compatible abstractModel format
+- Handles model translation and format validation
+- Integration with PySD's Vensim translation capabilities
+
+## JSON Schemas
+
+Text2Sim MCP Server uses formal JSON Schema validation (Draft 2020-12) to ensure simulation model correctness and provide structured error reporting. The server supports two distinct JSON formats optimized for their respective simulation paradigms.
+
+### Discrete-Event Simulation JSON Format
+
+The server uses a SimPy-compatible JSON schema for Discrete-Event Simulation models. This format provides declarative configuration that maps directly to SimPy's native capabilities.
+
+#### Basic Structure
+
+```json
+{
+  "run_time": 480,
+  "entity_types": {
+    "customer": {
+      "probability": 1.0,
+      "value": {"min": 10, "max": 50},
+      "priority": 5
+    }
+  },
+  "resources": {
+    "server": {
+      "capacity": 2,
+      "resource_type": "fifo"
+    }
+  },
+  "processing_rules": {
+    "steps": ["server"],
+    "server": {
+      "distribution": "uniform(5, 10)"
+    }
+  }
+}
+```
+
+#### Key Components
+
+- **Entity Types**: Define different classes of entities with probabilities, values, priorities, and custom attributes
+- **Resources**: Specify system resources with capacity limits and queuing disciplines (FIFO, priority, preemptive)
+- **Processing Rules**: Configure sequential processing steps with service time distributions and conditional routing
+- **Behavioral Rules**: Support for balking, reneging, resource failures, and complex routing logic
+
+#### Resource Types
+
+- **FIFO**: First-in-first-out queuing (SimPy Resource)
+- **Priority**: Priority-based queuing (SimPy PriorityResource)
+- **Preemptive**: Preemptive priority queuing (SimPy PreemptiveResource)
+
+For detailed documentation of the DES JSON format, see `schemas/DES/README.md`.
+
+### System Dynamics JSON Format
+
+The server uses a PySD-compatible JSON schema for System Dynamics simulations. This format provides direct compatibility with the PySD Python library ecosystem.
+
+#### Basic Structure
+
+```json
+{
+  "abstractModel": {
+    "originalPath": "model_name.json",
+    "sections": [{
+      "name": "__main__",
+      "type": "main",
+      "elements": [
+        {
+          "name": "Stock_Name",
+          "components": [{
+            "type": "Stock",
+            "ast": {
+              "syntaxType": "IntegStructure",
+              "flow": {"syntaxType": "ReferenceStructure", "reference": "Flow_Name"},
+              "initial": {"syntaxType": "ReferenceStructure", "reference": "1000"}
+            }
+          }],
+          "units": "items"
+        }
+      ]
+    }]
+  }
+}
+```
+
+#### Component Types
+
+- **Stock**: Accumulation variables that integrate flows over time
+- **Flow**: Rate variables that change stock values
+- **Auxiliary**: Calculated variables derived from other variables
+
+#### Abstract Syntax Tree (AST) Structures
+
+The PySD format supports two approaches for mathematical expressions:
+
+- **Simple References**: String-based expressions (e.g., `"Birth_Rate - Death_Rate"`)
+- **Arithmetic Structures**: Explicit mathematical structures with defined operators and arguments
+
+For detailed documentation of the PySD JSON format, see `docs/PYSD_JSON_SCHEMA_INTEGRATION.md`, `docs/PYSD_AST_STRUCTURES_GUIDE.md`, and `schemas/SD/README.md`.
 
 ---
 
@@ -220,14 +332,19 @@ Text2Sim is structured into modular components:
   - **Metrics Collector** – Gathers statistics like wait times and throughput.
   - **Secure Distribution Parser** – Parses probability distributions safely.
 - **System Dynamics (SD) Module**
-  - **Model Registry** – Manages available SD models with auto-detection.
-  - **PySD Integration** – Runs stock-and-flow models using PySD-compatible JSON format.
-  - **Template System** – One-element-per-variable structure with comprehensive examples.
-  - **Validation System** – Schema-specific feedback for proper PySD JSON structure.
+  - **PySD Integration** – Executes models using PySD-compatible abstractModel JSON format.
+  - **Schema Validation** – Validates models against abstract_model_v2.json schema.
+  - **Single-Schema Architecture** – Direct [PySD](https://pysd.readthedocs.io/en/master/) workflow compatibility without format conversion.
 
-For detailed documentation of each module, see:
-- [DES Module Documentation](DES/README.md)
-- [SD Module Documentation](SD/README.md)
+### Documentation
+
+Additional technical documentation is available:
+
+- `docs/PYSD_JSON_SCHEMA_INTEGRATION.md` - PySD JSON format specification
+- `docs/PYSD_AST_STRUCTURES_GUIDE.md` - AST structure patterns and best practices
+- `schemas/SD/README.md` - System Dynamics schema documentation
+- `schemas/DES/README.md` - Discrete-Event Simulation schema files
+- `SINGLE_SCHEMA_ARCHITECTURE.md` - Architecture overview and design decisions
 
 ---
 
@@ -243,7 +360,6 @@ For detailed documentation of each module, see:
   Errors are reported cleanly without leaking internal state.
 
 ---
-
 ## Disclaimer
 
 **Text2Sim MCP Server** is a project under active development. While we strive for accuracy and stability, please be aware of the following:
@@ -258,11 +374,9 @@ We are excited for you to use Text2Sim and hope you find it valuable. Your feedb
 
 ## Contributing
 
-Pull requests are welcome! Please fork the repo and submit a PR. Suggestions, bug reports, and feature ideas are always appreciated. 
+Contributions are accepted through standard fork-and-pull-request procedures. Bug reports and feature suggestions can be submitted via the project issue tracker.
 
-Please note: The project is under active development at the moment. Things may break and choices may change. 
-
-If you have suggestions for major changes, it would be helpful to discuss them prior your PR.
+Major changes should be discussed before implementation. The project is under active development and architectural decisions may change.
 
 ---
 
@@ -274,13 +388,9 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ## Citation
 
-If you use Text2Sim MCP Server in academic work, please cite:
+For academic use, cite as:
 
-**Nikolaos Maniatis.** *Text2Sim MCP Server (v2.4.2)*.
-[https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
-Available at: [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
+Maniatis, N. (2025). Text2Sim MCP Server (v2.5.0). https://github.com/IamCatoBot/text2sim-MCP-server
 Copyright The Cato Bot Company Limited and contributors. Licensed under MIT.
 
-**APA:**
-Maniatis, N. (2025). *Text2Sim MCP Server (v2.4.2)*. [https://github.com/IamCatoBot/text2sim-MCP-server](https://github.com/IamCatoBot/text2sim-MCP-server)
 ---
