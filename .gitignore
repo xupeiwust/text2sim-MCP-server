@@ -7,6 +7,7 @@ dist/
 wheels/
 *.egg-info
 context
+scripts
 validation_tests
 # Virtual environments
 .venv

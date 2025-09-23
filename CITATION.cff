@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: "Text2Sim MCP Server"
-version: "2.5.0"
+version: "2.5.1"
 doi: # Add DOI if/when available
 date-released: 2025-09-22 # Update with actual release date
 url: "https://github.com/IamCatoBot/text2sim-MCP-server"

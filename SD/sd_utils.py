@@ -5,7 +5,7 @@ from pathlib import Path
 def load_model_metadata():
     """
     Load metadata for all registered System Dynamics models
-    
+
     Returns:
         A dictionary containing model metadata
     """
@@ -14,57 +14,51 @@ def load_model_metadata():
         with open(metadata_path, "r") as f:
             return json.load(f)
     except FileNotFoundError:
-        # Create models directory if it doesn't exist
-        models_dir = Path(__file__).parent / "models"
-        models_dir.mkdir(exist_ok=True)
-        
-        # Create an empty metadata file with a sample entry
-        sample_metadata = {
-            "penny_jar": {
-                "path": "models/penny_jar.py",
-                "description": "A simple SD model of penny distribution among jars",
-                "parameters": {
-                    "initial_pennies": {
-                        "default": 100,
-                        "description": "Initial number of pennies in the jar"
-                    }
-                },
-                "outputs": ["jar1", "jar2"],
-                "time": {
-                    "start": 0,
-                    "stop": 100,
-                    "step": 1
-                }
-            }
-        }
-        
-        with open(metadata_path, "w") as f:
-            json.dump(sample_metadata, f, indent=2)
-        
-        return sample_metadata
+        # Return empty metadata if no file exists
+        # Users should create models and metadata as needed
+        return {}
 
 def get_model_list():
     """
     Get a list of all available SD models with descriptions
-    
+
     Returns:
-        A dictionary mapping model names to descriptions
+        A dictionary mapping model names to descriptions, or helpful message if empty
     """
     metadata = load_model_metadata()
+    if not metadata:
+        return {
+            "__info__": "No SD models registered. Create models in the models/ directory and add metadata.json entries.",
+            "__templates__": "Check templates/SD/ directory for available model templates to start with."
+        }
     return {name: data.get("description", "No description") for name, data in metadata.items()}
 
 def get_model_details(model_name):
     """
     Get detailed information about a specific model
-    
+
     Args:
         model_name: Name of the model to retrieve
-        
+
     Returns:
         A dictionary with model details or None if not found
     """
     metadata = load_model_metadata()
-    return metadata.get(model_name)
+    if not metadata:
+        return {
+            "error": f"No models registered. Model '{model_name}' not found.",
+            "suggestion": "Check templates/SD/ directory for available model templates."
+        }
+
+    model_details = metadata.get(model_name)
+    if model_details is None:
+        available_models = list(metadata.keys())
+        return {
+            "error": f"Model '{model_name}' not found.",
+            "available_models": available_models
+        }
+
+    return model_details
 
 def run_model_simulation(args):
     """
