@@ -398,8 +398,12 @@ class SchemaDocumentationProvider:
                                 "ast": {
                                     "syntaxType": "IntegStructure",
                                     "flow": {
-                                        "syntaxType": "ReferenceStructure",
-                                        "reference": "Birth_Rate - Death_Rate"
+                                        "syntaxType": "ArithmeticStructure",
+                                        "operators": ["-"],
+                                        "arguments": [
+                                            {"syntaxType": "ReferenceStructure", "reference": "Birth_Rate"},
+                                            {"syntaxType": "ReferenceStructure", "reference": "Death_Rate"}
+                                        ]
                                     },
                                     "initial": {
                                         "syntaxType": "ReferenceStructure",
@@ -422,8 +426,12 @@ class SchemaDocumentationProvider:
                                 "subtype": "Normal",
                                 "subscripts": [[], []],
                                 "ast": {
-                                    "syntaxType": "ReferenceStructure",
-                                    "reference": "Population * Birth_Fraction"
+                                    "syntaxType": "ArithmeticStructure",
+                                    "operators": ["*"],
+                                    "arguments": [
+                                        {"syntaxType": "ReferenceStructure", "reference": "Population"},
+                                        {"syntaxType": "ReferenceStructure", "reference": "Birth_Fraction"}
+                                    ]
                                 }
                             }],
                             "units": "people/year",
@@ -462,8 +470,12 @@ class SchemaDocumentationProvider:
                             "ast": {
                                 "syntaxType": "IntegStructure",
                                 "flow": {
-                                    "syntaxType": "ReferenceStructure",
-                                    "reference": "Inflow - Outflow"
+                                    "syntaxType": "ArithmeticStructure",
+                                    "operators": ["-"],
+                                    "arguments": [
+                                        {"syntaxType": "ReferenceStructure", "reference": "Inflow"},
+                                        {"syntaxType": "ReferenceStructure", "reference": "Outflow"}
+                                    ]
                                 },
                                 "initial": {
                                     "syntaxType": "ReferenceStructure",
@@ -480,8 +492,12 @@ class SchemaDocumentationProvider:
                             "subtype": "Normal",
                             "subscripts": [[], []],
                             "ast": {
-                                "syntaxType": "ReferenceStructure",
-                                "reference": "Mathematical_Expression"
+                                "syntaxType": "ArithmeticStructure",
+                                "operators": ["*"],
+                                "arguments": [
+                                    {"syntaxType": "ReferenceStructure", "reference": "Factor_A"},
+                                    {"syntaxType": "ReferenceStructure", "reference": "Factor_B"}
+                                ]
                             }
                         }
                     },
@@ -516,19 +532,34 @@ class SchemaDocumentationProvider:
                         }
                     },
                     {
-                        "title": "Flow/Auxiliary AST Structure",
-                        "description": "ReferenceStructure for rate and calculated variables",
+                        "title": "PREFERRED: ArithmeticStructure for Mathematical Expressions",
+                        "description": "Use ArithmeticStructure for any calculation with operators. This ensures proper parsing and mathematical accuracy.",
                         "example": {
-                            "syntaxType": "ReferenceStructure",
-                            "reference": "Variable_A * Variable_B + Constant"
+                            "syntaxType": "ArithmeticStructure",
+                            "operators": ["+"],
+                            "arguments": [
+                                {
+                                    "syntaxType": "ArithmeticStructure",
+                                    "operators": ["*"],
+                                    "arguments": [
+                                        {"syntaxType": "ReferenceStructure", "reference": "Variable_A"},
+                                        {"syntaxType": "ReferenceStructure", "reference": "Variable_B"}
+                                    ]
+                                },
+                                {"syntaxType": "ReferenceStructure", "reference": "Constant"}
+                            ]
                         }
                     },
                     {
-                        "title": "Complex Expression AST",
-                        "description": "Mathematical expressions with multiple variables",
+                        "title": "ReferenceStructure for Simple Variables Only",
+                        "description": "Use ReferenceStructure ONLY for single variable names or numeric constants. AVOID complex expressions.",
                         "example": {
                             "syntaxType": "ReferenceStructure",
-                            "reference": "MAX(0, (Target_Level - Current_Level) / Adjustment_Time)"
+                            "reference": "Population"
+                        },
+                        "bad_example": {
+                            "syntaxType": "ReferenceStructure",
+                            "reference": "Variable_A * Variable_B + Constant"
                         }
                     }
                 ],
@@ -784,7 +815,7 @@ class SchemaDocumentationProvider:
                     "flows": {
                         "description": "Rate variables that change stocks over time",
                         "required_fields": ["type", "subtype", "name", "subscripts", "ast"],
-                        "ast_patterns": ["ArithmeticStructure", "CallStructure", "ReferenceStructure"],
+                        "ast_patterns": ["ArithmeticStructure (PREFERRED for calculations)", "CallStructure", "ReferenceStructure (simple variables only)"],
                         "examples": [
                             {
                                 "title": "Simple Rate",
@@ -825,7 +856,7 @@ class SchemaDocumentationProvider:
                     "auxiliaries": {
                         "description": "Helper variables for calculations and constants",
                         "required_fields": ["type", "subtype", "name", "subscripts", "ast"],
-                        "ast_patterns": ["ReferenceStructure", "ArithmeticStructure", "CallStructure"],
+                        "ast_patterns": ["ArithmeticStructure (PREFERRED for calculations)", "ReferenceStructure (constants only)", "CallStructure"],
                         "examples": [
                             {
                                 "title": "Constant",
@@ -1372,8 +1403,8 @@ class SchemaDocumentationProvider:
                 },
                 "validation_rules": [
                     "Stock variables use IntegStructure syntax",
-                    "Flow/Auxiliary variables use ReferenceStructure syntax",
-                    "Mathematical expressions reference other variable names",
+                    "Flow/Auxiliary variables use ArithmeticStructure for calculations, ReferenceStructure for simple variables",
+                    "Use ArithmeticStructure for mathematical expressions with operators (+, -, *, /, ^)",
                     "Variable names must match element names exactly"
                 ],
                 "examples": self._examples_cache["SD"].get("ast", []),
@@ -1428,7 +1459,7 @@ class SchemaDocumentationProvider:
                 "name": "Stock and Flow Modeling",
                 "steps": [
                     "1. Define stock elements with IntegStructure AST",
-                    "2. Define flow elements with ReferenceStructure AST",
+                    "2. Define flow elements with ArithmeticStructure AST for calculations",
                     "3. Connect flows to stocks via AST references",
                     "4. Add auxiliary variables for rates and fractions",
                     "5. Test with different time settings"

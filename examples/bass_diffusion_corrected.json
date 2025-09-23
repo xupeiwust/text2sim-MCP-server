@@ -1,0 +1,194 @@
+{
+  "abstractModel": {
+    "originalPath": "bass_diffusion_corrected.json",
+    "sections": [
+      {
+        "name": "__main__",
+        "path": "/",
+        "type": "main",
+        "split": false,
+        "params": [],
+        "returns": [],
+        "elements": [
+          {
+            "name": "Potential_Adopters",
+            "units": "people",
+            "limits": [0, null],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "IntegStructure",
+                  "flow": {
+                    "syntaxType": "ArithmeticStructure",
+                    "operators": ["-"],
+                    "arguments": [
+                      {"syntaxType": "ReferenceStructure", "reference": "0"},
+                      {"syntaxType": "ReferenceStructure", "reference": "Adoption_Rate"}
+                    ]
+                  },
+                  "initial": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "Total_Market"
+                  }
+                },
+                "type": "Stock",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "People who could adopt but haven't yet"
+          },
+          {
+            "name": "Adopters",
+            "units": "people",
+            "limits": [0, null],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "IntegStructure",
+                  "flow": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "Adoption_Rate"
+                  },
+                  "initial": {
+                    "syntaxType": "ReferenceStructure",
+                    "reference": "0"
+                  }
+                },
+                "type": "Stock",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "People who have adopted the technology"
+          },
+          {
+            "name": "Adoption_Rate",
+            "units": "people/year",
+            "limits": [0, null],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "ArithmeticStructure",
+                  "operators": ["*"],
+                  "arguments": [
+                    {"syntaxType": "ReferenceStructure", "reference": "Adoption_Pressure"},
+                    {"syntaxType": "ReferenceStructure", "reference": "Potential_Adopters"}
+                  ]
+                },
+                "type": "Flow",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "Rate of technology adoption (Bass Diffusion equation)"
+          },
+          {
+            "name": "Innovation_Coefficient",
+            "units": "1/year",
+            "limits": [0, 1],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "ReferenceStructure",
+                  "reference": "0.03"
+                },
+                "type": "Auxiliary",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "Coefficient of innovation (external influence) - typically 0.01-0.05"
+          },
+          {
+            "name": "Imitation_Coefficient",
+            "units": "1/year",
+            "limits": [0, 1],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "ReferenceStructure",
+                  "reference": "0.4"
+                },
+                "type": "Auxiliary",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "Coefficient of imitation (word-of-mouth influence) - typically 0.1-0.5"
+          },
+          {
+            "name": "Total_Market",
+            "units": "people",
+            "limits": [1, null],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "ReferenceStructure",
+                  "reference": "1000"
+                },
+                "type": "Auxiliary",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "Total addressable market size"
+          },
+          {
+            "name": "Market_Penetration",
+            "units": "dimensionless",
+            "limits": [0, 1],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "ArithmeticStructure",
+                  "operators": ["/"],
+                  "arguments": [
+                    {"syntaxType": "ReferenceStructure", "reference": "Adopters"},
+                    {"syntaxType": "ReferenceStructure", "reference": "Total_Market"}
+                  ]
+                },
+                "type": "Auxiliary",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "Fraction of market that has adopted (0 to 1)"
+          },
+          {
+            "name": "Adoption_Pressure",
+            "units": "1/year",
+            "limits": [0, null],
+            "components": [
+              {
+                "ast": {
+                  "syntaxType": "ArithmeticStructure",
+                  "operators": ["+"],
+                  "arguments": [
+                    {"syntaxType": "ReferenceStructure", "reference": "Innovation_Coefficient"},
+                    {
+                      "syntaxType": "ArithmeticStructure",
+                      "operators": ["*"],
+                      "arguments": [
+                        {"syntaxType": "ReferenceStructure", "reference": "Imitation_Coefficient"},
+                        {"syntaxType": "ReferenceStructure", "reference": "Market_Penetration"}
+                      ]
+                    }
+                  ]
+                },
+                "type": "Auxiliary",
+                "subtype": "Normal",
+                "subscripts": [[], []]
+              }
+            ],
+            "documentation": "Total adoption pressure (innovation + imitation effects combined)"
+          }
+        ],
+        "viewsDict": {},
+        "subscripts": [],
+        "testInputs": [],
+        "constraints": []
+      }
+    ]
+  }
+}

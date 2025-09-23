@@ -1042,7 +1042,13 @@ def {func_name}():
         subtype = var_info.get('subtype', 'Normal')
         units = var_info.get('units', '')
 
-        func = f'''@component.add(name='{el_name}', units='{units}', comp_type='{comp_type}', comp_subtype='{subtype}')
+        # Extract dependencies for PySD evaluation order
+        dependencies = self._extract_auxiliary_dependencies(ast_info)
+        depends_on_str = ''
+        if dependencies:
+            depends_on_str = f", depends_on={dependencies}"
+
+        func = f'''@component.add(name='{el_name}', units='{units}', comp_type='{comp_type}', comp_subtype='{subtype}'{depends_on_str})
 def {func_name}():
     """{comp_type}: {var_info.get('documentation', func_name)}."""
     return {expression}
@@ -1170,6 +1176,19 @@ def {func_name}():
             'initial': initial_deps,
             'step': step_deps
         }
+
+    def _extract_auxiliary_dependencies(self, ast_info):
+        """Extract dependency information from auxiliary/flow AST for PySD dependency tracking."""
+        dependencies = {}
+
+        if ast_info:
+            # Extract all variable dependencies from the AST
+            variables = self._extract_variables_from_ast(ast_info)
+            for var in variables:
+                clean_var = self._clean_name(var)
+                dependencies[clean_var] = 1
+
+        return dependencies
 
     def _extract_variables_from_ast(self, ast_info):
         """Extract variable names from AST structure."""
