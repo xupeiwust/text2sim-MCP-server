@@ -242,18 +242,96 @@ Both produce identical simulation results when variables have the same values.
 
 ### Function Calls
 
+PySD supports mathematical functions through the CallStructure syntax type. **IMPORTANT**: Do not use ReferenceStructure for function calls - use CallStructure instead.
+
 **MIN/MAX Functions:**
 ```json
-// Simple
+// WRONG - Do not use ReferenceStructure for functions
 {"syntaxType": "ReferenceStructure", "reference": "MAX(0, Value)"}
 
-// Structured
+// CORRECT - Use CallStructure for functions
 {
-  "syntaxType": "ArithmeticStructure",
-  "operators": ["MAX"],
+  "syntaxType": "CallStructure",
+  "function": {
+    "syntaxType": "ReferenceStructure",
+    "reference": "MAX"
+  },
   "arguments": [
     {"syntaxType": "ReferenceStructure", "reference": "0"},
     {"syntaxType": "ReferenceStructure", "reference": "Value"}
+  ]
+}
+```
+
+#### **Comprehensive Function Examples**
+
+**Mathematical Functions:**
+```json
+// TANH (hyperbolic tangent)
+{
+  "syntaxType": "CallStructure",
+  "function": {"syntaxType": "ReferenceStructure", "reference": "TANH"},
+  "arguments": [
+    {
+      "syntaxType": "ArithmeticStructure",
+      "operators": ["*"],
+      "arguments": [
+        {"syntaxType": "ReferenceStructure", "reference": "sensitivity"},
+        {"syntaxType": "ReferenceStructure", "reference": "input_value"}
+      ]
+    }
+  ]
+}
+
+// MIN with nested MAX
+{
+  "syntaxType": "CallStructure",
+  "function": {"syntaxType": "ReferenceStructure", "reference": "MIN"},
+  "arguments": [
+    {"syntaxType": "ReferenceStructure", "reference": "1"},
+    {
+      "syntaxType": "CallStructure",
+      "function": {"syntaxType": "ReferenceStructure", "reference": "MAX"},
+      "arguments": [
+        {"syntaxType": "ReferenceStructure", "reference": "0.5"},
+        {"syntaxType": "ReferenceStructure", "reference": "utilization_rate"}
+      ]
+    }
+  ]
+}
+```
+
+**Supported Functions:**
+- **MIN, MAX**: Minimum/maximum values
+- **ABS**: Absolute value
+- **EXP, LN, LOG**: Exponential and logarithmic functions
+- **SIN, COS, TAN**: Trigonometric functions
+- **TANH, ATAN**: Hyperbolic and inverse trigonometric
+- **SQRT, POW**: Square root and power functions
+- **ROUND, FLOOR, CEIL**: Rounding functions
+- **IF_THEN_ELSE**: Conditional logic
+
+**Complex Example - Market Sentiment:**
+```json
+{
+  "syntaxType": "CallStructure",
+  "function": {"syntaxType": "ReferenceStructure", "reference": "TANH"},
+  "arguments": [
+    {
+      "syntaxType": "ArithmeticStructure",
+      "operators": ["*"],
+      "arguments": [
+        {
+          "syntaxType": "ArithmeticStructure",
+          "operators": ["-"],
+          "arguments": [
+            {"syntaxType": "ReferenceStructure", "reference": "Inventory_Coverage"},
+            {"syntaxType": "ReferenceStructure", "reference": "Desired_Coverage"}
+          ]
+        },
+        {"syntaxType": "ReferenceStructure", "reference": "Sentiment_Sensitivity"}
+      ]
+    }
   ]
 }
 ```

@@ -503,7 +503,17 @@
     "CallStructure": {
       "$dynamicAnchor": "syntax",
       "type": "object",
-      "description": "Function call",
+      "description": "Function call structure for mathematical functions like MIN, MAX, TANH, etc. Use this instead of putting function calls in ReferenceStructure strings.",
+      "examples": [
+        {
+          "syntaxType": "CallStructure",
+          "function": {"syntaxType": "ReferenceStructure", "reference": "MIN"},
+          "arguments": [
+            {"syntaxType": "ReferenceStructure", "reference": "1"},
+            {"syntaxType": "ReferenceStructure", "reference": "capacity"}
+          ]
+        }
+      ],
       "properties": {
         "syntaxType": {
           "const": "CallStructure"

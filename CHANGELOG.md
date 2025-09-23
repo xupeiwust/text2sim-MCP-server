@@ -6,6 +6,63 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ---
 
+## \[2.5.3] – CallStructure Function Library Implementation
+
+### Added
+
+**Mathematical Function Support**
+
+* Implemented complete CallStructure handler in `_ast_to_python_expression()` for proper function call processing.
+* Added comprehensive mathematical function library with 15+ functions: MIN, MAX, ABS, EXP, LN, LOG, SQRT, SIN, COS, TAN, TANH, ATAN, POW, ROUND, FLOOR, CEIL, IF_THEN_ELSE.
+* Integrated CallStructure support into dependency extraction system for proper PySD evaluation order.
+* Added function name validation to prevent false positives during model validation.
+
+**Documentation Enhancement**
+
+* Enhanced `PYSD_AST_STRUCTURES_GUIDE.md` with comprehensive CallStructure section including examples and best practices.
+* Added explicit guidance on correct vs incorrect function call formats to prevent LLM confusion.
+* Updated JSON Schema documentation with CallStructure examples and function library reference.
+* Included complex nested function examples demonstrating professional SD modeling patterns.
+
+**Professional Modeling Capabilities**
+
+* Enabled sophisticated financial modeling with price constraints, market sentiment analysis, and optimization behaviors.
+* Added support for nested function calls (e.g., MIN with nested MAX functions).
+* Implemented proper mathematical function mapping to Python/NumPy equivalents.
+* Added conditional logic support through IF_THEN_ELSE function integration.
+
+### Fixed
+
+**Validation System Improvements**
+
+* Resolved issue where mathematical function names (MIN, MAX, TANH) were incorrectly flagged as undefined variables.
+* Fixed validation logic to properly recognize CallStructure as valid syntax for function calls.
+* Enhanced variable reference checking to distinguish between function names and model variables.
+
+**Model Builder Robustness**
+
+* Added missing CallStructure case handling in AST-to-Python conversion pipeline.
+* Implemented proper error handling for malformed function calls with fallback behavior.
+* Enhanced dependency tracking to include variables referenced within function arguments.
+
+### Changed
+
+**Architecture Improvements**
+
+* Extended `_extract_variables_from_ast()` to support CallStructure dependency extraction.
+* Modified validation pipeline to properly handle mathematical function references.
+* Updated function mapping system with comprehensive Python/NumPy function equivalents.
+
+### Technical Details
+
+* **Function Library**: MIN, MAX, ABS, EXP, LN, LOG, SQRT, SIN, COS, TAN, TANH, ATAN, ATAN2, POW, ROUND, FLOOR, CEIL, IF_THEN_ELSE
+* **Validation**: Functions no longer trigger "undefined variable" errors
+* **Code Generation**: Proper Python function calls with NumPy integration
+* **Documentation**: Comprehensive examples prevent LLM format confusion
+* **Testing**: Full function library validation with mathematical accuracy verification
+
+---
+
 ## \[2.5.2] – System Dynamics Expression Evaluation and Schema Enhancements
 
 ### Fixed
