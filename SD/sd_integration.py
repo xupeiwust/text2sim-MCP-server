@@ -180,17 +180,16 @@ class PySDJSONIntegration:
             # Convert to PySD model
             pysd_model = self._convert_to_pysd_model(model)
 
-            # Set parameters if provided
+            # Set parameters if provided (use set_components, not initial_condition)
             if params:
-                for param_name, param_value in params.items():
-                    try:
-                        pysd_model.set_initial_condition(param_name, param_value)
-                    except Exception as e:
-                        self.logger.warning(f"Could not set parameter {param_name}: {str(e)}")
+                try:
+                    pysd_model.set_components(params)
+                except Exception as e:
+                    self.logger.warning(f"Could not set parameters via set_components: {str(e)}")
 
             # Run simulation
             result_data = pysd_model.run(
-                initial_condition=(initial_time, {}),
+                initial_condition='original',
                 final_time=final_time,
                 time_step=time_step,
                 return_columns=return_columns
@@ -531,27 +530,42 @@ class PySDJSONIntegration:
     def _test_pysd_compilation(self, model: Dict[str, Any], errors: List[str], warnings: List[str]) -> bool:
         """Test if the model can be compiled by PySD."""
         try:
-            # Create a temporary JSON file
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
-                json.dump(model, temp_file, indent=2)
-                temp_path = temp_file.name
-
+            # Attempt to build the model using our JSONModelBuilder
             try:
-                # Try to load with PySD (this is a simplified test)
-                # Full implementation would convert JSON to PySD format first
+                from .json_extensions.adapters.abstract_model_adapter import AbstractModelAdapter
+            except ImportError:
+                # Fallback for when running from different contexts
+                from json_extensions.adapters.abstract_model_adapter import AbstractModelAdapter
+
+            # Handle template format vs direct model format
+            working_model = model
+            if "model" in model and "abstractModel" in model["model"]:
+                working_model = model["model"]
+
+            # Try to create the adapter and build the model
+            model_adapter = AbstractModelAdapter(working_model, validate=False)
+
+            # Use temporary directory for the compilation test
+            with tempfile.TemporaryDirectory() as temp_dir:
+                builder = JSONModelBuilder(model_adapter, temp_dir)
+                python_file_path = builder.build_model()
+
+                # Try to load the generated Python file with PySD
+                pysd_model = pysd.load(python_file_path)
+
+                # If we got here, compilation succeeded
+                self.logger.debug(f"PySD compilation test passed for model")
                 return True
 
-            except Exception as e:
-                errors.append(f"PySD compilation test failed: {str(e)}")
-                return False
-
-            finally:
-                # Clean up temporary file
-                Path(temp_path).unlink(missing_ok=True)
+        except ImportError as e:
+            warnings.append(f"PySD compilation test skipped: Missing dependencies ({str(e)})")
+            return True  # Don't fail validation for missing optional dependencies
 
         except Exception as e:
-            warnings.append(f"Could not perform PySD compilation test: {str(e)}")
-            return True  # Don't fail validation if we can't test compilation
+            error_msg = f"PySD compilation test failed: {str(e)}"
+            self.logger.warning(error_msg)
+            errors.append(error_msg)
+            return False
 
     def _convert_to_pysd_model(self, model: Dict[str, Any]):
         """Convert JSON model to PySD model object using ModelBuilder."""
@@ -564,27 +578,38 @@ class PySDJSONIntegration:
             if "model" in model and "abstractModel" in model["model"]:
                 working_model = model["model"]
 
+            # Normalize JSON: ensure each component has a name matching its element
+            try:
+                normalized_working = json.loads(json.dumps(working_model))
+                am = normalized_working.get("abstractModel", {})
+                sections = am.get("sections", [])
+                for section in sections:
+                    elements = section.get("elements", [])
+                    for element in elements:
+                        element_name = element.get("name", "")
+                        components = element.get("components", [])
+                        for comp in components:
+                            if "name" not in comp or not comp["name"]:
+                                comp["name"] = element_name
+            except Exception as norm_e:
+                self.logger.warning(f"Component name normalization failed: {norm_e}")
+
             # Create the adapter that provides PySD-compatible interface
-            model_adapter = AbstractModelAdapter(working_model, validate=False)
+            model_adapter = AbstractModelAdapter(normalized_working, validate=False)
 
-            # Use ModelBuilder to generate Python code file, then load with PySD
+            # Use the local, robust JSONModelBuilder
             import tempfile
-            import os
-
             with tempfile.TemporaryDirectory() as temp_dir:
-                # Create ModelBuilder with the adapter
                 builder = JSONModelBuilder(model_adapter, temp_dir)
-
-                # Build the Python model file
                 python_file_path = builder.build_model()
-
-                # Load the generated Python file with PySD
                 pysd_model = pysd.load(python_file_path)
-
                 return pysd_model
 
         except Exception as e:
             self.logger.error(f"Model conversion error: {str(e)}")
+            # Try to get more specific error information
+            import traceback
+            self.logger.error(f"Full traceback: {traceback.format_exc()}")
             raise SDModelBuildError(f"Failed to build model from JSON: {str(e)}")
 
 
@@ -801,6 +826,7 @@ class JSONModelBuilder:
         with open(python_file, 'w', encoding='utf-8') as f:
             f.write(python_code)
 
+
         return str(python_file)
 
     def _extract_variables(self):
@@ -822,156 +848,187 @@ class JSONModelBuilder:
                 }
 
     def _generate_python_code(self) -> str:
-        """Generate PySD-compatible Python code."""
+        """Generate PySD-compatible Python code matching working pysd-json implementation."""
 
         # Generate function definitions for each variable
         functions = []
-        integ_functions = []
+        statefuls = []
+        stateful_refs = []
 
-        # Add required imports and setup
+        # Add required imports and setup matching working pysd-json implementation
         code_parts = [
             '"""Generated PySD model from JSON."""',
             'import numpy as np',
             'from pysd.py_backend.statefuls import Integ',
+            'from pysd import Component',
+            'from pathlib import Path',
             '',
-            '# Global time variable',
-            '_t = 0',
+            '__pysd_version__ = "3.14.0"',
             '',
-            'def time():',
-            '    """Return current time."""',
-            '    return _t',
+            '__data = {',
+            "    'scope': None,",
+            "    'time': lambda: 0",
+            '}',
+            '',
+            '_root = Path(__file__).parent',
+            '',
+            'component = Component()',
             '',
         ]
 
-        # Add control variables
+        # Add control variables section matching working implementation
         code_parts.extend([
-            'def final_time():',
-            '    """Final simulation time."""',
-            '    return 100',
+            '#######################################################################',
+            '#                          CONTROL VARIABLES                          #',
+            '#######################################################################',
+            'def _init_outer_references(data):',
+            '    for key in data:',
+            '        __data[key] = data[key]',
             '',
-            'def initial_time():',
-            '    """Initial simulation time."""',
-            '    return 0',
             '',
-            'def time_step():',
-            '    """Simulation time step."""',
-            '    return 1',
-            '',
-            'def saveper():',
-            '    """Save frequency."""',
-            '    return time_step()',
+            '@component.add(name="Time")',
+            'def time():',
+            '    """',
+            '    Current time of the model.',
+            '    """',
+            '    return __data[\'time\']()',
             '',
         ])
 
-        # Generate functions for each variable
+        # Generate control variable functions with proper decorators
+        control_funcs = [
+            ('initial_time', 'INITIAL TIME', '0'),
+            ('final_time', 'FINAL TIME', '100'), 
+            ('time_step', 'TIME STEP', '1'),
+            ('saveper', 'SAVEPER', 'time_step()')
+        ]
+        
+        for func_name, display_name, default_value in control_funcs:
+            code_parts.extend([
+                f'@component.add(name="{display_name}")',
+                f'def {func_name}():',
+                f'    """',
+                f'    {display_name.title()} for the simulation.',
+                f'    """',
+                f'    return {default_value}',
+                '',
+            ])
+
+        # Add _control_vars dictionary after control functions are defined
+        code_parts.extend([
+            '_control_vars = {',
+            '    "initial_time": lambda: initial_time(),',
+            '    "final_time": lambda: final_time(),',
+            '    "time_step": lambda: time_step(),',
+            '    "saveper": lambda: saveper()',
+            '}',
+            '',
+            '#######################################################################',
+            '#                           MODEL VARIABLES                           #',
+            '#######################################################################',
+            '',
+        ])
+
+        # Generate functions for each variable with proper decorators
         for var_name, var_info in self.variables.items():
             func_name = self._clean_name(var_name)
             var_type = var_info['type']
             ast_info = var_info['ast']
 
             if var_type == 'Stock':
-                # Generate stock (integration) function
-                stock_func, integ_func = self._generate_stock_function(func_name, ast_info, var_info)
+                # Generate stock (integration) function and module-level stateful
+                stock_func, stateful_def = self._generate_stock_function(func_name, ast_info, var_info)
+                statefuls.append(stateful_def)
+                stateful_refs.append(f'_{func_name}_integ')
                 functions.append(stock_func)
-                integ_functions.append(integ_func)
 
             elif var_type in ['Flow', 'Auxiliary']:
                 # Generate flow or auxiliary function
                 func = self._generate_auxiliary_function(func_name, ast_info, var_info)
                 functions.append(func)
 
-        # Add all functions to code
+        # Add functions first, then statefuls at module level
+        # This ensures all functions are defined before Integ objects try to reference them
         code_parts.extend(functions)
-        code_parts.extend(integ_functions)
+        code_parts.append('')  # Add spacing before statefuls
+        code_parts.extend(statefuls)
 
-        # Add required PySD infrastructure
+        # Expose statefuls tuple for PySD initialization
+        if stateful_refs:
+            code_parts.extend([
+                '',
+                '# Stateful components (for PySD initialization)',
+                '_statefuls = (',
+            ])
+            for ref in stateful_refs:
+                code_parts.append(f'    {ref},')
+            code_parts.extend([
+                ')',
+                'statefuls = _statefuls',
+                '',
+            ])
+
+        # Add required PySD infrastructure matching working implementation
         code_parts.extend([
-            '',
-            '# Required PySD infrastructure',
-            'def _init_outer_references(data):',
-            '    """Initialize outer references."""',
-            '    for key in data:',
-            '        globals()[key] = data[key]',
-            '',
-            '# PySD version info',
-            '__pysd_version__ = "3.14.0"',
             '',
             '# Variable namespace',
-            '_namespace = {',
+            'namespace = {',
         ])
 
-        # Add namespace mappings
+        # Add namespace mappings (use original names as keys, map to Python function names)
         for var_name in self.variables.keys():
             clean_name = self._clean_name(var_name)
-            code_parts.append(f'    "{clean_name.lower()}": "{clean_name}",')
+            code_parts.append(f'    "{var_name}": "{clean_name}",')
 
         code_parts.extend([
+            '    "TIME": "time",',
             '    "time": "time",',
             '}',
             '',
             '# Dependencies (simplified)',
-            '_dependencies = {',
-        ])
-
-        # Add basic dependencies
-        for var_name in self.variables.keys():
-            clean_name = self._clean_name(var_name)
-            code_parts.append(f'    "{clean_name}": [],')
-
-        code_parts.extend([
-            '    "time": [],',
-            '}',
+            'dependencies = {}',
             '',
             '# Module attributes required by PySD',
-            'namespace = _namespace',
-            'dependencies = _dependencies',
-            '',
-            '# Component accessor class (required by PySD)',
-            'class ComponentAccessor:',
-            '    """Component accessor with required attributes."""',
-            '    def __init__(self):',
-            '        self.namespace = _namespace',
-            '        self.dependencies = _dependencies',
-            '        self.subscripts = {}  # No subscripts in our simple models',
-            '    ',
-            '    def __call__(self, name):',
-            '        """Get component by name."""',
-            '        return globals().get(name.lower(), globals().get(name))',
-            '',
-            'component = ComponentAccessor()',
-            '',
-            '# Model metadata',
             'def get_pysd_compiler_version():',
-            '    """Return compiler version string."""',
-            '    return "3.14.0"',
+            '    return __pysd_version__',
+            '',
         ])
 
         return '\n'.join(code_parts)
 
     def _generate_stock_function(self, func_name: str, ast_info, var_info):
-        """Generate stock (integration) function."""
+        """Generate stock (integration) function and module-level Integ stateful."""
 
-        # Main stock function
-        stock_func = f'''def {func_name}():
-    """Stock: {var_info.get('documentation', func_name)}."""
-    return _{func_name}_integ()'''
-
-        # Integration helper function
+        # Create module-level Integ instance
         if hasattr(ast_info, 'syntax_type') and ast_info.syntax_type == 'IntegStructure':
             # Extract flow and initial value from AST
             flow_expr = self._ast_to_python_expression(ast_info.flow)
             initial_expr = self._ast_to_python_expression(ast_info.initial)
 
-            integ_func = f'''def _{func_name}_integ():
-    """Integration function for {func_name}."""
-    return Integ(lambda: {flow_expr}, lambda: {initial_expr}, "{func_name}")'''
+            stateful_def = f'''_{func_name}_integ = Integ(lambda: {flow_expr}, lambda: {initial_expr}, "{func_name}")'''
         else:
             # Fallback for malformed stock
-            integ_func = f'''def _{func_name}_integ():
-    """Integration function for {func_name}."""
-    return Integ(lambda: 0, lambda: 100, "{func_name}")'''
+            initial_expr = '100'
+            stateful_def = f'''_{func_name}_integ = Integ(lambda: 0, lambda: {initial_expr}, "{func_name}")'''
 
-        return stock_func, integ_func
+        # Main stock function with @component.add decorator including dependencies
+        el_name = var_info.get('name', func_name).replace("'", "\\'")
+        subtype = var_info.get('subtype', 'Normal')
+        units = var_info.get('units', '')
+        integ_name = f'_{func_name}_integ'
+
+        # Extract dependency information from AST
+        dependencies = self._extract_stock_dependencies(ast_info)
+
+        stock_func = f'''@component.add(name='{el_name}', units='{units}', comp_type='Stock', comp_subtype='{subtype}', depends_on={{'{integ_name}': 1}}, other_deps={{'{integ_name}': {{'initial': {dependencies['initial']}, 'step': {dependencies['step']}}}}})
+def {func_name}():
+    """Stock: {var_info.get('documentation', func_name)}."""
+    return _{func_name}_integ()
+
+
+'''
+
+        return stock_func, stateful_def
 
     def _generate_auxiliary_function(self, func_name: str, ast_info, var_info):
         """Generate auxiliary or flow function."""
@@ -979,9 +1036,19 @@ class JSONModelBuilder:
         # Convert AST to Python expression
         expression = self._ast_to_python_expression(ast_info)
 
-        func = f'''def {func_name}():
-    """{'Flow' if var_info['type'] == 'Flow' else 'Auxiliary'}: {var_info.get('documentation', func_name)}."""
-    return {expression}'''
+        # Generate function with @component.add decorator
+        el_name = var_info.get('name', func_name).replace("'", "\\'")
+        comp_type = var_info['type']
+        subtype = var_info.get('subtype', 'Normal')
+        units = var_info.get('units', '')
+
+        func = f'''@component.add(name='{el_name}', units='{units}', comp_type='{comp_type}', comp_subtype='{subtype}')
+def {func_name}():
+    """{comp_type}: {var_info.get('documentation', func_name)}."""
+    return {expression}
+
+
+'''
 
         return func
 
@@ -994,6 +1061,11 @@ class JSONModelBuilder:
             if ast_info.syntax_type == 'ReferenceStructure':
                 if hasattr(ast_info, 'reference'):
                     return self._convert_reference_expression(ast_info.reference)
+            elif ast_info.syntax_type == 'ArithmeticStructure':
+                return self._convert_arithmetic_structure(ast_info)
+            elif ast_info.syntax_type == 'IntegStructure':
+                # Should not be called directly for IntegStructure - handled separately
+                return '0'
 
         # Fallback
         return '0'
@@ -1054,6 +1126,76 @@ class JSONModelBuilder:
                 converted_tokens.append(token)
 
         return ''.join(converted_tokens)
+
+    def _convert_arithmetic_structure(self, ast_info) -> str:
+        """Convert ArithmeticStructure to Python expression."""
+        if not hasattr(ast_info, 'operators') or not hasattr(ast_info, 'arguments'):
+            return '0'
+
+        operators = ast_info.operators
+        arguments = ast_info.arguments
+
+        if not arguments:
+            return '0'
+
+        if len(arguments) == 1:
+            return self._ast_to_python_expression(arguments[0])
+
+        # Build expression left-to-right
+        result = self._ast_to_python_expression(arguments[0])
+
+        for i, operator in enumerate(operators):
+            if i + 1 < len(arguments):
+                arg_expr = self._ast_to_python_expression(arguments[i + 1])
+                result = f"({result} {operator} {arg_expr})"
+
+        return result
+
+    def _extract_stock_dependencies(self, ast_info):
+        """Extract dependency information from stock AST for PySD dependency tracking."""
+        initial_deps = {}
+        step_deps = {}
+
+        if hasattr(ast_info, 'syntax_type') and ast_info.syntax_type == 'IntegStructure':
+            # Extract dependencies from initial value
+            if hasattr(ast_info, 'initial'):
+                initial_vars = self._extract_variables_from_ast(ast_info.initial)
+                for var in initial_vars:
+                    initial_deps[self._clean_name(var)] = 1
+
+            # For step dependencies, we don't typically need them for basic stocks
+            # as they're handled by the flow expressions
+
+        return {
+            'initial': initial_deps,
+            'step': step_deps
+        }
+
+    def _extract_variables_from_ast(self, ast_info):
+        """Extract variable names from AST structure."""
+        variables = []
+
+        if not ast_info:
+            return variables
+
+        if hasattr(ast_info, 'syntax_type'):
+            if ast_info.syntax_type == 'ReferenceStructure' and hasattr(ast_info, 'reference'):
+                ref = ast_info.reference
+                if ref and not ref.replace(".", "").replace("-", "").isdigit():
+                    # It's a variable reference, not a number
+                    import re
+                    # Extract variable names from expression
+                    var_names = re.findall(r'[A-Za-z][A-Za-z0-9_\s]*[A-Za-z0-9_]|[A-Za-z]', ref)
+                    for var_name in var_names:
+                        var_name = var_name.strip()
+                        if var_name in self.variables:
+                            variables.append(var_name)
+
+            elif ast_info.syntax_type == 'ArithmeticStructure' and hasattr(ast_info, 'arguments'):
+                for arg in ast_info.arguments:
+                    variables.extend(self._extract_variables_from_ast(arg))
+
+        return variables
 
     def _clean_name(self, name: str) -> str:
         """Clean variable name for Python function names."""

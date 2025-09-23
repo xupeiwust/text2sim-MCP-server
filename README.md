@@ -390,7 +390,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 For academic use, cite as:
 
-Maniatis, N. (2025). Text2Sim MCP Server (v2.5.0). https://github.com/IamCatoBot/text2sim-MCP-server
+Maniatis, N. (2025). Text2Sim MCP Server (v2.5.1). https://github.com/IamCatoBot/text2sim-MCP-server
 Copyright The Cato Bot Company Limited and contributors. Licensed under MIT.
 
 ---

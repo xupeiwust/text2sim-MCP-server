@@ -6,6 +6,65 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ---
 
+## \[2.5.1] – SD Implementation Quality & Reliability Improvements
+
+### Fixed
+
+**PySD Integration Stability**
+
+* Fixed `_test_pysd_compilation()` method that previously always returned `True` without actual testing.
+* Implemented proper PySD compilation validation using `JSONModelBuilder` and actual PySD model loading.
+* Added comprehensive error handling for missing dependencies and compilation failures.
+* Enhanced validation accuracy with real compilation testing instead of placeholder responses.
+
+**Mathematical Expression Handling**
+
+* Resolved initialization order issues in generated PySD Python code causing "stateful element not initialized" errors.
+* Fixed `ArithmeticStructure` AST conversion that was returning `'0'` instead of proper mathematical expressions.
+* Implemented proper dependency tracking with `depends_on` and `other_deps` decorators for PySD components.
+* Added `_convert_arithmetic_structure()` method for correct operator precedence in complex expressions.
+
+**Utility Function Improvements**
+
+* Removed misleading dummy data from `sd_utils.py` that created fake "penny_jar" model metadata.
+* Replaced placeholder responses with helpful guidance directing users to actual templates and resources.
+* Enhanced `get_model_list()` and `get_model_details()` to provide useful information instead of hardcoded samples.
+* Improved error messages with actionable suggestions for missing models and metadata.
+
+### Added
+
+**Documentation & Transparency**
+
+* Created `docs/SD_KNOWN_LIMITATIONS.md` documenting current limitations and workarounds.
+* Added comprehensive status documentation including working features and quality metrics.
+* Documented Vensim converter as known placeholder implementation with future development notes.
+* Added fractional time step limitation documentation with practical workarounds.
+
+**Code Quality Improvements**
+
+* Enhanced import handling with fallback mechanisms for different execution contexts.
+* Improved error messages throughout the SD integration with specific, actionable guidance.
+* Added proper logging and debug information for troubleshooting compilation issues.
+* Implemented robust dependency extraction for PySD model building.
+
+### Changed
+
+**Code Organization**
+
+* Cleaned up placeholder and dummy code identified through comprehensive scanning.
+* Improved function signatures and type hints for better code maintainability.
+* Enhanced error handling patterns throughout the SD implementation.
+* Streamlined import structures for better reliability across different contexts.
+
+**Validation System**
+
+* Updated compilation testing to use actual PySD model building and loading.
+* Enhanced validation feedback with specific error details and resolution steps.
+* Improved handling of different model formats (template vs direct abstractModel).
+* Added better detection and reporting of circular dependencies and undefined variables.
+
+---
+
 ## \[2.5.0] – PySD-compatible JSON Schema Architecture Implementation
 
 ### Added
