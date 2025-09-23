@@ -382,9 +382,9 @@
       },
       "oneOf": [
         {"$ref": "#/$defs/ArithmeticStructure"},
+        {"$ref": "#/$defs/ReferenceStructure"},
         {"$ref": "#/$defs/LogicStructure"},
         {"$ref": "#/$defs/SubscriptsReferenceStructure"},
-        {"$ref": "#/$defs/ReferenceStructure"},
         {"$ref": "#/$defs/CallStructure"},
         {"$ref": "#/$defs/GameStructure"},
         {"$ref": "#/$defs/AllocateAvailableStructure"},
@@ -411,22 +411,23 @@
     "ArithmeticStructure": {
       "$dynamicAnchor": "syntax",
       "type": "object",
-      "description": "Arithmetic operation structure",
+      "description": "PREFERRED: Arithmetic operation structure for mathematical expressions. Use this for any calculation involving operators (+, -, *, /, ^) between variables or constants. Examples: A+B, X*Y/Z, (Rate*Population). This ensures proper parsing and mathematical accuracy.",
       "properties": {
         "syntaxType": {
           "const": "ArithmeticStructure"
         },
         "operators": {
           "type": "array",
-          "items": {"type": "string"},
-          "description": "List of operators between arguments"
+          "items": {"type": "string", "enum": ["+", "-", "*", "/", "^", "**", "mod", "%"]},
+          "description": "Mathematical operators between arguments. Common: +, -, *, /, ^ (power). Order matches left-to-right evaluation: [A, op1, B, op2, C] = (A op1 B) op2 C"
         },
         "arguments": {
           "type": "array",
           "items": {
             "$dynamicRef": "#syntax"
           },
-          "description": "Arguments of arithmetic operations"
+          "minItems": 2,
+          "description": "Mathematical operands. Each argument can be a ReferenceStructure (variable/constant) or nested ArithmeticStructure for complex expressions. Example: [ReferenceStructure('A'), ReferenceStructure('B')] with operators ['+'] represents A+B"
         }
       },
       "required": ["syntaxType", "operators", "arguments"],
@@ -478,14 +479,15 @@
     "ReferenceStructure": {
       "$dynamicAnchor": "syntax",
       "type": "object",
-      "description": "Variable reference",
+      "description": "Single variable or constant reference. Use ONLY for simple variable names (e.g., 'Population') or numeric constants (e.g., '42', '0.5'). For mathematical expressions with operators, use ArithmeticStructure instead. AVOID embedding calculations like 'A+B*C' here as it may not parse correctly.",
       "properties": {
         "syntaxType": {
           "const": "ReferenceStructure"
         },
         "reference": {
           "type": "string",
-          "description": "Name of the referenced variable"
+          "pattern": "^([A-Za-z][A-Za-z0-9_\\s]*|[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)$",
+          "description": "SIMPLE reference only: variable name (e.g., 'Birth_Rate', 'Population') or numeric constant (e.g., '42', '0.03', '1.5e-3'). Do NOT use mathematical expressions - use ArithmeticStructure for calculations."
         },
         "subscripts": {
           "oneOf": [

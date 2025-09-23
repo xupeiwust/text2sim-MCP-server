@@ -6,6 +6,34 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ---
 
+## \[2.5.2] – System Dynamics Expression Evaluation and Schema Enhancements
+
+### Fixed
+
+**Component Dependency Resolution**
+
+* Implemented systematic dependency extraction for auxiliary and flow components in PySD model generation.
+* Added `depends_on` declarations to auxiliary variable component decorators to ensure correct evaluation order.
+* Resolved evaluation sequence issues where auxiliary variables calculated with stale values from previous simulation steps.
+* Fixed Market_Penetration and similar ratio calculations that previously returned zero despite non-zero numerators.
+
+**Schema Guidance System**
+
+* Enhanced abstract model schema to prioritize ArithmeticStructure over ReferenceStructure for mathematical expressions.
+* Added explicit operator enumeration and validation patterns to guide proper model structure generation.
+* Updated schema documentation with prescriptive examples demonstrating correct mathematical expression patterns.
+* Improved schema validation to prevent complex mathematical expressions within ReferenceStructure components.
+
+### Changed
+
+**Model Expression Processing**
+
+* Extended `_extract_variables_from_ast()` method to support dependency extraction for non-stock components.
+* Modified `_generate_auxiliary_function()` to include systematic dependency tracking in generated Python code.
+* Enhanced compatibility with both ReferenceStructure and ArithmeticStructure expression formats.
+
+---
+
 ## \[2.5.1] – SD Implementation Quality & Reliability Improvements
 
 ### Fixed
