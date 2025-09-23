@@ -83,6 +83,21 @@ class PySDJSONIntegration:
         self.logger = logging.getLogger(__name__)
         self._compiled_models_cache = {}
 
+    def _extract_working_model(self, model: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extract the working model from template or direct format.
+
+        Args:
+            model: Input model in either template format {"model": {"abstractModel": ...}}
+                   or direct format {"abstractModel": ...}
+
+        Returns:
+            The working model dictionary containing abstractModel
+        """
+        if "model" in model and isinstance(model["model"], dict) and "abstractModel" in model["model"]:
+            return model["model"]
+        return model
+
     def validate_json_model(self, model: Dict[str, Any]) -> ValidationResult:
         """
         Validate a PySD-compatible JSON model.
@@ -98,13 +113,11 @@ class PySDJSONIntegration:
         suggestions = []
 
         try:
-            # Handle template format vs direct model format
-            working_model = model
-            if "model" in model and "abstractModel" in model["model"]:
-                # Template format with nested model
-                working_model = model["model"]
-            elif "abstractModel" not in model:
-                # Neither format found
+            # Extract working model using centralized helper
+            working_model = self._extract_working_model(model)
+
+            # Validate that working model contains abstractModel
+            if "abstractModel" not in working_model:
                 errors.append("Model must contain 'abstractModel' property, either at root level or under 'model' key")
                 return ValidationResult(False, errors, warnings, suggestions)
 
@@ -180,20 +193,30 @@ class PySDJSONIntegration:
             # Convert to PySD model
             pysd_model = self._convert_to_pysd_model(model)
 
-            # Set parameters if provided (use set_components, not initial_condition)
+            # Set parameters if provided using modern PySD approach
             if params:
                 try:
                     pysd_model.set_components(params)
                 except Exception as e:
                     self.logger.warning(f"Could not set parameters via set_components: {str(e)}")
 
-            # Run simulation
-            result_data = pysd_model.run(
-                initial_condition='original',
-                final_time=final_time,
-                time_step=time_step,
-                return_columns=return_columns
-            )
+            # Run simulation using correct PySD API for this version
+            # Note: PySD 3.14.x uses return_timestamps to control time range
+            if initial_time != 0:
+                # Custom time range when initial_time is not 0
+                timestamps = range(int(initial_time), int(final_time) + 1, int(time_step))
+                result_data = pysd_model.run(
+                    return_timestamps=timestamps,
+                    return_columns=return_columns
+                )
+            else:
+                # Standard simulation from 0 to final_time
+                result_data = pysd_model.run(
+                    initial_condition='original',
+                    final_time=final_time,
+                    time_step=time_step,
+                    return_columns=return_columns
+                )
 
             # Convert to time series format
             time_series = {}
@@ -297,11 +320,8 @@ class PySDJSONIntegration:
             flows = []
             auxiliaries = []
 
-            # Handle template format vs direct model format
-            working_model = model
-            if "model" in model and "abstractModel" in model["model"]:
-                working_model = model["model"]
-
+            # Extract working model using centralized helper
+            working_model = self._extract_working_model(model)
             abstract_model = working_model.get("abstractModel", {})
             sections = abstract_model.get("sections", [])
 
@@ -537,10 +557,8 @@ class PySDJSONIntegration:
                 # Fallback for when running from different contexts
                 from json_extensions.adapters.abstract_model_adapter import AbstractModelAdapter
 
-            # Handle template format vs direct model format
-            working_model = model
-            if "model" in model and "abstractModel" in model["model"]:
-                working_model = model["model"]
+            # Extract working model using centralized helper
+            working_model = self._extract_working_model(model)
 
             # Try to create the adapter and build the model
             model_adapter = AbstractModelAdapter(working_model, validate=False)
@@ -573,12 +591,11 @@ class PySDJSONIntegration:
             # Use the AbstractModelAdapter for JSON parsing
             from .json_extensions.adapters.abstract_model_adapter import AbstractModelAdapter
 
-            # Handle template format vs direct model format
-            working_model = model
-            if "model" in model and "abstractModel" in model["model"]:
-                working_model = model["model"]
+            # Extract working model using centralized helper
+            working_model = self._extract_working_model(model)
 
             # Normalize JSON: ensure each component has a name matching its element
+            normalized_working = working_model  # Safe default fallback
             try:
                 normalized_working = json.loads(json.dumps(working_model))
                 am = normalized_working.get("abstractModel", {})
@@ -593,6 +610,7 @@ class PySDJSONIntegration:
                                 comp["name"] = element_name
             except Exception as norm_e:
                 self.logger.warning(f"Component name normalization failed: {norm_e}")
+                # normalized_working already set to working_model as fallback
 
             # Create the adapter that provides PySD-compatible interface
             model_adapter = AbstractModelAdapter(normalized_working, validate=False)
@@ -730,7 +748,8 @@ class PySDJSONIntegration:
 
     def _generate_suggestions(self, model: Dict[str, Any], suggestions: List[str]):
         """Generate helpful suggestions for model improvement."""
-        abstract_model = model.get("abstractModel", {})
+        working_model = self._extract_working_model(model)
+        abstract_model = working_model.get("abstractModel", {})
         sections = abstract_model.get("sections", [])
 
         total_elements = sum(len(section.get("elements", [])) for section in sections)
@@ -856,14 +875,23 @@ class JSONModelBuilder:
         stateful_refs = []
 
         # Add required imports and setup matching working pysd-json implementation
+        # Get current PySD version dynamically to avoid version drift
+        try:
+            import pysd as _pysd_version_check
+            current_pysd_version = _pysd_version_check.__version__
+        except (ImportError, AttributeError):
+            # Fallback to minimum required version if PySD not available
+            current_pysd_version = "3.12.0"
+
         code_parts = [
             '"""Generated PySD model from JSON."""',
             'import numpy as np',
+            'import pysd as _pysd',
             'from pysd.py_backend.statefuls import Integ',
             'from pysd import Component',
             'from pathlib import Path',
             '',
-            '__pysd_version__ = "3.14.0"',
+            f'__pysd_version__ = "{current_pysd_version}"',
             '',
             '__data = {',
             "    'scope': None,",
@@ -1219,10 +1247,10 @@ def {func_name}():
     def _clean_name(self, name: str) -> str:
         """Clean variable name for Python function names."""
         # Replace spaces with underscores and make lowercase
-        cleaned = name.replace(' ', '_').replace('-', '_').lower()
+        cleaned = (name or "").replace(' ', '_').replace('-', '_').lower()
 
         # Ensure valid Python identifier
-        if not cleaned[0].isalpha():
+        if not cleaned or not cleaned[0].isalpha():
             cleaned = 'var_' + cleaned
 
         return cleaned
