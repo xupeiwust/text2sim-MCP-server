@@ -164,12 +164,17 @@ class PySDJSONIntegration:
             # Validate model first
             validation = self.validate_json_model(model)
             if not validation.is_valid:
+                error_summary = self._create_validation_error_summary(validation.errors, validation.warnings)
                 return SimulationResult(
                     success=False,
                     data=None,
                     time_series=None,
-                    error_message=f"Model validation failed: {'; '.join(validation.errors)}",
-                    metadata={"validation_errors": validation.errors}
+                    error_message=error_summary,
+                    metadata={
+                        "validation_errors": validation.errors,
+                        "validation_warnings": validation.warnings,
+                        "suggestions": validation.suggestions
+                    }
                 )
 
             # Convert to PySD model
@@ -179,13 +184,13 @@ class PySDJSONIntegration:
             if params:
                 for param_name, param_value in params.items():
                     try:
-                        pysd_model.set_initial_condition((initial_time, {param_name: param_value}))
+                        pysd_model.set_initial_condition(param_name, param_value)
                     except Exception as e:
                         self.logger.warning(f"Could not set parameter {param_name}: {str(e)}")
 
             # Run simulation
             result_data = pysd_model.run(
-                initial_condition=initial_time,
+                initial_condition=(initial_time, {}),
                 final_time=final_time,
                 time_step=time_step,
                 return_columns=return_columns
@@ -194,15 +199,12 @@ class PySDJSONIntegration:
             # Convert to time series format
             time_series = {}
             if isinstance(result_data, pd.DataFrame):
-                for column in result_data.columns:
-                    if column.lower() != 'time':
-                        time_series[column] = result_data[column].tolist()
+                # Add time column from index
+                time_series['TIME'] = result_data.index.tolist()
 
-                # Ensure time column exists
-                if 'TIME' in result_data.columns:
-                    time_series['TIME'] = result_data['TIME'].tolist()
-                elif result_data.index.name == 'TIME':
-                    time_series['TIME'] = result_data.index.tolist()
+                # Add all other columns
+                for column in result_data.columns:
+                    time_series[column] = result_data[column].tolist()
 
             metadata = {
                 "simulation_time": final_time - initial_time,
@@ -486,8 +488,10 @@ class PySDJSONIntegration:
 
             if ast.get("syntaxType") == "ReferenceStructure":
                 ref = ast.get("reference", "")
-                if ref and ref not in variable_names and not ref.replace(".", "").replace("-", "").isdigit():
-                    warnings.append(f"Element '{element_name}' references undefined variable '{ref}'")
+                if ref and ref not in variable_names and not ref.replace(".", "").replace("-", "").replace(" ", "").isdigit():
+                    # More sophisticated check for mathematical expressions
+                    if self._contains_undefined_variables(ref, variable_names):
+                        errors.append(f"Element '{element_name}' references undefined variable '{ref}'")
 
             # Recursively check nested structures
             for key, value in ast.items():
@@ -505,6 +509,24 @@ class PySDJSONIntegration:
                 for component in components:
                     ast = component.get("ast", {})
                     check_references_in_ast(ast, element.get("name", ""))
+
+    def _contains_undefined_variables(self, expression: str, variable_names: set) -> bool:
+        """Check if expression contains undefined variable references."""
+        import re
+
+        # Find potential variable names (letters, underscores, spaces)
+        # Common patterns: Variable_Name, Variable Name, CONSTANT_VALUE
+        potential_vars = re.findall(r'[A-Za-z_][A-Za-z0-9_\s]*[A-Za-z0-9_]|[A-Za-z]', expression)
+
+        for var in potential_vars:
+            var_clean = var.strip()
+            # Skip if it's a number or common operators/functions
+            if (var_clean and
+                not var_clean.replace(".", "").isdigit() and  # not a number
+                var_clean not in {'and', 'or', 'not', 'if', 'then', 'else'} and  # not operators
+                var_clean not in variable_names):  # not in our variable set
+                return True
+        return False
 
     def _test_pysd_compilation(self, model: Dict[str, Any], errors: List[str], warnings: List[str]) -> bool:
         """Test if the model can be compiled by PySD."""
@@ -532,81 +554,79 @@ class PySDJSONIntegration:
             return True  # Don't fail validation if we can't test compilation
 
     def _convert_to_pysd_model(self, model: Dict[str, Any]):
-        """Convert JSON model to PySD model object."""
+        """Convert JSON model to PySD model object using ModelBuilder."""
         try:
+            # Use the AbstractModelAdapter for JSON parsing
+            from .json_extensions.adapters.abstract_model_adapter import AbstractModelAdapter
+
             # Handle template format vs direct model format
             working_model = model
             if "model" in model and "abstractModel" in model["model"]:
                 working_model = model["model"]
 
-            abstract_model = working_model.get("abstractModel", {})
-            sections = abstract_model.get("sections", [])
+            # Create the adapter that provides PySD-compatible interface
+            model_adapter = AbstractModelAdapter(working_model, validate=False)
 
-            if not sections:
-                raise ValueError("Model must contain sections with elements")
+            # Use ModelBuilder to generate Python code file, then load with PySD
+            import tempfile
+            import os
 
-            # Create a temporary Vensim-like model file to load with PySD
-            # This is a simplified approach that creates equations from our JSON
-            equations = []
-            main_section = sections[0]  # Use first section
-            elements = main_section.get("elements", [])
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Create ModelBuilder with the adapter
+                builder = JSONModelBuilder(model_adapter, temp_dir)
 
-            for element in elements:
-                var_name = element.get("name", "")
-                components = element.get("components", [])
+                # Build the Python model file
+                python_file_path = builder.build_model()
 
-                if not components:
-                    continue
+                # Load the generated Python file with PySD
+                pysd_model = pysd.load(python_file_path)
 
-                component = components[0]  # One component per element
-                comp_type = component.get("type", "")
-                ast = component.get("ast", {})
-
-                equation = self._ast_to_equation(var_name, ast, comp_type)
-                if equation:
-                    equations.append(equation)
-
-            # Create a temporary model file
-            model_content = "\n".join(equations)
-
-            # For now, return a minimal working model
-            # In production, this would write to a temp file and load with PySD
-            # return pysd.read_vensim(temp_file_path)
-
-            # Temporary solution: create a simple programmatic model
-            # This demonstrates the structure but won't run actual simulations
-            class SimpleSDModel:
-                def __init__(self, equations):
-                    self.equations = equations
-                    self.variables = {}
-
-                def run(self, initial_condition=0, final_time=100, time_step=1, return_columns=None):
-                    # Simple simulation placeholder
-                    import pandas as pd
-                    import numpy as np
-
-                    time_points = np.arange(initial_condition, final_time + time_step, time_step)
-
-                    # Create dummy data for demonstration
-                    # In real implementation, this would solve the equations
-                    data = {
-                        'TIME': time_points,
-                        'population': 1000 * (1 + 0.005 * time_points),  # 0.5% growth
-                        'birth_rate': 20 * (1 + 0.005 * time_points),    # grows with population
-                        'death_rate': 15 * (1 + 0.005 * time_points),    # grows with population
-                    }
-
-                    return pd.DataFrame(data).set_index('TIME')
-
-                def set_initial_condition(self, condition):
-                    # Placeholder for parameter setting
-                    pass
-
-            return SimpleSDModel(equations)
+                return pysd_model
 
         except Exception as e:
             self.logger.error(f"Model conversion error: {str(e)}")
-            raise Exception(f"Failed to build model from JSON: {str(e)}")
+            raise SDModelBuildError(f"Failed to build model from JSON: {str(e)}")
+
+
+    def _analyze_model_structure(self, abstract_model: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze model structure for error reporting."""
+        sections = abstract_model.get("sections", [])
+        variables = []
+        stocks = []
+        flows = []
+        auxiliaries = []
+        expressions = []
+
+        for section in sections:
+            elements = section.get("elements", [])
+            for element in elements:
+                var_name = element.get("name", "")
+                variables.append(var_name)
+
+                components = element.get("components", [])
+                for component in components:
+                    comp_type = component.get("type", "")
+                    if comp_type == "Stock":
+                        stocks.append(var_name)
+                    elif comp_type == "Flow":
+                        flows.append(var_name)
+                    elif comp_type == "Auxiliary":
+                        auxiliaries.append(var_name)
+
+                    # Check for mathematical expressions
+                    ast = component.get("ast", {})
+                    if ast.get("syntaxType") == "ReferenceStructure":
+                        ref = ast.get("reference", "")
+                        if "*" in ref or "+" in ref or "-" in ref or "/" in ref:
+                            expressions.append(f"{var_name}: {ref}")
+
+        return {
+            "variables": variables,
+            "stocks": len(stocks),
+            "flows": len(flows),
+            "auxiliaries": len(auxiliaries),
+            "expressions": len(expressions)
+        }
 
     def _ast_to_equation(self, var_name: str, ast: Dict[str, Any], comp_type: str) -> str:
         """Convert AST structure to equation string."""
@@ -699,3 +719,349 @@ class PySDJSONIntegration:
         else:
             suggestions.append("Good SD model structure - consider adding more variables for complexity")
             suggestions.append("Add auxiliary variables for intermediate calculations")
+
+    def _create_validation_error_summary(self, errors: List[str], warnings: List[str]) -> str:
+        """Create a user-friendly error summary with actionable guidance."""
+        summary_parts = ["Model validation failed with the following issues:"]
+
+        if errors:
+            summary_parts.append("\n🚫 ERRORS (must be fixed):")
+            for error in errors:
+                summary_parts.append(f"  • {error}")
+
+        if warnings:
+            summary_parts.append("\n⚠️  WARNINGS:")
+            for warning in warnings:
+                summary_parts.append(f"  • {warning}")
+
+        # Add specific guidance based on error patterns
+        if any("references undefined variable" in error for error in errors):
+            summary_parts.append("\n💡 GUIDANCE:")
+            summary_parts.append("  • Check that all variable names in expressions match element names exactly")
+            summary_parts.append("  • Variable names are case-sensitive and must match the 'name' field of elements")
+            summary_parts.append("  • Use underscores or spaces consistently in variable names")
+            summary_parts.append("  • Ensure all referenced variables are defined in the model")
+
+        if any("abstractModel" in error for error in errors):
+            summary_parts.append("\n💡 GUIDANCE:")
+            summary_parts.append("  • Ensure your model has the correct JSON structure with 'abstractModel' at the root")
+            summary_parts.append("  • Include 'sections' array with at least one main section")
+            summary_parts.append("  • Each section needs 'elements' array with model variables")
+
+        return "\n".join(summary_parts)
+
+
+class JSONModelBuilder:
+    """
+    Builds PySD Python model files from AbstractModelAdapter.
+
+    This class converts JSON models via the adapter pattern into Python code
+    files that PySD can load and execute.
+    """
+
+    def __init__(self, model_adapter, temp_dir: str):
+        """
+        Initialize the builder.
+
+        Parameters
+        ----------
+        model_adapter : AbstractModelAdapter
+            The JSON model adapter
+        temp_dir : str
+            Temporary directory for generated files
+        """
+        self.model_adapter = model_adapter
+        self.temp_dir = temp_dir
+        self.variables = {}
+        self.equations = []
+
+    def build_model(self) -> str:
+        """
+        Build the Python model file from the JSON adapter.
+
+        Returns
+        -------
+        str
+            Path to the generated Python file
+        """
+        # Extract model information
+        self._extract_variables()
+
+        # Generate Python code
+        python_code = self._generate_python_code()
+
+        # Write to temporary file
+        from pathlib import Path
+        model_name = getattr(self.model_adapter, 'original_path', Path('temp_model.json')).stem
+        if isinstance(model_name, Path):
+            model_name = model_name.stem
+
+        python_file = Path(self.temp_dir) / f"{model_name}.py"
+
+        with open(python_file, 'w', encoding='utf-8') as f:
+            f.write(python_code)
+
+        return str(python_file)
+
+    def _extract_variables(self):
+        """Extract variables from the model adapter."""
+        # Process all sections (typically just one main section)
+        for section in self.model_adapter.sections:
+            for element in section.elements:
+                if not element.components:
+                    continue
+
+                component = element.components[0]  # One component per element
+
+                self.variables[element.name] = {
+                    'name': element.name,
+                    'type': component.type,
+                    'ast': component.ast,
+                    'units': element.units,
+                    'documentation': element.documentation
+                }
+
+    def _generate_python_code(self) -> str:
+        """Generate PySD-compatible Python code."""
+
+        # Generate function definitions for each variable
+        functions = []
+        integ_functions = []
+
+        # Add required imports and setup
+        code_parts = [
+            '"""Generated PySD model from JSON."""',
+            'import numpy as np',
+            'from pysd.py_backend.statefuls import Integ',
+            '',
+            '# Global time variable',
+            '_t = 0',
+            '',
+            'def time():',
+            '    """Return current time."""',
+            '    return _t',
+            '',
+        ]
+
+        # Add control variables
+        code_parts.extend([
+            'def final_time():',
+            '    """Final simulation time."""',
+            '    return 100',
+            '',
+            'def initial_time():',
+            '    """Initial simulation time."""',
+            '    return 0',
+            '',
+            'def time_step():',
+            '    """Simulation time step."""',
+            '    return 1',
+            '',
+            'def saveper():',
+            '    """Save frequency."""',
+            '    return time_step()',
+            '',
+        ])
+
+        # Generate functions for each variable
+        for var_name, var_info in self.variables.items():
+            func_name = self._clean_name(var_name)
+            var_type = var_info['type']
+            ast_info = var_info['ast']
+
+            if var_type == 'Stock':
+                # Generate stock (integration) function
+                stock_func, integ_func = self._generate_stock_function(func_name, ast_info, var_info)
+                functions.append(stock_func)
+                integ_functions.append(integ_func)
+
+            elif var_type in ['Flow', 'Auxiliary']:
+                # Generate flow or auxiliary function
+                func = self._generate_auxiliary_function(func_name, ast_info, var_info)
+                functions.append(func)
+
+        # Add all functions to code
+        code_parts.extend(functions)
+        code_parts.extend(integ_functions)
+
+        # Add required PySD infrastructure
+        code_parts.extend([
+            '',
+            '# Required PySD infrastructure',
+            'def _init_outer_references(data):',
+            '    """Initialize outer references."""',
+            '    for key in data:',
+            '        globals()[key] = data[key]',
+            '',
+            '# PySD version info',
+            '__pysd_version__ = "3.14.0"',
+            '',
+            '# Variable namespace',
+            '_namespace = {',
+        ])
+
+        # Add namespace mappings
+        for var_name in self.variables.keys():
+            clean_name = self._clean_name(var_name)
+            code_parts.append(f'    "{clean_name.lower()}": "{clean_name}",')
+
+        code_parts.extend([
+            '    "time": "time",',
+            '}',
+            '',
+            '# Dependencies (simplified)',
+            '_dependencies = {',
+        ])
+
+        # Add basic dependencies
+        for var_name in self.variables.keys():
+            clean_name = self._clean_name(var_name)
+            code_parts.append(f'    "{clean_name}": [],')
+
+        code_parts.extend([
+            '    "time": [],',
+            '}',
+            '',
+            '# Module attributes required by PySD',
+            'namespace = _namespace',
+            'dependencies = _dependencies',
+            '',
+            '# Component accessor class (required by PySD)',
+            'class ComponentAccessor:',
+            '    """Component accessor with required attributes."""',
+            '    def __init__(self):',
+            '        self.namespace = _namespace',
+            '        self.dependencies = _dependencies',
+            '        self.subscripts = {}  # No subscripts in our simple models',
+            '    ',
+            '    def __call__(self, name):',
+            '        """Get component by name."""',
+            '        return globals().get(name.lower(), globals().get(name))',
+            '',
+            'component = ComponentAccessor()',
+            '',
+            '# Model metadata',
+            'def get_pysd_compiler_version():',
+            '    """Return compiler version string."""',
+            '    return "3.14.0"',
+        ])
+
+        return '\n'.join(code_parts)
+
+    def _generate_stock_function(self, func_name: str, ast_info, var_info):
+        """Generate stock (integration) function."""
+
+        # Main stock function
+        stock_func = f'''def {func_name}():
+    """Stock: {var_info.get('documentation', func_name)}."""
+    return _{func_name}_integ()'''
+
+        # Integration helper function
+        if hasattr(ast_info, 'syntax_type') and ast_info.syntax_type == 'IntegStructure':
+            # Extract flow and initial value from AST
+            flow_expr = self._ast_to_python_expression(ast_info.flow)
+            initial_expr = self._ast_to_python_expression(ast_info.initial)
+
+            integ_func = f'''def _{func_name}_integ():
+    """Integration function for {func_name}."""
+    return Integ(lambda: {flow_expr}, lambda: {initial_expr}, "{func_name}")'''
+        else:
+            # Fallback for malformed stock
+            integ_func = f'''def _{func_name}_integ():
+    """Integration function for {func_name}."""
+    return Integ(lambda: 0, lambda: 100, "{func_name}")'''
+
+        return stock_func, integ_func
+
+    def _generate_auxiliary_function(self, func_name: str, ast_info, var_info):
+        """Generate auxiliary or flow function."""
+
+        # Convert AST to Python expression
+        expression = self._ast_to_python_expression(ast_info)
+
+        func = f'''def {func_name}():
+    """{'Flow' if var_info['type'] == 'Flow' else 'Auxiliary'}: {var_info.get('documentation', func_name)}."""
+    return {expression}'''
+
+        return func
+
+    def _ast_to_python_expression(self, ast_info) -> str:
+        """Convert AST info to Python expression."""
+        if not ast_info:
+            return '0'
+
+        if hasattr(ast_info, 'syntax_type'):
+            if ast_info.syntax_type == 'ReferenceStructure':
+                if hasattr(ast_info, 'reference'):
+                    return self._convert_reference_expression(ast_info.reference)
+
+        # Fallback
+        return '0'
+
+    def _convert_reference_expression(self, reference: str) -> str:
+        """Convert reference expression to Python function calls."""
+        if not reference:
+            return '0'
+
+        # Handle simple numbers
+        try:
+            float(reference)
+            return reference
+        except ValueError:
+            pass
+
+        # Handle mathematical expressions with variables
+        # Convert variable names to function calls
+        import re
+
+        def replace_var_with_function(match):
+            var_name = match.group(0)
+            clean_name = self._clean_name(var_name)
+            return f'{clean_name}()'
+
+        # Pattern to match variable names (letters, underscores, spaces)
+        var_pattern = r'[A-Za-z][A-Za-z0-9_\s]*[A-Za-z0-9_]|[A-Za-z]'
+
+        # Replace variable names with function calls, but preserve numbers and operators
+        result = reference
+
+        # Handle negative references first
+        if reference.startswith('-'):
+            rest = self._convert_reference_expression(reference[1:])
+            return f'-{rest}'
+
+        # Split on operators to handle each part
+        import re
+        tokens = re.split(r'([\+\-\*/\(\)\s]+)', reference)
+
+        converted_tokens = []
+        for token in tokens:
+            token = token.strip()
+            if not token:
+                converted_tokens.append('')
+            elif re.match(r'^[\+\-\*/\(\)\s]+$', token):
+                # Operator or whitespace/parentheses - keep as is
+                converted_tokens.append(token)
+            elif re.match(r'^\d+\.?\d*$', token):
+                # Number - keep as is
+                converted_tokens.append(token)
+            elif re.match(var_pattern, token) and token in self.variables:
+                # Variable name - convert to function call
+                clean_name = self._clean_name(token)
+                converted_tokens.append(f'{clean_name}()')
+            else:
+                # Unknown token - keep as is
+                converted_tokens.append(token)
+
+        return ''.join(converted_tokens)
+
+    def _clean_name(self, name: str) -> str:
+        """Clean variable name for Python function names."""
+        # Replace spaces with underscores and make lowercase
+        cleaned = name.replace(' ', '_').replace('-', '_').lower()
+
+        # Ensure valid Python identifier
+        if not cleaned[0].isalpha():
+            cleaned = 'var_' + cleaned
+
+        return cleaned
