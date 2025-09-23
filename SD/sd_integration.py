@@ -508,9 +508,15 @@ class PySDJSONIntegration:
             if ast.get("syntaxType") == "ReferenceStructure":
                 ref = ast.get("reference", "")
                 if ref and ref not in variable_names and not ref.replace(".", "").replace("-", "").replace(" ", "").isdigit():
-                    # More sophisticated check for mathematical expressions
-                    if self._contains_undefined_variables(ref, variable_names):
-                        errors.append(f"Element '{element_name}' references undefined variable '{ref}'")
+                    # Check if it's a function name (skip validation for function names)
+                    function_names = {
+                        'MIN', 'MAX', 'ABS', 'EXP', 'LN', 'LOG', 'SQRT', 'SIN', 'COS', 'TAN',
+                        'TANH', 'ATAN', 'ATAN2', 'POW', 'ROUND', 'FLOOR', 'CEIL', 'IF_THEN_ELSE'
+                    }
+                    if ref.upper() not in function_names:
+                        # More sophisticated check for mathematical expressions
+                        if self._contains_undefined_variables(ref, variable_names):
+                            errors.append(f"Element '{element_name}' references undefined variable '{ref}'")
 
             # Recursively check nested structures
             for key, value in ast.items():
@@ -1097,6 +1103,8 @@ def {func_name}():
                     return self._convert_reference_expression(ast_info.reference)
             elif ast_info.syntax_type == 'ArithmeticStructure':
                 return self._convert_arithmetic_structure(ast_info)
+            elif ast_info.syntax_type == 'CallStructure':
+                return self._convert_call_structure(ast_info)
             elif ast_info.syntax_type == 'IntegStructure':
                 # Should not be called directly for IntegStructure - handled separately
                 return '0'
@@ -1185,6 +1193,66 @@ def {func_name}():
 
         return result
 
+    def _convert_call_structure(self, ast_info) -> str:
+        """Convert CallStructure AST to Python function call."""
+        if not hasattr(ast_info, 'function') or not hasattr(ast_info, 'arguments'):
+            return '0'
+
+        # Get function name
+        func_name = None
+        if hasattr(ast_info.function, 'reference'):
+            func_name = ast_info.function.reference
+        elif hasattr(ast_info.function, 'syntax_type') and ast_info.function.syntax_type == 'ReferenceStructure':
+            func_name = getattr(ast_info.function, 'reference', None)
+
+        if not func_name:
+            return '0'
+
+        # Convert arguments
+        args = []
+        for arg in ast_info.arguments:
+            arg_expr = self._ast_to_python_expression(arg)
+            args.append(arg_expr)
+
+        # Map function names to Python/NumPy equivalents
+        function_mapping = {
+            'MIN': 'min',
+            'MAX': 'max',
+            'ABS': 'abs',
+            'EXP': 'np.exp',
+            'LN': 'np.log',
+            'LOG': 'np.log10',
+            'SQRT': 'np.sqrt',
+            'SIN': 'np.sin',
+            'COS': 'np.cos',
+            'TAN': 'np.tan',
+            'TANH': 'np.tanh',
+            'ATAN': 'np.arctan',
+            'ATAN2': 'np.arctan2',
+            'POW': 'np.power',
+            'ROUND': 'round',
+            'FLOOR': 'np.floor',
+            'CEIL': 'np.ceil',
+            'IF_THEN_ELSE': self._convert_if_then_else
+        }
+
+        python_func = function_mapping.get(func_name.upper(), func_name.lower())
+
+        # Handle special case for IF_THEN_ELSE
+        if python_func == self._convert_if_then_else:
+            return self._convert_if_then_else(args)
+
+        # Generate function call
+        args_str = ', '.join(args)
+        return f"{python_func}({args_str})"
+
+    def _convert_if_then_else(self, args) -> str:
+        """Convert IF_THEN_ELSE to Python conditional expression."""
+        if len(args) != 3:
+            return '0'
+        condition, then_expr, else_expr = args
+        return f"({then_expr} if {condition} else {else_expr})"
+
     def _extract_stock_dependencies(self, ast_info):
         """Extract dependency information from stock AST for PySD dependency tracking."""
         initial_deps = {}
@@ -1239,6 +1307,11 @@ def {func_name}():
                             variables.append(var_name)
 
             elif ast_info.syntax_type == 'ArithmeticStructure' and hasattr(ast_info, 'arguments'):
+                for arg in ast_info.arguments:
+                    variables.extend(self._extract_variables_from_ast(arg))
+
+            elif ast_info.syntax_type == 'CallStructure' and hasattr(ast_info, 'arguments'):
+                # Extract variables from function arguments
                 for arg in ast_info.arguments:
                     variables.extend(self._extract_variables_from_ast(arg))
 
