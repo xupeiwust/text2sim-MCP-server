@@ -1623,17 +1623,30 @@ def simulate_sd(config: dict, parameters: dict = None, time_settings: dict = Non
             params=parameters
         )
 
-        return {
-            "success": True,
-            "results": results.time_series if results.success else None,
-            "model_info": {
-                "model_name": config.get("model_name", "Unnamed Model"),
-                "time_range": f"{len(results.time_series.get('TIME', [0]))} time steps" if results.success and results.time_series and 'TIME' in results.time_series else "Unknown",
-                "variables": list(results.time_series.keys()) if results.success and results.time_series else []
-            },
-            "metadata": results.metadata,
-            "error_message": results.error_message
-        }
+        if results.success:
+            return {
+                "success": True,
+                "results": results.time_series,
+                "model_info": {
+                    "model_name": config.get("model_name", "Unnamed Model"),
+                    "time_range": f"{len(results.time_series.get('TIME', [0]))} time steps",
+                    "variables": list(results.time_series.keys())
+                },
+                "metadata": results.metadata,
+                "error_message": None
+            }
+        else:
+            return {
+                "success": False,
+                "results": None,
+                "model_info": {
+                    "model_name": config.get("model_name", "Unnamed Model"),
+                    "time_range": "Simulation failed",
+                    "variables": []
+                },
+                "metadata": results.metadata,
+                "error_message": results.error_message
+            }
 
     except (SDValidationError, SDModelBuildError, SDSimulationError) as e:
         return {"error": f"SD simulation error: {str(e)}"}
