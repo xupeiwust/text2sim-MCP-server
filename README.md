@@ -20,12 +20,6 @@ Text2Sim MCP Server enables Large Language Models to create, validate, and execu
 
 ## About
 
-This project is developed by The Cato Bot Company Limited and is available as open source software. Community contributions are accepted through standard pull request procedures.
-
----
-
-## About
-
 The Text2Sim MCP Server is an open source project developed by [The Cato Bot Company Limited](https://catobot.com). We believe in transparent, commercially-backed open source development that benefits both users and contributors while supporting sustainable project growth. Community contributions are accepted through standard pull request procedures.
 
 ---
