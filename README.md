@@ -46,17 +46,23 @@ Learn more: [astral-sh/uv](https://github.com/astral-sh/uv)
 
 ---
 
-## Usage
+## Quick Start
 
 ### **Clone the repository**
 ```bash
 git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
+cd text2sim-MCP-server
+```
+
+### **Install dependencies**
+```bash
+uv sync
 ```
 
 ### **Integration with Claude Desktop**
 
 1. Open:
- 
+
 `Claude > Settings > Developer > Edit Config > claude_desktop_config.json`
 
 2. Add the following block:
@@ -67,9 +73,11 @@ git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
       "command": "uv",
       "args": [
         "--directory",
-        "PATH_TO_TEXT2SIM_MCP_SERVER", # Update it with yours
+        "PATH_TO_TEXT2SIM_MCP_SERVER",
         "run",
-        "mcp_server.py"
+        "python",
+        "-m",
+        "mcp_server"
       ],
       "env": {}
     }
@@ -77,7 +85,7 @@ git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
 }
 ```
 
-> **Note:** If the `uv` command is not found, run `which uv` (Unix) or `Get-Command uv` (PowerShell) and use the full path in the `"command"` field.
+> **Note:** Replace `PATH_TO_TEXT2SIM_MCP_SERVER` with the actual path to your cloned repository. If the `uv` command is not found, run `which uv` (Unix) or `Get-Command uv` (PowerShell) and use the full path in the `"command"` field.
 
 ---
 
@@ -129,11 +137,44 @@ git clone https://github.com/IamCatoBot/text2sim-MCP-server.git
 
 ---
 
+## Architecture
+
+### **Modular Design**
+
+Text2Sim MCP Server v2.6.0 features a completely refactored modular architecture that improves maintainability, testability, and extensibility:
+
+```
+mcp_server/
+├── __init__.py              # Package exports and version info
+├── server.py                # Main server entry point
+├── registry.py              # Centralized tool registration
+├── shared/                  # Common utilities
+│   ├── error_handlers.py    # Standardized error handling
+│   ├── response_builders.py # Response formatting utilities
+│   └── integration_layer.py # SD integration with fallbacks
+└── tools/                   # Domain-specific tool modules
+    ├── des_tools.py         # DES simulation tools
+    ├── sd_tools.py          # SD simulation tools
+    ├── model_mgmt_tools.py  # Model lifecycle management
+    ├── validation_tools.py  # Validation and help tools
+    └── template_tools.py    # Template management tools
+```
+
+### **Key Improvements**
+
+- **Separation of Concerns**: Each domain has its own focused module
+- **Standardized Error Handling**: Consistent error responses with actionable guidance
+- **Enhanced Integration**: Robust SD integration with graceful fallbacks
+- **Professional Standards**: Comprehensive documentation and type hints
+- **Extensibility**: Easy to add new simulation paradigms or tools
+
+---
+
 ## API Reference
 
 ### MCP Tools Overview
 
-The server exposes the following tools through the Model Context Protocol:
+The server exposes **16 tools** across **5 categories** through the Model Context Protocol:
 
 #### **Core Simulation Tools**
 
@@ -202,6 +243,11 @@ The server exposes the following tools through the Model Context Protocol:
 - Automatic template naming with metadata
 - Template sharing and organization capabilities
 
+**`delete_template`** - Remove user templates
+- Safe deletion with confirmation requirements
+- Protects built-in templates from accidental removal
+- Provides backup recommendations
+
 #### **System Dynamics Specific Tools**
 
 **`get_sd_model_info`** - Analyze System Dynamics models
@@ -209,11 +255,17 @@ The server exposes the following tools through the Model Context Protocol:
 - Returns complexity metrics and variable information
 - Validates abstractModel format and reports structure analysis
 
-**`convert_vensim_to_sd_json`** - Convert Vensim models to PySD JSON (TO-DO)
-(Note: Current implementation returns a basic structure. Full Vensim conversion requires additional implementation)
+**`convert_vensim_to_sd_json`** - Convert Vensim models to PySD JSON
 - Converts Vensim .mdl files to PySD-compatible abstractModel format
 - Handles model translation and format validation
 - Integration with PySD's Vensim translation capabilities
+
+#### **Enhanced Tools (New in v2.6.0)**
+
+**`delete_model`** - Safe model deletion
+- Remove saved models with confirmation requirements
+- Provides model metadata before deletion
+- Includes undo suggestions and safety features
 
 ## JSON Schemas
 
@@ -384,7 +436,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 For academic use, cite as:
 
-Maniatis, N. (2025). Text2Sim MCP Server (v2.5.3). https://github.com/IamCatoBot/text2sim-MCP-server
+Maniatis, N. (2025). Text2Sim MCP Server (v2.6.0). https://github.com/IamCatoBot/text2sim-MCP-server
 Copyright The Cato Bot Company Limited and contributors. Licensed under MIT.
 
 ---

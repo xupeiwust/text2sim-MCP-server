@@ -6,6 +6,51 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ---
 
+## \[2.6.0] – Modular Architecture Refactoring
+
+### Added
+
+**Modular Architecture**
+
+* Complete refactoring from 1,821-line monolithic file to clean modular architecture with 16 tools across 5 focused modules.
+* New `mcp_server/` package with domain-separated tool modules: `des_tools.py`, `sd_tools.py`, `model_mgmt_tools.py`, `validation_tools.py`, `template_tools.py`.
+* Centralized tool registration system in `registry.py` with comprehensive tool discovery and validation capabilities.
+* Shared utilities package with standardized error handling, response building, and integration management.
+
+**Enhanced Tools**
+
+* Added `delete_model()` tool with safety features and confirmation requirements.
+* Added `delete_template()` tool for safe user template removal with built-in protection.
+* Enhanced all tools with improved error handling, response formatting, and user guidance.
+
+**Developer Experience**
+
+* New CLI entry point: `text2sim-mcp` command for easy server startup.
+* Migration validation script (`migration_validation.py`) for testing installation and functionality.
+* Comprehensive startup logging with tool registration status and capability overview.
+* Updated `pyproject.toml` with proper entry points and development dependencies.
+
+### Changed
+
+**Architecture Improvements**
+
+* **Breaking Change**: Primary server entry point changed from `python mcp_server.py` to `python -m mcp_server`.
+* Standardized error handling across all tools with 7 specialized error types and actionable suggestions.
+* Enhanced response building with 10 standardized response builders for different operation types.
+* Improved SD integration with robust fallback mechanisms and detailed error reporting.
+
+### Deprecated
+
+* Original `mcp_server.py` file is now considered legacy code and has been replaced with the new modular entry points.
+
+### Migration Guide
+
+**For Existing Users:**
+
+Update Claude Desktop configuration to use new entry point: `"python", "-m", "mcp_server"`
+
+---
+
 ## \[2.5.3] – CallStructure Function Library Implementation
 
 ### Added
@@ -58,8 +103,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 * **Function Library**: MIN, MAX, ABS, EXP, LN, LOG, SQRT, SIN, COS, TAN, TANH, ATAN, ATAN2, POW, ROUND, FLOOR, CEIL, IF_THEN_ELSE
 * **Validation**: Functions no longer trigger "undefined variable" errors
 * **Code Generation**: Proper Python function calls with NumPy integration
-* **Documentation**: Comprehensive examples prevent LLM format confusion
-* **Testing**: Full function library validation with mathematical accuracy verification
 
 ---
 
